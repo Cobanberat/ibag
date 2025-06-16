@@ -1,4 +1,4 @@
-@extends('layouts.app')
+ @extends('layouts.app')
 
 @section('content')
 <div class="container">
@@ -33,7 +33,7 @@
                                     </span>
                                 @enderror
                             </div>
-                        </div>
+                        </div>  
 
                         <div class="form-group row">
                             <label for="password" class="col-md-4 col-form-label text-md-right" style="color: white;">Password</label>

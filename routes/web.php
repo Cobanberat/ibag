@@ -20,3 +20,9 @@ Route::middleware('auth')->group(function () {
         return view('home');
     })->name('home');
 });
+Route::middleware(['auth', 'is_admin'])->group(function () {
+});
+Route::get('/admin', function () {
+    return view('admin.container');
+})->name('admin.dashboard');
+
