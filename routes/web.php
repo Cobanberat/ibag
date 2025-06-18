@@ -25,4 +25,10 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
 Route::get('/admin', function () {
     return view('admin.container');
 })->name('admin.dashboard');
+Route::get('/admin/stock', function () {
+    return view('admin.stock');
+})->name('admin.stock');
+Route::get('/admin/kategori', function () {
+    return view('admin.categoryList');
+})->name('admin.kategori');
 

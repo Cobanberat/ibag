@@ -42,14 +42,14 @@
             <li class="sidebar-header">Ekipman Yönetimi</li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.stock') }}">
                     <i class="align-middle" data-feather="box"></i>
                     <span class="align-middle">Stok Takibi</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.kategori') }}">
                     <i class="align-middle" data-feather="layers"></i>
                     <span class="align-middle">Kategoriler</span>
                 </a>
