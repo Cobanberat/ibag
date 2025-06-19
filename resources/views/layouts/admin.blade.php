@@ -14,6 +14,15 @@
     <link rel="shortcut icon" href="img/icons/icon-48x48.png" />
 
     <link rel="canonical" href="https://demo-basic.adminkit.io/" />
+    <!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Font Awesome (ikonlar için, örn: fas fa-trash-alt) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <title>IBAG</title>
     @vite(['resources/css/admin.css'])
@@ -56,7 +65,7 @@
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.ekipman') }}">
                     <i class="align-middle" data-feather="cpu"></i>
                     <span class="align-middle">Ekipman Özellikleri</span>
                 </a>
@@ -65,14 +74,14 @@
             <li class="sidebar-header">İşlem Takibi</li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.gidenGelen') }}">
                     <i class="align-middle" data-feather="repeat"></i>
                     <span class="align-middle">Giden / Gelen İşlemler</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.equipmentStatus') }}">
                     <i class="align-middle" data-feather="check-circle"></i>
                     <span class="align-middle">Eşya Durumu</span>
                 </a>
@@ -576,6 +585,9 @@
         });
     });
 </script>
+    @stack('scripts')
 </body>
-
+<!-- Bootstrap JS (opsiyonel, modal/dropdown gibi dinamik bileşenler için) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap 5 JS (bundle, Popper ile birlikte) -->
 </html>

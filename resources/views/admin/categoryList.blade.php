@@ -6,31 +6,38 @@
         border-radius: 1rem;
         box-shadow: 0 2px 12px rgba(0,0,0,0.07);
         margin-bottom: 1.5rem;
-        padding: 1.2rem 1.5rem;
+        padding: 1rem 1.2rem;
         display: flex;
         align-items: center;
-        gap: 1.2rem;
-        min-height: 90px;
+        gap: 1.1rem;
+        min-height: 70px;
         background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%);
         color: #fff;
+        transition: box-shadow 0.18s, transform 0.18s;
     }
     .summary-card.bg-warning {
         background: linear-gradient(90deg, #ffc107 0%, #ffe082 100%);
         color: #7a5c00;
     }
+    .summary-card:hover {
+        box-shadow: 0 6px 24px rgba(13,110,253,0.13);
+        transform: translateY(-4px) scale(1.03);
+    }
     .summary-card i {
-        font-size: 2.2em;
+        font-size: 1.7em;
         opacity: 0.8;
     }
     .summary-card .summary-value {
-        font-size: 2.1em;
-        font-weight: 700;
+        font-size: 1.35em;
+        font-weight: 600;
         margin-bottom: 0.1em;
+        line-height: 1.1;
     }
     .summary-card .summary-label {
-        font-size: 1.05em;
+        font-size: 1em;
         color: #e3e3e3;
         font-weight: 500;
+        line-height: 1.1;
     }
     .btn-add-category {
         display: flex;
@@ -287,18 +294,36 @@
         <!-- Diğer kategoriler aynı şekilde eklenebilir -->
     </tbody>
 </table>
-<div class="d-flex justify-content-between align-items-center mt-2">
-    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Seçili Kategorileri Sil</button>
-    <nav>
+<div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+    <button class="btn btn-danger btn-sm">
+        <i class="fas fa-trash-alt me-1"></i> Seçili Kategorileri Sil
+    </button>
+
+    <nav aria-label="Sayfalama">
         <ul class="pagination mb-0">
-            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>  
-            <li class="page-item active"><span class="page-link">1</span></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="Önceki">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">1</span>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#">2</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#">3</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#" aria-label="Sonraki">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </div>
+
 <!-- Kategori Ekle Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
   <div class="modal-dialog">

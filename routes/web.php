@@ -31,4 +31,13 @@ Route::get('/admin/stock', function () {
 Route::get('/admin/kategori', function () {
     return view('admin.categoryList');
 })->name('admin.kategori');
+Route::get('/admin/ekipmanlar', function () {
+    return view('admin.equipmentFeatures');
+})->name('admin.ekipman');
+Route::get('/admin/gidenGelen', function () {
+    return view('admin.comingGoing');
+})->name('admin.gidenGelen');
+Route::get('/admin/ekipmanDurumu', function () {
+    return view('admin.equipmentStatus');
+})->name('admin.equipmentStatus');
 
