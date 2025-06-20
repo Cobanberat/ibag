@@ -40,4 +40,7 @@ Route::get('/admin/gidenGelen', function () {
 Route::get('/admin/ekipmanDurumu', function () {
     return view('admin.equipmentStatus');
 })->name('admin.equipmentStatus');
+Route::get('/admin/durumKontrol', function () {
+    return view('admin.statusCheck');
+})->name('admin.statusCheck');
 

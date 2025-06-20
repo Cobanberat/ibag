@@ -88,7 +88,7 @@
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.statusCheck') }}">
                     <i class="align-middle" data-feather="activity"></i>
                     <span class="align-middle">Durum Kontrolü</span>
                 </a>
