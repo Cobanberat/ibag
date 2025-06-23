@@ -72,7 +72,7 @@
             </li>
 
             <li class="sidebar-header">İşlem Takibi</li>
-
+   
             <li class="sidebar-item">
                 <a class="sidebar-link" href="{{ route('admin.gidenGelen') }}">
                     <i class="align-middle" data-feather="repeat"></i>
@@ -97,58 +97,53 @@
             <li class="sidebar-header">Destek & Takip</li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.fault') }}">
                     <i class="align-middle" data-feather="alert-circle"></i>
                     <span class="align-middle">Arıza Bildirimi</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.location') }}">
                     <i class="align-middle" data-feather="map-pin"></i>
                     <span class="align-middle">Konum Takibi</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{route('admin.approvalProcces')}}">
                     <i class="align-middle" data-feather="check-square"></i>
                     <span class="align-middle">Onay Süreci</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
-                    <i class="align-middle" data-feather="eye"></i>
-                    <span class="align-middle">Kullanım Durumu</span>
-                </a>
-            </li>
+          
 
             <li class="sidebar-header">Analiz & Rapor</li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.reporting') }}">
                     <i class="align-middle" data-feather="bar-chart-2"></i>
                     <span class="align-middle">Raporlama</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.dataAnalysis') }}">
                     <i class="align-middle" data-feather="pie-chart"></i>
                     <span class="align-middle">Veri Analizi</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.equipmentAnalysis') }}">
                     <i class="align-middle" data-feather="settings"></i>
                     <span class="align-middle">Ekipman Analizi</span>
                 </a>
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.memberAnalysis') }}">
                     <i class="align-middle" data-feather="users"></i>
                     <span class="align-middle">Üye Analizi</span>
                 </a>
@@ -157,7 +152,7 @@
             <li class="sidebar-header">Kullanıcı</li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="#">
+                <a class="sidebar-link" href="{{ route('admin.users') }}">
                     <i class="align-middle" data-feather="user"></i>
                     <span class="align-middle">Kullanıcılar</span>
                 </a>
