@@ -21,8 +21,10 @@
   .modern-table th { background:#f3f6fa; font-weight:600; color:#4b5563; border-top:none; }
   .modern-table tr { transition: background .12s; }
   .modern-table tr:hover { background:#f1f5fb; }
-  .pagination .page-link { border-radius:1em; margin:0 2px; color:#6366f1; border:none; background:#f3f6fa; }
-  .pagination .page-item.active .page-link { background:#6366f1; color:#fff; }
+  .pagination .page-link { border-radius:1em; margin:0 2px; color:#6366f1; border:none; background:#f3f6fa; transition: all 0.2s ease; }
+  .pagination .page-item.active .page-link { background:#6366f1; color:#fff; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3); font-weight: 600; }
+  .pagination .page-item.active .page-link:hover { background:#5a5fd8; color:#fff; }
+  .pagination .page-link:hover { background:#e0e7ff; color:#6366f1; transform: translateY(-1px); }
   .filter-bar { background:linear-gradient(90deg,#f3f6fa 0,#e0e7ff 100%); border-radius:1.2em; box-shadow:0 2px 12px #e0e7ef; padding:.7em 1em; margin-bottom:1.5em; display:flex; flex-wrap:wrap; gap:.7em; align-items:center; }
   .filter-bar .input-group { flex:1 1 180px; min-width:160px; }
   .filter-bar .form-select, .filter-bar .form-control { border-radius:1em; border:none; background:#f7f8fa; font-size:.98rem; }
@@ -66,9 +68,8 @@
 </style>
 <div class="container-fluid">
   <h3 class="mb-4">Raporlama & Analiz Paneli</h3>
-  <!-- Karanlık Mod ve Bildirim -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <button class="btn btn-outline-dark" id="darkModeBtn"><i class="fas fa-moon"></i> Karanlık Mod</button>
+  <!-- Bildirim -->
+  <div class="d-flex justify-content-end align-items-center mb-3">
     <div id="snackbar" style="display:none;position:fixed;top:1.5em;right:2em;z-index:9999;" class="alert alert-info shadow">Yeni veri geldi!</div>
   </div>
   <!-- Otomatik Rapor Planlama ve Paylaşım -->
@@ -95,18 +96,7 @@
       <button class="btn btn-outline-info btn-sm">Kritik Ekipman Listesi</button>
       <button class="btn btn-outline-secondary btn-sm">Tüm Talepler Özeti</button>
       <button class="btn btn-outline-dark btn-sm"><i class="fas fa-plus"></i> Yeni Favori</button>
-    </div>
-  </div>
-  <!-- Doğal Dilde Sorgu ve AI Özet -->
-  <div class="card modern-card mb-4">
-    <div class="card-header"><i class="fas fa-robot me-2 text-info"></i>Yapay Zeka Destekli Analiz</div>
-    <div class="card-body">
-      <div class="input-group mb-2">
-        <input type="text" class="form-control" id="aiQueryInput" placeholder="Örn: Bu ay en çok arıza yapan ekipman nedir?">
-        <button class="btn btn-outline-info" id="aiQueryBtn"><i class="fas fa-magic"></i> Sorgula</button>
-      </div>
-      <div id="aiSummary" class="alert alert-light border mb-0" style="display:none;"></div>
-    </div>
+    </di  v>
   </div>
   <!-- KPI Kartları (animasyonlu uyarı, mini trend) -->
   <div class="row g-3 mb-4">
@@ -188,7 +178,6 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <span>Tüm Talepler</span>
       <div>
-        <button class="btn btn-outline-secondary btn-sm" onclick="toggleColumns()"><i class="fas fa-columns"></i> Kolonlar</button>
         <button class="btn btn-outline-primary btn-sm" onclick="printTable()"><i class="fas fa-print"></i></button>
         <button class="btn btn-outline-success btn-sm" onclick="downloadCSV()"><i class="fas fa-file-csv"></i></button>
         <button class="btn btn-outline-info btn-sm" onclick="copyTable()"><i class="fas fa-copy"></i></button>
@@ -203,7 +192,21 @@
       </div>
       <div class="table-responsive">
         <table class="table modern-table table-striped table-hover mb-0" id="mainTalepTable">
-          <thead><tr><th>#</th><th>Talep No</th><th>Tarih</th><th>Tip</th><th>Ekipman</th><th>Kod</th><th>Bölge</th><th>Talep Eden</th><th>Aciliyet</th><th>Durum</th><th>Dosya</th><th>Açıklama</th><th></th></tr></thead>
+          <thead><tr>
+            <th>#</th>
+            <th id="col-talepNo">Talep No</th>
+            <th id="col-tarih">Tarih</th>
+            <th id="col-tip">Tip</th>
+            <th id="col-ekipman">Ekipman</th>
+            <th id="col-kod">Kod</th>
+            <th id="col-bolge">Bölge</th>
+            <th id="col-eden">Talep Eden</th>
+            <th id="col-aciliyet">Aciliyet</th>
+            <th id="col-durum">Durum</th>
+            <th id="col-dosya">Dosya</th>
+            <th id="col-aciklama">Açıklama</th>
+            <th></th>
+          </tr></thead>
           <tbody id="talepTableBody"></tbody>
         </table>
       </div>
@@ -422,14 +425,28 @@ function renderTalepPagination() {
   const data = filteredTalepData.length ? filteredTalepData : talepData;
   const pageCount = Math.ceil(data.length/pageSize);
   let html = '';
+  
+  // Debug bilgisi
+  console.log('Pagination render:', { currentPage, pageCount, dataLength: data.length });
+  
   for(let i=1;i<=pageCount;i++) {
-    html += `<li class='page-item${i===currentPage?' active':''}'><a class='page-link' href='#' onclick='gotoTalepPage(${i});return false;'>${i}</a></li>`;
+    const isActive = i === currentPage;
+    html += `<li class='page-item${isActive?' active':''}'><a class='page-link' href='#' onclick='gotoTalepPage(${i});return false;'>${i}</a></li>`;
   }
   document.getElementById('talepPagination').innerHTML = html;
+  
+  // Aktif sayfa butonunu vurgula
+  const activeButton = document.querySelector('.pagination .page-item.active .page-link');
+  if (activeButton) {
+    activeButton.style.background = '#6366f1';
+    activeButton.style.color = '#fff';
+    activeButton.style.fontWeight = '600';
+  }
 }
 function gotoTalepPage(page) {
   currentPage = page;
   renderTalepTable();
+  renderTalepPagination();
 }
 function showTalepDetail(idx) {
   const d = (filteredTalepData.length ? filteredTalepData : talepData)[idx];
@@ -466,13 +483,6 @@ document.getElementById('chartTypeSelect').onchange = function() {
   chartType = this.value;
   // Grafik türünü değiştir (örnek)
 };
-// Karanlık mod
-let darkMode = false;
-document.getElementById('darkModeBtn').onclick = function() {
-  darkMode = !darkMode;
-  document.body.classList.toggle('bg-dark', darkMode);
-  document.body.classList.toggle('text-white', darkMode);
-};
 // Canlı bildirim/snackbar örneği
 function showSnackbar(msg) {
   const sb = document.getElementById('snackbar');
@@ -480,12 +490,6 @@ function showSnackbar(msg) {
   sb.style.display = 'block';
   setTimeout(()=>sb.style.display='none', 3000);
 }
-// AI sorgu örneği
-const aiSummary = document.getElementById('aiSummary');
-document.getElementById('aiQueryBtn').onclick = function() {
-  aiSummary.style.display = 'block';
-  aiSummary.innerHTML = '<b>En çok arıza yapan ekipman:</b> Oksijen Konsantratörü (7 arıza)<br><b>Öneri:</b> Bu ekipmanın bakım sıklığını artırın.';
-};
 // Mini trend grafikler (örnek)
 new Chart(document.getElementById('miniTrend1'), {type:'line',data:{labels:['',''],datasets:[{data:[110,120],borderColor:'#6366f1',tension:.4}]},options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
 new Chart(document.getElementById('miniTrend2'), {type:'line',data:{labels:['',''],datasets:[{data:[100,98],borderColor:'#28a745',tension:.4}]},options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
@@ -509,5 +513,143 @@ function filterFromChart() { selectedTypes=['Arıza']; updateActiveFilters(); ap
 function comparePeriods() { showSnackbar('Dönem karşılaştırma özelliği örnek!'); }
 // Canlı veri simülasyonu
 setTimeout(()=>showSnackbar('Yeni veri geldi!'), 5000);
+
+// Kolon gizleme/gösterme fonksiyonları
+let hiddenColumns = [];
+
+function toggleColumn(columnName) {
+  const columnIndex = getColumnIndex(columnName);
+  const icon = document.querySelector(`#icon-${columnName}`);
+  
+  if (hiddenColumns.includes(columnName)) {
+    // Kolonu göster
+    hiddenColumns = hiddenColumns.filter(col => col !== columnName);
+    icon.className = 'fas fa-check';
+    showColumn(columnIndex);
+    showSnackbar(`${getColumnDisplayName(columnName)} kolonu gösterildi`);
+  } else {
+    // Kolonu gizle
+    hiddenColumns.push(columnName);
+    icon.className = 'fas fa-times';
+    hideColumn(columnIndex);
+    showSnackbar(`${getColumnDisplayName(columnName)} kolonu gizlendi`);
+  }
+}
+
+function getColumnIndex(columnName) {
+  const columnMap = {
+    'talepNo': 1,
+    'tarih': 2,
+    'tip': 3,
+    'ekipman': 4,
+    'kod': 5,
+    'bolge': 6,
+    'eden': 7,
+    'aciliyet': 8,
+    'durum': 9,
+    'dosya': 10,
+    'aciklama': 11
+  };
+  return columnMap[columnName];
+}
+
+function getColumnDisplayName(columnName) {
+  const displayNames = {
+    'talepNo': 'Talep No',
+    'tarih': 'Tarih',
+    'tip': 'Tip',
+    'ekipman': 'Ekipman',
+    'kod': 'Kod',
+    'bolge': 'Bölge',
+    'eden': 'Talep Eden',
+    'aciliyet': 'Aciliyet',
+    'durum': 'Durum',
+    'dosya': 'Dosya',
+    'aciklama': 'Açıklama'
+  };
+  return displayNames[columnName];
+}
+
+function hideColumn(index) {
+  const table = document.getElementById('mainTalepTable');
+  const headerRow = table.querySelector('thead tr');
+  const bodyRows = table.querySelectorAll('tbody tr');
+  
+  // Başlık hücresini gizle
+  if (headerRow.cells[index]) {
+    headerRow.cells[index].style.display = 'none';
+  }
+  
+  // Veri hücrelerini gizle
+  bodyRows.forEach(row => {
+    if (row.cells[index]) {
+      row.cells[index].style.display = 'none';
+    }
+  });
+}
+
+function showColumn(index) {
+  const table = document.getElementById('mainTalepTable');
+  const headerRow = table.querySelector('thead tr');
+  const bodyRows = table.querySelectorAll('tbody tr');
+  
+  // Başlık hücresini göster
+  if (headerRow.cells[index]) {
+    headerRow.cells[index].style.display = '';
+  }
+  
+  // Veri hücrelerini göster
+  bodyRows.forEach(row => {
+    if (row.cells[index]) {
+      row.cells[index].style.display = '';
+    }
+  });
+}
+
+function showAllColumns() {
+  hiddenColumns = [];
+  const table = document.getElementById('mainTalepTable');
+  const headerRow = table.querySelector('thead tr');
+  const bodyRows = table.querySelectorAll('tbody tr');
+  
+  // Tüm başlık hücrelerini göster
+  for (let i = 0; i < headerRow.cells.length; i++) {
+    headerRow.cells[i].style.display = '';
+  }
+  
+  // Tüm veri hücrelerini göster
+  bodyRows.forEach(row => {
+    for (let i = 0; i < row.cells.length; i++) {
+      row.cells[i].style.display = '';
+    }
+  });
+  
+  // Tüm ikonları güncelle
+  const columnNames = ['talepNo', 'tarih', 'tip', 'ekipman', 'kod', 'bolge', 'eden', 'aciliyet', 'durum', 'dosya', 'aciklama'];
+  columnNames.forEach(columnName => {
+    const icon = document.querySelector(`#icon-${columnName}`);
+    if (icon) icon.className = 'fas fa-check';
+  });
+  
+  showSnackbar('Tüm kolonlar gösterildi');
+}
+
+function hideAllColumns() {
+  const columnNames = ['talepNo', 'tarih', 'tip', 'ekipman', 'kod', 'bolge', 'eden', 'aciliyet', 'durum', 'dosya', 'aciklama'];
+  hiddenColumns = [...columnNames];
+  
+  columnNames.forEach(columnName => {
+    const index = getColumnIndex(columnName);
+    hideColumn(index);
+  });
+  
+  // Tüm ikonları güncelle
+  columnNames.forEach(columnName => {
+    const icon = document.querySelector(`#icon-${columnName}`);
+    if (icon) icon.className = 'fas fa-times';
+  });
+  
+  showSnackbar('Tüm kolonlar gizlendi');
+}
 </script>
 @endsection

@@ -5,9 +5,21 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/admin.js',
+                'resources/css/admin.css'
+            ],
             refresh: true,
         }),
         tailwindcss(),
     ],
+    server: {
+        host: '0.0.0.0', // Tüm IP'lerden erişime izin verir
+        port: 5173, // Vite varsayılan portu
+        hmr: {
+            host: '192.168.1.234' // ← burayı kendi IP adresinle güncelle
+        }
+    }
 });

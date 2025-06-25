@@ -30,7 +30,7 @@ Route::get('/admin/stock', function () {
     return view('admin.stock');
 })->name('admin.stock');
 
-Route::get('/admin/kategorı', function () {
+Route::get('/admin/kategori', function () {
     return view('admin.categoryList');
 })->name('admin.kategori');
 
@@ -50,15 +50,15 @@ Route::get('/admin/durumKontrol', function () {
     return view('admin.statusCheck');
 })->name('admin.statusCheck');
 
-Route::get('/admin/arızaBıldırım', function () {
+Route::get('/admin/arizabildirimi', function () {
     return view('admin.fault');
 })->name('admin.fault');
 
-Route::get('/admin/KonumTakıbı', function () {
+Route::get('/admin/konumTakibi', function () {
     return view('admin.location');
 })->name('admin.location');
 
-Route::get('/admin/onaySurecı', function () {
+Route::get('/admin/onaySureci', function () {
     return view('admin.approvalProcces');
 })->name('admin.approvalProcces');
 
@@ -66,19 +66,19 @@ Route::get('/admin/raporlama', function () {
     return view('admin.reporting');
 })->name('admin.reporting');
 
-Route::get('/admin/verıAnalızı', function () {
+Route::get('/admin/veriAnalizi', function () {
     return view('admin.dataAnalysis');
 })->name('admin.dataAnalysis');
 
-Route::get('/admin/ekıpmanAnalızı', function () {
+    Route::get('/admin/ekipmanAnalizi', function () {
     return view('admin.equipmentAnalysis');
 })->name('admin.equipmentAnalysis');
 
-Route::get('/admin/uyeAnalızı', function () {
+Route::get('/admin/uyeAnalizi', function () {
     return view('admin.memberAnalysis');
 })->name('admin.memberAnalysis');
 
-Route::get('/admin/kullanıcılar', function () {
+Route::get('/admin/kullanicilar', function () {
     return view('admin.users');
 })->name('admin.users');
 
