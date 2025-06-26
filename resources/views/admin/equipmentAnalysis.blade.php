@@ -100,7 +100,7 @@ body { background: #f8fafc; }
   <div class="equip-header">
     <div class="d-flex align-items-center justify-content-between w-100">
       <div>
-        <h2>🚀 Ekipman Analizi Paneli</h2>
+        <h2 style='color:#fff;'>🚀 Ekipman Analizi Paneli</h2>
         <p>Ekipmanların durumu, kullanımı, arızaları ve performansını modern, canlı ve etkileşimli olarak analiz edin.</p>
       </div>
       <button class="btn btn-outline-light" onclick="toggleEquipDarkMode()" title="Karanlık Mod"><i class="fas fa-moon"></i></button>
@@ -222,6 +222,69 @@ body { background: #f8fafc; }
     </div>
   </div>
   <div id="equipSnackbar">Veriler güncellendi!</div>
+  <!-- Ekipman Ekle Modal (Modern) -->
+  <div class="modal fade" id="addEquipModal" tabindex="-1" aria-labelledby="addEquipModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title d-flex align-items-center gap-2" id="addEquipModalLabel">
+            <i id="equipModalIcon" class="fas fa-cubes"></i> Yeni Ekipman Ekle
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addEquipForm" autocomplete="off">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="equipCategory" class="form-label fw-bold">Kategori <span class="text-danger">*</span></label>
+                <select class="form-select" id="equipCategory" required>
+                  <option value="">Seçiniz</option>
+                  <option value="Elektrik" data-icon="bolt" data-color="#6366f1">⚡ Elektrik</option>
+                  <option value="İnşaat" data-icon="building" data-color="#ffc107">🏗️ İnşaat</option>
+                  <option value="Makine" data-icon="cogs" data-color="#43e97b">🔧 Makine</option>
+                  <option value="Tesisat" data-icon="plug" data-color="#17a2b8">🔌 Tesisat</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="equipName" class="form-label fw-bold">Ekipman Adı <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="equipName" placeholder="Örn: Jeneratör" required>
+              </div>
+              <div class="col-md-6">
+                <label for="equipCode" class="form-label fw-bold">Ekipman Kodu <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="equipCode" placeholder="Örn: JEN-001" required>
+              </div>
+              <div class="col-md-3">
+                <label for="equipStock" class="form-label fw-bold">Stok <span class="text-danger">*</span></label>
+                <input type="number" min="1" class="form-control" id="equipStock" placeholder="Adet" required>
+              </div>
+              <div class="col-md-3">
+                <label for="equipStatus" class="form-label fw-bold">Durum <span class="text-danger">*</span></label>
+                <select class="form-select" id="equipStatus" required>
+                  <option value="">Seçiniz</option>
+                  <option>Aktif</option>
+                  <option>Arızalı</option>
+                  <option>Bakımda</option>
+                  <option>Depoda</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="equipDesc" class="form-label fw-bold">Açıklama</label>
+                <textarea class="form-control" id="equipDesc" rows="2" placeholder="Ek bilgi..."></textarea>
+              </div>
+            </div>
+            <div class="mt-3 d-flex align-items-center gap-2">
+              <span id="equipCategoryBadge" class="badge bg-secondary" style="display:none;"></span>
+              <span id="equipFormError" class="text-danger small"></span>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          <button type="submit" class="btn btn-primary" form="addEquipForm">Kaydet</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 // Sayma animasyonu
@@ -345,8 +408,16 @@ function exportEquipData() {
 }
 // Hızlı işlemler
 function quickAction(action) {
+  if(action === 'add') {
+    var modal = new bootstrap.Modal(document.getElementById('addEquipModal'));
+    document.getElementById('addEquipForm').reset();
+    document.getElementById('equipFormError').innerText = '';
+    document.getElementById('equipCategoryBadge').style.display = 'none';
+    document.getElementById('equipModalIcon').className = 'fas fa-cubes';
+    modal.show();
+    return;
+  }
   const actions = {
-    add: '➕ Yeni ekipman ekleme formu açılıyor...',
     maintenance: '🔧 Bakım planlama sayfasına yönlendiriliyorsunuz...',
     report: '📊 Rapor oluşturuluyor...',
     alert: '🔔 Uyarı ayarları açılıyor...'
@@ -365,6 +436,48 @@ document.getElementById('clearEquipFiltersBtn').addEventListener('click', ()=>{
   document.getElementById(id).addEventListener('change', () => {
     showEquipSnackbar('🔍 Filtreler uygulandı!');
   });
+});
+// Kategori seçilince ikon ve badge değişsin
+const equipCategory = document.getElementById('equipCategory');
+equipCategory.addEventListener('change', function() {
+  const selected = equipCategory.options[equipCategory.selectedIndex];
+  const badge = document.getElementById('equipCategoryBadge');
+  const icon = document.getElementById('equipModalIcon');
+  if(selected.value) {
+    badge.innerText = selected.text;
+    badge.style.display = 'inline-block';
+    badge.style.background = selected.getAttribute('data-color') || '#6366f1';
+    icon.className = 'fas fa-' + (selected.getAttribute('data-icon') || 'cubes');
+    icon.style.color = selected.getAttribute('data-color') || '#6366f1';
+  } else {
+    badge.style.display = 'none';
+    icon.className = 'fas fa-cubes';
+    icon.style.color = '';
+  }
+});
+// Form validasyonu ve submit
+const addEquipForm = document.getElementById('addEquipForm');
+addEquipForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = document.getElementById('equipName').value.trim();
+  const cat = document.getElementById('equipCategory').value;
+  const code = document.getElementById('equipCode').value.trim();
+  const stock = document.getElementById('equipStock').value;
+  const status = document.getElementById('equipStatus').value;
+  if(!name || !cat || !code || !stock || !status) {
+    document.getElementById('equipFormError').innerText = 'Lütfen tüm zorunlu alanları doldurun.';
+    return;
+  }
+  document.getElementById('equipFormError').innerText = '';
+  // Başarılı ekleme animasyonu
+  const modal = bootstrap.Modal.getInstance(document.getElementById('addEquipModal'));
+  modal.hide();
+  showEquipSnackbar('✅ Yeni ekipman başarıyla eklendi!');
+  // Burada AJAX ile backend'e veri gönderilebilir.
+  addEquipForm.reset();
+  document.getElementById('equipCategoryBadge').style.display = 'none';
+  document.getElementById('equipModalIcon').className = 'fas fa-cubes';
+  document.getElementById('equipModalIcon').style.color = '';
 });
 // Sayfa yüklendiğinde animasyonları başlat
 document.addEventListener('DOMContentLoaded', () => {

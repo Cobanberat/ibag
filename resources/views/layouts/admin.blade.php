@@ -41,7 +41,7 @@
         <ul class="sidebar-nav">
             <li class="sidebar-header">Genel</li>
 
-            <li class="sidebar-item active">
+            <li class="sidebar-item{{ request()->routeIs('admin.dashboard') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.dashboard') }}">
                     <i class="align-middle" data-feather="home"></i>
                     <span class="align-middle">Ana Sayfa</span>
@@ -50,21 +50,21 @@
 
             <li class="sidebar-header">Ekipman Yönetimi</li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.stock') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.stock') }}">
                     <i class="align-middle" data-feather="box"></i>
                     <span class="align-middle">Stok Takibi</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.kategori') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.kategori') }}">
                     <i class="align-middle" data-feather="layers"></i>
                     <span class="align-middle">Kategoriler</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.ekipman') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.ekipman') }}">
                     <i class="align-middle" data-feather="cpu"></i>
                     <span class="align-middle">Ekipman Özellikleri</span>
@@ -73,21 +73,21 @@
 
             <li class="sidebar-header">İşlem Takibi</li>
    
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.gidenGelen') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.gidenGelen') }}">
                     <i class="align-middle" data-feather="repeat"></i>
                     <span class="align-middle">Giden / Gelen İşlemler</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.equipmentStatus') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.equipmentStatus') }}">
                     <i class="align-middle" data-feather="check-circle"></i>
                     <span class="align-middle">Eşya Durumu</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.statusCheck') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.statusCheck') }}">
                     <i class="align-middle" data-feather="activity"></i>
                     <span class="align-middle">Durum Kontrolü</span>
@@ -96,21 +96,21 @@
 
             <li class="sidebar-header">Destek & Takip</li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.fault') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.fault') }}">
                     <i class="align-middle" data-feather="alert-circle"></i>
                     <span class="align-middle">Arıza Bildirimi</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.location') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.location') }}">
                     <i class="align-middle" data-feather="map-pin"></i>
                     <span class="align-middle">Konum Takibi</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.approvalProcces') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{route('admin.approvalProcces')}}">
                     <i class="align-middle" data-feather="check-square"></i>
                     <span class="align-middle">Onay Süreci</span>
@@ -121,28 +121,28 @@
 
             <li class="sidebar-header">Analiz & Rapor</li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.reporting') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.reporting') }}">
                     <i class="align-middle" data-feather="bar-chart-2"></i>
                     <span class="align-middle">Raporlama</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.dataAnalysis') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.dataAnalysis') }}">
                     <i class="align-middle" data-feather="pie-chart"></i>
                     <span class="align-middle">Veri Analizi</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.equipmentAnalysis') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.equipmentAnalysis') }}">
                     <i class="align-middle" data-feather="settings"></i>
                     <span class="align-middle">Ekipman Analizi</span>
                 </a>
             </li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.memberAnalysis') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.memberAnalysis') }}">
                     <i class="align-middle" data-feather="users"></i>
                     <span class="align-middle">Üye Analizi</span>
@@ -151,7 +151,7 @@
 
             <li class="sidebar-header">Kullanıcı</li>
 
-            <li class="sidebar-item">
+            <li class="sidebar-item{{ request()->routeIs('admin.users') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.users') }}">
                     <i class="align-middle" data-feather="user"></i>
                     <span class="align-middle">Kullanıcılar</span>
