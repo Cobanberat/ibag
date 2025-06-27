@@ -47,6 +47,12 @@
                     <span class="align-middle">Ana Sayfa</span>
                 </a>
             </li>
+            <li class="sidebar-item{{ request()->routeIs('admin.isEkle') ? ' active' : '' }}">
+                <a class="sidebar-link" href="{{ route('admin.isEkle') }}">
+                    <i class="align-middle" data-feather="plus-circle"></i>
+                    <span class="align-middle">İş Ekle</span>
+                </a>
+            </li>
 
             <li class="sidebar-header">Ekipman Yönetimi</li>
 

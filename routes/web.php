@@ -82,3 +82,7 @@ Route::get('/admin/kullanicilar', function () {
     return view('admin.users');
 })->name('admin.users');
 
+Route::get('/admin/isEkle', function () {
+    return view('admin.isEkle');
+})->name('admin.isEkle');
+
