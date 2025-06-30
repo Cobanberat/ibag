@@ -22,7 +22,6 @@
 
 
 <!-- Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <title>IBAG</title>
     @vite(['resources/css/admin.css'])
@@ -58,8 +57,14 @@
 
             <li class="sidebar-item{{ request()->routeIs('admin.stock') ? ' active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.stock') }}">
-                    <i class="align-middle" data-feather="box"></i>
-                    <span class="align-middle">Stok Takibi</span>
+                    <i class="align-middle" data-feather="package"></i>
+                    <span class="align-middle">Stok</span>
+                </a>
+            </li>
+            <li class="sidebar-item{{ request()->routeIs('admin.equipments') ? ' active' : '' }}">
+                <a class="sidebar-link" href="{{ route('admin.equipments') }}">
+                    <i class="align-middle" data-feather="tool"></i>
+                    <span class="align-middle">Ekipmanlar</span>
                 </a>
             </li>
 
@@ -174,6 +179,44 @@
 
 				<div class="navbar-collapse collapse">
 					<ul class="navbar-nav navbar-align">
+            <li class="nav-item">
+               <!-- From Uiverse.io by Type-Delta --> 
+<label
+  for="themeToggle"
+  class="themeToggle st-sunMoonThemeToggleBtn"
+  type="checkbox"
+>
+  <input type="checkbox" id="themeToggle" class="themeToggleInput" />
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    stroke="none"
+  >
+    <mask id="moon-mask">
+      <rect x="0" y="0" width="20" height="20" fill="white"></rect>
+      <circle cx="11" cy="3" r="8" fill="black"></circle>
+    </mask>
+    <circle
+      class="sunMoon"
+      cx="10"
+      cy="10"
+      r="8"
+      mask="url(#moon-mask)"
+    ></circle>
+    <g>
+      <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
+      <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
+      <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
+      <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
+      <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
+      <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
+    </g>
+  </svg>
+</label>
+
+            </li>
 						<li class="nav-item dropdown">
 							<a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown">
 								<div class="position-relative">
@@ -245,6 +288,9 @@
 									<i class="align-middle" data-feather="message-square"></i>
 								</div>
 							</a>
+                            <!-- From Uiverse.io by RiccardoRapelli --> 
+
+
 							<div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="messagesDropdown">
 								<div class="dropdown-menu-header">
 									<div class="position-relative">
@@ -312,7 +358,8 @@
               </a>
 
 							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
-                <img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="Charles Hall" /> <span class="text-dark">Charles Hall</span>
+                <span class="avatar bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-1" style="width:36px;height:36px;font-weight:700;font-size:1.2rem;">B</span>
+                <span class="text-dark">Berat Çoban</span>
               </a>
 							<div class="dropdown-menu dropdown-menu-end">
 								<a class="dropdown-item" href="pages-profile.html"><i class="align-middle me-1" data-feather="user"></i> Profile</a>
@@ -592,3 +639,97 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Bootstrap 5 JS (bundle, Popper ile birlikte) -->
 </html>
+<style>
+ /* From Uiverse.io by Type-Delta */ 
+/* a clone from joshwcomeau.com 
+ * but this version runs on pure CSS
+ */
+
+.themeToggle {
+  color: #bbb;
+  width: 3em;
+}
+
+.st-sunMoonThemeToggleBtn {
+  position: relative;
+  cursor: pointer;
+}
+
+.st-sunMoonThemeToggleBtn .themeToggleInput {
+  opacity: 0;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.st-sunMoonThemeToggleBtn svg {
+  position: absolute;
+  left: 0;
+  width: 70%;
+  height: 70%;
+  transition: transform 0.4s ease;
+  transform: rotate(40deg);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunMoon {
+  transform-origin: center center;
+  transition: inherit;
+  transform: scale(1);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunRay {
+  transform-origin: center center;
+  transform: scale(0);
+}
+
+.st-sunMoonThemeToggleBtn svg mask > circle {
+  transition: transform 0.64s cubic-bezier(0.41, 0.64, 0.32, 1.575);
+  transform: translate(0px, 0px);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunRay2 {
+  animation-delay: 0.05s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay3 {
+  animation-delay: 0.1s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay4 {
+  animation-delay: 0.17s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  animation-delay: 0.25s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  animation-delay: 0.29s !important;
+}
+
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg {
+  transform: rotate(90deg);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg mask > circle {
+  transform: translate(16px, -3px);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunMoon {
+  transform: scale(0.55);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunRay {
+  animation: showRay1832 0.4s ease 0s 1 forwards;
+}
+
+@keyframes showRay1832 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @push('scripts')
+<script>
+  if (window.feather) { feather.replace(); }
+</script>
+@endpush

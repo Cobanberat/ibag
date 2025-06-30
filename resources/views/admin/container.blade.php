@@ -6,8 +6,8 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
             <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
-            <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Yönetim</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Container</li>
+            <li class="breadcrumb-item"><a href="admin/" class="text-decoration-none">Yönetim</a></li>
+            <li class="breadcrumb-item active" aria-current="page"></li>
         </ol>
     </nav>
     <!-- Üst Bar: Kullanıcı Kartı, Yardım, Duyuru, Hava Durumu, Bildirimler -->
@@ -65,19 +65,19 @@
                     <span class="fw-bold fs-5"><i class="fa fa-bolt text-warning me-2"></i>Hızlı İşlemler</span>
                 </div>
                 <div class="card-body d-flex flex-wrap justify-content-center gap-3 p-3">
-                    <a href="/admin/equipment/create" class="quick-action-btn" data-bs-toggle="tooltip" title="Yeni ekipman ekle">
+                    <a href="{{route('admin.equipments')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Yeni ekipman ekle">
                         <div class="quick-action-icon bg-gradient-primary"><i class="fa fa-plus-circle"></i></div>
                         <div class="quick-action-label">Ekipman Ekle</div>
                     </a>
-                    <a href="/admin/fault/create" class="quick-action-btn" data-bs-toggle="tooltip" title="Arıza bildirimi yap">
+                    <a href="{{route('admin.fault')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Arıza bildirimi yap">
                         <div class="quick-action-icon bg-gradient-danger"><i class="fa fa-bug"></i></div>
                         <div class="quick-action-label">Arıza Bildir</div>
-                    </a>
-                    <a href="/admin/location" class="quick-action-btn" data-bs-toggle="tooltip" title="Konum takibi yap">
+                    </a> 
+                    <a href="{{route('admin.location')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Konum takibi yap">
                         <div class="quick-action-icon bg-gradient-success"><i class="fa fa-map-marker-alt"></i></div>
                         <div class="quick-action-label">Konum Takibi</div>
                     </a>
-                    <a href="/admin/users" class="quick-action-btn" data-bs-toggle="tooltip" title="Kullanıcıları yönet">
+                    <a href="{{route('admin.users')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Kullanıcıları yönet">
                         <div class="quick-action-icon bg-gradient-info"><i class="fa fa-users-cog"></i></div>
                         <div class="quick-action-label">Kullanıcı Yönetimi</div>
                     </a>

@@ -34,7 +34,7 @@ Route::get('/admin/kategori', function () {
     return view('admin.categoryList');
 })->name('admin.kategori');
 
-Route::get('/admin/ekipmanlar', function () {
+Route::get('/admin/ekipmanÖzelikleri', function () {
     return view('admin.equipmentFeatures');
 })->name('admin.ekipman');
 
@@ -85,4 +85,8 @@ Route::get('/admin/kullanicilar', function () {
 Route::get('/admin/isEkle', function () {
     return view('admin.isEkle');
 })->name('admin.isEkle');
+
+Route::get('/admin/ekipmanlar', function () {
+    return view('admin.equipment');
+})->name('admin.equipments');
 

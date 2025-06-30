@@ -33,27 +33,33 @@
                     </div>
                     <div class="col-md-8">
                         <label class="form-label fw-bold"><i class="fas fa-users me-1"></i> Giden Kişiler</label>
-                        <div class="small text-muted mb-2">Her satıra bir kişi ekleyin. Görev ve telefon opsiyoneldir.</div>
-                        <div id="person-list">
-                            <div class="row g-2 align-items-end person-row mb-2 py-3 px-2 rounded modern-row bg-white shadow-sm position-relative">
-                                <div class="col-md-4 d-flex align-items-center">
-                                    <span class="badge bg-primary me-2"><i class="fas fa-user"></i></span>
-                                    <input type="text" class="form-control modern-input" placeholder="İsim Soyisim" required>
-                                </div>
-                                <div class="col-md-4 d-flex align-items-center">
-                                    <span class="badge bg-info me-2"><i class="fas fa-id-badge"></i></span>
-                                    <input type="text" class="form-control modern-input" placeholder="Görev (örn: Ekip Lideri)">
-                                </div>
-                                <div class="col-md-3 d-flex align-items-center">
-                                    <span class="badge bg-warning text-dark me-2"><i class="fas fa-phone"></i></span>
-                                    <input type="tel" class="form-control modern-input" placeholder="Telefon">
-                                </div>
-                                <div class="col-md-1 text-end">
-                                    <button type="button" class="btn btn-outline-danger remove-person w-100" title="Kişiyi kaldır"><i class="fas fa-trash"></i></button>
-                                </div>
+                        <div class="small text-muted mb-2">Çalışan seç, ekle diyince aşağıya düşer.</div>
+                        <div class="row g-2 align-items-end mb-2 py-3 px-2 rounded modern-row bg-white shadow-sm position-relative justify-content-center" id="person-form-row">
+                            <div class="col-md-8 d-flex align-items-center justify-content-center">
+                                <span class="badge bg-primary me-2"><i class="fas fa-user"></i></span>
+                                <select class="form-select modern-input" id="person-select">
+                                    <option value="">Çalışan Seç</option>
+                                    <option value="Berat Çoban">Berat Çoban</option>
+                                    <option value="Ayşe Yılmaz">Ayşe Yılmaz</option>
+                                    <option value="Mehmet Demir">Mehmet Demir</option>
+                                    <option value="Zeynep Kaya">Zeynep Kaya</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button type="button" class="btn btn-outline-primary btn-lg px-4" id="add-person-btn"><i class="fas fa-user-plus"></i> Ekle</button>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-person"><i class="fas fa-user-plus"></i> Kişi Ekle</button>
+                        <div class="table-responsive mb-2">
+                            <table class="table table-bordered table-striped align-middle mb-0" id="person-list-table" style="display:none;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Çalışan</th>
+                                        <th style="width:40px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div class="mb-4">
@@ -159,16 +165,27 @@ document.addEventListener('DOMContentLoaded', function() {
         row.querySelector('.equipment-photos').style.display = 'none';
         updatePhotoInputs(row);
     });
-    // Kişi ekle/çıkar
-    document.getElementById('add-person').onclick = function() {
-        const row = document.querySelector('.person-row').cloneNode(true);
-        row.querySelectorAll('input').forEach(input => input.value = '');
-        document.getElementById('person-list').appendChild(row);
+    // Giden Kişiler: Select ile ekleme ve tabloya düşürme
+    const personSelect = document.getElementById('person-select');
+    const addPersonBtn = document.getElementById('add-person-btn');
+    const personListTable = document.getElementById('person-list-table');
+    const personListTbody = personListTable.querySelector('tbody');
+
+    addPersonBtn.onclick = function() {
+        const name = personSelect.value;
+        if (!name) { personSelect.classList.add('is-invalid'); return; } else { personSelect.classList.remove('is-invalid'); }
+        // Tabloya ekle
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${name}</td><td><button type="button" class="btn btn-sm btn-danger remove-person-row"><i class="fas fa-trash"></i></button></td>`;
+        personListTbody.appendChild(tr);
+        personListTable.style.display = '';
+        // Temizle
+        personSelect.value = '';
     };
-    document.getElementById('person-list').addEventListener('click', function(e) {
-        if (e.target.closest('.remove-person')) {
-            const rows = document.querySelectorAll('.person-row');
-            if (rows.length > 1) e.target.closest('.person-row').remove();
+    personListTbody.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-person-row')) {
+            e.target.closest('tr').remove();
+            if (personListTbody.children.length === 0) personListTable.style.display = 'none';
         }
     });
 });

@@ -1,6 +1,12 @@
 @extends('layouts.admin')
 @section('content')
-<style>
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
+        <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Arıza Bildirimi' }}</li>
+    </ol>
+</nav><style>
   .fault-card {
     border-radius: 1.5rem;
     box-shadow: 0 4px 32px rgba(80,80,180,0.08), 0 1.5px 4px rgba(80,80,180,0.04);
