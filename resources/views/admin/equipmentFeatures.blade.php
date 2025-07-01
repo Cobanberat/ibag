@@ -297,16 +297,16 @@
     <tbody>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-bolt text-warning me-1"></i> Motor Gücü</td>
-            <td contenteditable="true">Jeneratör</td>
-            <td contenteditable="true">Sayı</td>
-            <td contenteditable="true">kW</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">5</td>
-            <td contenteditable="true">1 / 100</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Teknik</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Motor Gücü</td>
+            <td class="editable" data-field="category">Jeneratör</td>
+            <td class="editable" data-field="type">Sayı</td>
+            <td class="editable" data-field="unit">kW</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="default">5</td>
+            <td class="editable" data-field="minmax">1 / 100</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Teknik</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -314,16 +314,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-weight-hanging text-secondary me-1"></i> Ağırlık</td>
-            <td contenteditable="true">Kırıcı</td>
-            <td contenteditable="true">Sayı</td>
-            <td contenteditable="true">kg</td>
-            <td contenteditable="true"><span class="badge bg-danger">Hayır</span></td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">0 / 500</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Fiziksel</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Ağırlık</td>
+            <td class="editable" data-field="category">Kırıcı</td>
+            <td class="editable" data-field="type">Sayı</td>
+            <td class="editable" data-field="unit">kg</td>
+            <td class="editable" data-field="required"><span class="badge bg-danger">Hayır</span></td>
+            <td class="editable" data-field="default">-</td>
+            <td class="editable" data-field="minmax">0 / 500</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Fiziksel</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -331,16 +331,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-cogs text-info me-1"></i> Çalışma Modu</td>
-            <td contenteditable="true">Jeneratör</td>
-            <td contenteditable="true">Seçim</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">Dizel</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Dizel,Benzin</td>
-            <td contenteditable="true">Teknik</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Çalışma Modu</td>
+            <td class="editable" data-field="category">Jeneratör</td>
+            <td class="editable" data-field="type">Seçim</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="default">Dizel</td>
+            <td class="editable" data-field="minmax">-</td>
+            <td class="editable" data-field="options">Dizel,Benzin</td>
+            <td class="editable" data-field="group">Teknik</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -348,16 +348,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-calendar-alt text-primary me-1"></i> Üretim Yılı</td>
-            <td contenteditable="true">Kask</td>
-            <td contenteditable="true">Tarih</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-danger">Hayır</span></td>
-            <td contenteditable="true">2022</td>
-            <td contenteditable="true">2010 / 2024</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Fiziksel</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Üretim Yılı</td>
+            <td class="editable" data-field="category">Kask</td>
+            <td class="editable" data-field="type">Tarih</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-danger">Hayır</span></td>
+            <td class="editable" data-field="default">2022</td>
+            <td class="editable" data-field="minmax">2010 / 2024</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Fiziksel</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -365,16 +365,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-clipboard-check text-success me-1"></i> Garanti Durumu</td>
-            <td contenteditable="true">Jeneratör</td>
-            <td contenteditable="true">Boolean</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">Var</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Var, Yok</td>
-            <td contenteditable="true">Teknik</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Garanti Durumu</td>
+            <td class="editable" data-field="category">Jeneratör</td>
+            <td class="editable" data-field="type">Boolean</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="default">Var</td>
+            <td class="editable" data-field="minmax">-</td>
+            <td class="editable" data-field="options">Var, Yok</td>
+            <td class="editable" data-field="group">Teknik</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -382,16 +382,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-battery-full text-success me-1"></i> Akü Kapasitesi</td>
-            <td contenteditable="true">Akü</td>
-            <td contenteditable="true">Sayı</td>
-            <td contenteditable="true">Ah</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">100</td>
-            <td contenteditable="true">50 / 200</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Elektriksel</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Akü Kapasitesi</td>
+            <td class="editable" data-field="category">Akü</td>
+            <td class="editable" data-field="type">Sayı</td>
+            <td class="editable" data-field="unit">Ah</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="default">100</td>
+            <td class="editable" data-field="minmax">50 / 200</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Elektriksel</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -399,16 +399,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-plug text-primary me-1"></i> Priz Tipi</td>
-            <td contenteditable="true">Priz</td>
-            <td contenteditable="true">Seçim</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-danger">Hayır</span></td>
-            <td contenteditable="true">Schuko</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Schuko,IEC</td>
-            <td contenteditable="true">Elektriksel</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Priz Tipi</td>
+            <td class="editable" data-field="category">Priz</td>
+            <td class="editable" data-field="type">Seçim</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-danger">Hayır</span></td>
+            <td class="editable" data-field="default">Schuko</td>
+            <td class="editable" data-field="minmax">-</td>
+            <td class="editable" data-field="options">Schuko,IEC</td>
+            <td class="editable" data-field="group">Elektriksel</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -416,16 +416,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true"><i class="fas fa-bolt text-danger me-1"></i> Voltaj</td>
-            <td contenteditable="true">UPS</td>
-            <td contenteditable="true">Sayı</td>
-            <td contenteditable="true">V</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">220</td>
-            <td contenteditable="true">110 / 240</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Elektriksel</td>
-            <td contenteditable="true"><span class="badge bg-success">Aktif</span></td>
+            <td class="editable" data-field="name">Voltaj</td>
+            <td class="editable" data-field="category">UPS</td>
+            <td class="editable" data-field="type">Sayı</td>
+            <td class="editable" data-field="unit">V</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="default">220</td>
+            <td class="editable" data-field="minmax">110 / 240</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Elektriksel</td>
+            <td class="editable" data-field="active"><span class="badge bg-success">Aktif</span></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -433,16 +433,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true" title="Düzenlemek için tıkla">Renk <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Ekipmanın rengi"><i class="fas fa-info-circle"></i></button></td>
-            <td contenteditable="true">Kask</td>
-            <td contenteditable="true">Metin</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-danger">Hayır</span></td>
-            <td contenteditable="true">Sarı</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Kırmızı,Mavi,Sarı</td>
-            <td contenteditable="true">Fiziksel</td>
-            <td contenteditable="false"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div></td>
+            <td class="editable" data-field="name" title="Düzenlemek için tıkla">Renk <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Ekipmanın rengi"><i class="fas fa-info-circle"></i></button></td>
+            <td class="editable" data-field="category">Kask</td>
+            <td class="editable" data-field="type">Metin</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-danger">Hayır</span></td>
+            <td class="editable" data-field="default">Sarı</td>
+            <td class="editable" data-field="minmax">-</td>
+            <td class="editable" data-field="options">Kırmızı,Mavi,Sarı</td>
+            <td class="editable" data-field="group">Fiziksel</td>
+            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked></div></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -450,16 +450,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true" title="Düzenlemek için tıkla">Seri No <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Seri numarası"><i class="fas fa-info-circle"></i></button></td>
-            <td contenteditable="true">Jeneratör</td>
-            <td contenteditable="true">Metin</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Teknik</td>
-            <td contenteditable="false"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div></td>
+            <td class="editable" data-field="name" title="Düzenlemek için tıkla">Seri No <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Seri numarası"><i class="fas fa-info-circle"></i></button></td>
+            <td class="editable" data-field="category">Jeneratör</td>
+            <td class="editable" data-field="type">Metin</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="minmax">-</td>
+            <td class="editable" data-field="minmax">-</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Teknik</td>
+            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked></div></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -467,16 +467,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true" title="Düzenlemek için tıkla">Kullanım Süresi <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Toplam kullanım süresi (saat)"><i class="fas fa-info-circle"></i></button></td>
-            <td contenteditable="true">Jeneratör</td>
-            <td contenteditable="true">Sayı</td>
-            <td contenteditable="true">saat</td>
-            <td contenteditable="true"><span class="badge bg-success">Evet</span></td>
-            <td contenteditable="true">0</td>
-            <td contenteditable="true">0 / 10000</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true">Teknik</td>
-            <td contenteditable="false"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div></td>
+            <td class="editable" data-field="name" title="Düzenlemek için tıkla">Kullanım Süresi <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Toplam kullanım süresi (saat)"><i class="fas fa-info-circle"></i></button></td>
+            <td class="editable" data-field="category">Jeneratör</td>
+            <td class="editable" data-field="type">Sayı</td>
+            <td class="editable" data-field="unit">saat</td>
+            <td class="editable" data-field="required"><span class="badge bg-success">Evet</span></td>
+            <td class="editable" data-field="minmax">0</td>
+            <td class="editable" data-field="minmax">0 / 10000</td>
+            <td class="editable" data-field="options">-</td>
+            <td class="editable" data-field="group">Teknik</td>
+            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked></div></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -484,16 +484,16 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td contenteditable="true" title="Düzenlemek için tıkla">IP Koruma Sınıfı <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Toz ve suya karşı koruma seviyesi"><i class="fas fa-info-circle"></i></button></td>
-            <td contenteditable="true">UPS</td>
-            <td contenteditable="true">Seçim</td>
-            <td contenteditable="true">-</td>
-            <td contenteditable="true"><span class="badge bg-danger">Hayır</span></td>
-            <td contenteditable="true">IP54</td>
-            <td contenteditable="true">IP20 / IP67</td>
-            <td contenteditable="true">IP20,IP54,IP67</td>
-            <td contenteditable="true">Teknik</td>
-            <td contenteditable="false"><div class="form-check form-switch"><input class="form-check-input" type="checkbox"></div></td>
+            <td class="editable" data-field="name" title="Düzenlemek için tıkla">IP Koruma Sınıfı <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Toz ve suya karşı koruma seviyesi"><i class="fas fa-info-circle"></i></button></td>
+            <td class="editable" data-field="category">UPS</td>
+            <td class="editable" data-field="type">Seçim</td>
+            <td class="editable" data-field="unit">-</td>
+            <td class="editable" data-field="required"><span class="badge bg-danger">Hayır</span></td>
+            <td class="editable" data-field="minmax">IP54</td>
+            <td class="editable" data-field="minmax">IP20 / IP67</td>
+            <td class="editable" data-field="options">IP20,IP54,IP67</td>
+            <td class="editable" data-field="group">Teknik</td>
+            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox"></div></td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -639,29 +639,55 @@ if(selectAll) {
     });
 }
 // Inline edit: hücreye tıklayınca input açılır, enter veya blur ile kaydedilir
-const editableCells = document.querySelectorAll('.feature-table td[contenteditable]');
-editableCells.forEach(cell => {
-    cell.addEventListener('focus', function() {
-        this.dataset.oldValue = this.innerText;
-        this.setAttribute('title', 'Enter: Kaydet, Esc: Vazgeç');
-        this.style.boxShadow = '0 0 0 2px #0d6efd';
-        this.style.background = '#e7f1ff';
-    });
-    cell.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            this.blur();
-        } else if (e.key === 'Escape') {
-            this.innerText = this.dataset.oldValue;
-            this.blur();
+document.querySelectorAll('.feature-table td.editable').forEach(cell => {
+    cell.addEventListener('dblclick', function(e) {
+        if(cell.querySelector('input,select')) return;
+        let field = cell.getAttribute('data-field');
+        let text = cell.innerText.trim();
+        let input;
+        if(field==='type') {
+            input = document.createElement('select');
+            ['Sayı','Metin','Seçim','Tarih','Boolean'].forEach(opt => {
+                let o = document.createElement('option'); o.value=opt; o.text=opt; if(opt===text) o.selected=true; input.appendChild(o);
+            });
+        } else if(field==='required') {
+            input = document.createElement('select');
+            ['Evet','Hayır'].forEach(opt => {
+                let o = document.createElement('option'); o.value=opt; o.text=opt; if(text.includes(opt)) o.selected=true; input.appendChild(o);
+            });
+        } else if(field==='active') {
+            input = document.createElement('select');
+            ['Aktif','Pasif'].forEach(opt => {
+                let o = document.createElement('option'); o.value=opt; o.text=opt; if(text.includes(opt)) o.selected=true; input.appendChild(o);
+            });
+        } else {
+            input = document.createElement('input'); input.type='text'; input.value=text; input.className='form-control form-control-sm d-inline w-auto';
         }
-    });
-    cell.addEventListener('blur', function() {
-        this.setAttribute('title', 'Düzenlemek için tıkla');
-        this.style.boxShadow = '';
-        this.style.background = '';
-        // Burada AJAX ile kaydetme işlemi yapılabilir
-        // this.innerText yeni değer
+        input.style.maxWidth = '120px';
+        let oldHtml = cell.innerHTML;
+        cell.innerHTML = '';
+        cell.appendChild(input);
+        input.focus();
+        function saveEdit() {
+            let val = input.value;
+            if(field==='required') {
+                cell.innerHTML = `<span class="badge bg-${val==='Evet'?'success':'danger'}">${val}</span>`;
+            } else if(field==='active') {
+                cell.innerHTML = `<span class="badge bg-${val==='Aktif'?'success':'secondary'}">${val}</span>`;
+            } else {
+                cell.innerText = val;
+            }
+        }
+        function cancelEdit() {
+            cell.innerHTML = oldHtml;
+        }
+        input.addEventListener('keydown', function(ev) {
+            if(ev.key==='Enter') saveEdit();
+            if(ev.key==='Escape') cancelEdit();
+        });
+        input.addEventListener('blur', function() {
+            saveEdit();
+        });
     });
 });
 // Bootstrap tooltip

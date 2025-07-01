@@ -165,7 +165,6 @@
             <th>Ürün Sayısı</th>
             <th>Eklenme Tarihi</th>
             <th>Renk</th>
-            <th>İkon</th>
             <th>İşlemler</th>
         </tr>
     </thead>
@@ -173,7 +172,7 @@
         <!-- JS ile doldurulacak -->
     </tbody>
 </table>
-<div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+<div class="d-flex justify-content-end align-items-center mt-3 flex-wrap gap-2">
     <nav aria-label="Sayfalama">
         <ul class="pagination mb-0" id="pagination">
             <!-- JS ile doldurulacak -->
@@ -317,7 +316,6 @@ function renderTable() {
             <td>${c.productCount}</td>
             <td>${c.date}</td>
             <td><span class="category-color" style="background:${c.color}"></span></td>
-            <td><i class="fas ${c.icon} text-primary"></i></td>
             <td class="category-actions">
                 <button type="button" class="btn btn-sm btn-info detailBtn" data-id="${c.id}"><i class="fas fa-info-circle"></i></button>
                 <button type="button" class="btn btn-sm btn-warning editBtn" data-id="${c.id}"><i class="fas fa-edit"></i></button>

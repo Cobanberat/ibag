@@ -154,7 +154,7 @@ body.dark-mode .equip-card:hover { background: #23272f; color: #fff; }
 }
 .equip-card .equip-status {
   font-size: 1.1em; font-weight: 700; border-radius: 0.7em; padding: 0.3em 1.1em;
-  color: #fff; display: inline-block; margin-left: 0.5em;
+  color: #fff; display: flex; align-items: center; gap:3px; margin-left: 0.5em;
   box-shadow: 0 1px 4px #0d6efd11;
   animation: badgePop 0.7s cubic-bezier(.77,0,.18,1);
   border: none;

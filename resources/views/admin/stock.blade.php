@@ -86,7 +86,6 @@
             box-shadow: 0 4px 24px #0d6efd11;
         }
         .table thead th {
-            background: linear-gradient(90deg, #f6f8fa 60%, #e9ecef 100%);
             font-weight: 700;
             border-bottom: 2px solid #e9ecef;
             font-size: 1.08em;
@@ -128,7 +127,7 @@
         .table td, .table th { vertical-align: middle !important; }
         .editBtn, .deleteBtn, .stockInBtn, .stockOutBtn, .logBtn, .photoBtn { transition: transform 0.13s; }
         .editBtn:hover, .deleteBtn:hover, .stockInBtn:hover, .stockOutBtn:hover, .logBtn:hover, .photoBtn:hover { transform: scale(1.13); }
-        .table td[contenteditable="true"] { background: #f8fafc; border-radius: 0.5em; transition: background 0.2s; }
+        .table td[contenteditable="true"] { background: #f8fafc; transition: background 0.2s; }
         .table td[contenteditable="true"]:focus { outline: 2px solid #0d6efd; background: #e7f1ff; }
         .collapse.bg-light { font-size: 1.08em; }
         .product-photo-thumb { width: 38px; height: 38px; object-fit: cover; border-radius: 0.5em; box-shadow: 0 1px 4px #0d6efd11; margin-right: 0.5em; }

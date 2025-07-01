@@ -209,7 +209,7 @@ function renderTable() {
     pageRows.forEach(row => {
         let tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><input type="checkbox" class="row-select" data-id="${row.id}" ${selectedIds.has(row.id)?'checked':''}></td>
+            <td class="checkbox-cell"><input type="checkbox" class="row-select" data-id="${row.id}" ${selectedIds.has(row.id)?'checked':''}></td>
             <td class="editable" data-field="name"><span class="editable-text">${row.name}</span></td>
             <td class="editable" data-field="serial"><span class="editable-text">${row.serial}</span></td>
             <td class="editable" data-field="type"><span class="editable-text">${row.type}</span></td>
@@ -244,6 +244,16 @@ function renderTable() {
             document.getElementById('deleteSelectedBtn').disabled = selectedIds.size===0;
         });
     });
+    // Checkbox hücresine tıklama ile checkbox'ı tetikle
+    document.querySelectorAll('td.checkbox-cell').forEach(td => {
+        td.addEventListener('click', function(e) {
+            // Eğer doğrudan checkbox'a tıklandıysa tekrar tetikleme
+            if(e.target.tagName.toLowerCase() === 'input') return;
+            let cb = td.querySelector('input.row-select');
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event('change', {bubbles:true}));
+        });
+    });
     // Satır içi düzenleme
     document.querySelectorAll('#equipmentTable .editable').forEach(cell => {
         cell.addEventListener('dblclick', function(e) {
@@ -267,34 +277,29 @@ function renderTable() {
                 input = document.createElement('input'); input.type='text'; input.value=text; input.className='form-control form-control-sm d-inline w-auto';
             }
             input.style.maxWidth = '150px';
-            let saveBtn = document.createElement('button');
-            saveBtn.className = 'btn btn-success btn-sm ms-1';
-            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
-            let cancelBtn = document.createElement('button');
-            cancelBtn.className = 'btn btn-secondary btn-sm ms-1';
-            cancelBtn.innerHTML = '<i class="fas fa-times"></i>';
             let oldHtml = cell.innerHTML;
             cell.innerHTML = '';
             cell.appendChild(input);
-            cell.appendChild(saveBtn);
-            cell.appendChild(cancelBtn);
             input.focus();
-            saveBtn.onclick = function(ev) {
-                ev.preventDefault();
+            // Kaydet fonksiyonu
+            function saveEdit() {
                 let val = input.value;
                 let id = getRowId(cell);
                 let eq = equipmentData.find(r=>r.id===id);
                 eq[field] = val;
                 renderTable();
-            };
-            cancelBtn.onclick = function(ev) {
-                ev.preventDefault();
+            }
+            // Vazgeç fonksiyonu
+            function cancelEdit() {
                 cell.innerHTML = oldHtml;
-            };
-            input.onkeydown = function(ev) {
-                if(ev.key==='Enter') saveBtn.onclick(ev);
-                if(ev.key==='Escape') cancelBtn.onclick(ev);
-            };
+            }
+            input.addEventListener('keydown', function(ev) {
+                if(ev.key==='Enter') saveEdit();
+                if(ev.key==='Escape') cancelEdit();
+            });
+            input.addEventListener('blur', function() {
+                saveEdit();
+            });
         });
     });
     // Detay modalı
