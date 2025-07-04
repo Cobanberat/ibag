@@ -53,12 +53,14 @@
             font-weight: 600;
             box-shadow: 0 2px 12px #0d6efd22;
             border-radius: 2em;
-            padding: 0.65em 1.7em;
+            padding: 0.375em 1.7em;
             font-size: 1.12em;
             letter-spacing: 0.01em;
             transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
         }
         .filter-bar .btn-add-product:hover, .filter-bar .btn-add-product:focus {
             background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%);
@@ -131,6 +133,15 @@
         .table td[contenteditable="true"]:focus { outline: 2px solid #0d6efd; background: #e7f1ff; }
         .collapse.bg-light { font-size: 1.08em; }
         .product-photo-thumb { width: 38px; height: 38px; object-fit: cover; border-radius: 0.5em; box-shadow: 0 1px 4px #0d6efd11; margin-right: 0.5em; }
+        .modal-slide-down {
+            transform: translateY(-80px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(.4,2,.6,1.2);
+        }
+        .modal.show .modal-dialog.modal-slide-down {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
     <div class="alert alert-warning d-flex align-items-center" role="alert">
         <i class="fas fa-exclamation-circle me-2"></i>
@@ -160,13 +171,13 @@
         <button class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i> PDF</button>
         <button type="button" class="btn btn-outline-primary ms-2" id="bulkCategoryBtn"><i class="fas fa-layer-group"></i> Toplu Kategori Değiştir</button>
         <button type="button" class="btn btn-outline-info ms-2" id="bulkLocationBtn"><i class="fas fa-map-marker-alt"></i> Toplu Konum Değiştir</button>
-        <button type="button" class="btn btn-add-product ms-auto" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        <button type="button" class="btn btn-add-product" data-bs-toggle="modal" data-bs-target="#addProductModal">
             <i class="fas fa-plus"></i> Yeni Ürün
         </button>
     </div>
     <!-- Ürün Ekle Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered modal-slide-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addProductModalLabel"><i class="fas fa-plus me-2"></i>Yeni Ürün Ekle</h5>
@@ -222,7 +233,7 @@
     </div>
     <!-- Toplu Kategori Değiştir Modal -->
     <div class="modal fade" id="bulkCategoryModal" tabindex="-1" aria-labelledby="bulkCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered modal-slide-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="bulkCategoryModalLabel"><i class="fas fa-layer-group me-2"></i>Toplu Kategori Değiştir</h5>
@@ -249,7 +260,7 @@
     </div>
     <!-- Toplu Konum Değiştir Modal -->
     <div class="modal fade" id="bulkLocationModal" tabindex="-1" aria-labelledby="bulkLocationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered modal-slide-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="bulkLocationModalLabel"><i class="fas fa-map-marker-alt me-2"></i>Toplu Konum Değiştir</h5>
@@ -347,8 +358,52 @@
             </div>
         </div>
     </div>
+    <!-- Toplu İşlem Modalı -->
+    <div class="modal fade" id="bulkActionModal" tabindex="-1" aria-labelledby="bulkActionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-slide-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkActionModalLabel"><i class="fas fa-cogs me-2"></i>Seçili Ekipmanlara İşlem Yap</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="bulkActionForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">İşlem Tipi Seç</label>
+                            <select class="form-select" id="bulkActionType" required>
+                                <option value="">Seçiniz</option>
+                                <option value="category">Kategori Değiştir</option>
+                                <option value="location">Konum Değiştir</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="bulkCategorySelect">
+                            <label class="form-label">Yeni Kategori</label>
+                            <select class="form-select" id="bulkNewCategory">
+                                <option value="">Seçiniz</option>
+                                <option>Donanım</option>
+                                <option>Ağ</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="bulkLocationSelect">
+                            <label class="form-label">Yeni Konum</label>
+                            <select class="form-select" id="bulkNewLocation">
+                                <option value="">Seçiniz</option>
+                                <option>Depo A</option>
+                                <option>Depo B</option>
+                                <option>Depo C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-primary">Uygula</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <form>
-        <div class="card mt-2" style="border-radius:1.2rem;box-shadow:0 4px 24px #0d6efd11;">
+        <div class="card mt-2 p-2" style="border-radius:1.2rem;box-shadow:0 4px 24px #0d6efd11;">
             <div class="card-body p-0">
                 <table class="table table-hover table-striped mb-0" id="stockTable">
                     <thead class="table-light">
@@ -372,6 +427,9 @@
             <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
                 <button class="btn btn-danger btn-sm" id="deleteSelected">
                     <i class="fas fa-trash-alt me-1"></i> Seçili Ekipmanları Sil
+                </button>
+                <button class="btn btn-primary btn-sm" id="bulkActionBtn" disabled>
+                    <i class="fas fa-cogs me-1"></i> Seçili Ekipmanlara İşlem Yap
                 </button>
                 <nav aria-label="Sayfalama">
                     <ul class="pagination mb-0" id="pagination">
@@ -590,6 +648,43 @@
                 showMonths: 1
             });
         });
+        // Seçili ekipmanlara işlem yap butonu aktif/pasif
+        function updateBulkActionBtn() {
+            const anyChecked = document.querySelectorAll('input[name="select[]"]:checked').length > 0;
+            document.getElementById('bulkActionBtn').disabled = !anyChecked;
+        }
+        document.getElementById('stockTableBody').addEventListener('change', updateBulkActionBtn);
+        document.getElementById('selectAll').addEventListener('change', updateBulkActionBtn);
+        // Butona tıklayınca modal aç
+        document.getElementById('bulkActionBtn').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('bulkActionType').value = '';
+            document.getElementById('bulkCategorySelect').classList.add('d-none');
+            document.getElementById('bulkLocationSelect').classList.add('d-none');
+            new bootstrap.Modal(document.getElementById('bulkActionModal')).show();
+        };
+        // İşlem tipi seçilince ilgili select göster
+        document.getElementById('bulkActionType').onchange = function() {
+            document.getElementById('bulkCategorySelect').classList.toggle('d-none', this.value !== 'category');
+            document.getElementById('bulkLocationSelect').classList.toggle('d-none', this.value !== 'location');
+        };
+        // Form submit
+        document.getElementById('bulkActionForm').onsubmit = function(e) {
+            e.preventDefault();
+            const type = document.getElementById('bulkActionType').value;
+            const checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
+            if(type === 'category') {
+                const newCat = document.getElementById('bulkNewCategory').value;
+                products.forEach(p=>{if(checked.includes(p.id))p.category=newCat;});
+            }
+            if(type === 'location') {
+                const newLoc = document.getElementById('bulkNewLocation').value;
+                products.forEach(p=>{if(checked.includes(p.id))p.location=newLoc;});
+            }
+            var modal = bootstrap.Modal.getInstance(document.getElementById('bulkActionModal'));
+            modal.hide();
+            renderTable();
+        };
         renderTable();
     </script>
 @endpush

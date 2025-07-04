@@ -97,7 +97,6 @@
         box-shadow: 0 4px 24px #0d6efd11;
     }
     .table thead th {
-        background: linear-gradient(90deg, #f6f8fa 60%, #e9ecef 100%);
         font-weight: 700;
         border-bottom: 2px solid #e9ecef;
         font-size: 1.08em;
@@ -138,9 +137,6 @@
 </style>
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h3 class="fw-bold mb-0">Kategoriler</h3>
-    <button class="btn btn-add-category" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-        <i class="fas fa-plus"></i> Yeni Kategori
-    </button>
 </div>
 <div class="filter-bar mb-2">
     <input type="text" class="form-control form-control-sm" id="categorySearch" style="width: 200px;" placeholder="Kategori ara...">
@@ -154,7 +150,9 @@
     </select>
     <button class="btn btn-sm btn-outline-success"><i class="fas fa-file-excel"></i> Excel</button>
     <button class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i> PDF</button>
-    <button class="btn btn-danger btn-sm ms-auto" id="deleteSelected"><i class="fas fa-trash-alt me-1"></i> Seçili Kategorileri Sil</button>
+    <button class="btn btn-add-category p-2 ms-auto" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <i class="fas fa-plus"></i> Yeni Kategori
+    </button>
 </div>
 <table class="table table-hover table-striped mb-0" id="categoryTable">
     <thead>
@@ -172,7 +170,8 @@
         <!-- JS ile doldurulacak -->
     </tbody>
 </table>
-<div class="d-flex justify-content-end align-items-center mt-3 flex-wrap gap-2">
+<div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 p-2">
+    <button class="btn btn-danger btn-sm p-2" id="deleteSelected"><i class="fas fa-trash-alt me-1"></i> Seçili Kategorileri Sil</button>
     <nav aria-label="Sayfalama">
         <ul class="pagination mb-0" id="pagination">
             <!-- JS ile doldurulacak -->
@@ -181,7 +180,7 @@
 </div>
 <!-- Kategori Ekle Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addCategoryModalLabel"><i class="fas fa-plus-circle me-2"></i>Yeni Kategori Ekle</h5>
@@ -224,7 +223,7 @@
 </div>
 <!-- Kategori Düzenle Modal -->
 <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-warning text-dark">
         <h5 class="modal-title" id="editCategoryModalLabel"><i class="fas fa-edit me-2"></i>Kategori Düzenle</h5>
@@ -267,8 +266,8 @@
   </div>
 </div>
 <!-- Kategori Detay Modal -->
-<div class="modal fade" id="categoryDetailModal" tabindex="-1" aria-labelledby="categoryDetailModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+<div class="modal fade " id="categoryDetailModal" tabindex="-1" aria-labelledby="categoryDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-info text-white">
         <h5 class="modal-title" id="categoryDetailModalLabel"><i class="fas fa-info-circle me-2"></i>Kategori Detayı</h5>
@@ -330,7 +329,7 @@ function renderPagination(total) {
     let pageCount = Math.ceil(total/perPage);
     let pag = '';
     for(let i=1;i<=pageCount;i++) {
-        pag += `<li class="page-item${i===currentPage?' active':''}"><a class="page-link" href="#" onclick="gotoPage(${i});return false;">${i}</a></li>`;
+        pag += `<li class="page-item${i===currentPage?' active':''}"><a class="page-link py-2 p-3" href="#" onclick="gotoPage(${i});return false;">${i}</a></li>`;
     }
     document.getElementById('pagination').innerHTML = pag;
 }

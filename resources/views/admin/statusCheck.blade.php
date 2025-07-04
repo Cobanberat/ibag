@@ -76,48 +76,6 @@
   </div>
 </div>
 
-<!-- Ürünleri Gör Modalı -->
-<div class="modal fade" id="upcomingModal" tabindex="-1" aria-labelledby="upcomingModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-warning bg-opacity-25">
-        <h5 class="modal-title" id="upcomingModalLabel"><i class="fas fa-bell me-2 text-warning"></i>Yaklaşan Bakım Gereken Ürünler</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body">
-        <ul class="list-group">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Jeneratör 5kVA <span class="badge bg-warning text-dark">28 gün</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Oksijen Konsantratörü <span class="badge bg-warning text-dark">3 gün</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="overdueModal" tabindex="-1" aria-labelledby="overdueModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger bg-opacity-25">
-        <h5 class="modal-title" id="overdueModalLabel"><i class="fas fa-exclamation-triangle me-2 text-danger"></i>Geciken İşlem Olan Ürünler</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body">
-        <ul class="list-group">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Akülü Matkap <span class="badge bg-danger">Bugün</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Hilti Kırıcı <span class="badge bg-danger">1 gün gecikti</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Gelişmiş Filtreler ve Toplu İşlem Barı -->
 <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
   <button class="btn btn-success" id="addControlBtn"><i class="fas fa-plus"></i> Yeni Kontrol Ekle</button>
@@ -173,6 +131,36 @@
 <!-- Satır Detay Paneli (JS ile eklenir) -->
 <div id="rowDetailPanelContainer"></div>
 
+<!-- Yaklaşan Kontroller Modalı -->
+<div class="modal fade" id="upcomingModal" tabindex="-1" aria-labelledby="upcomingModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="upcomingModalLabel">Yaklaşan Kontroller</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Yaklaşan kontrollerin listesi buraya gelecek -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Geciken Kontroller Modalı -->
+<div class="modal fade" id="overdueModal" tabindex="-1" aria-labelledby="overdueModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="overdueModalLabel">Geciken Kontroller</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Geciken kontrollerin listesi buraya gelecek -->
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Yeni Kontrol Ekle Modalı -->
 <div class="modal fade" id="addControlModal" tabindex="-1" aria-labelledby="addControlModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -182,47 +170,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
       <div class="modal-body">
-        <form id="addControlForm">
-          <div class="mb-2">
-            <label class="form-label">Ekipman</label>
-            <select class="form-select" id="addControlEkipman" required>
-              <option>Jeneratör 5kVA</option>
-              <option>Oksijen Konsantratörü</option>
-              <option>Hilti Kırıcı</option>
-              <option>Akülü Matkap</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Kontrol Türü</label>
-            <select class="form-select" id="addControlType" required>
-              <option>Bakım</option>
-              <option>Test</option>
-              <option>Arıza</option>
-              <option>Taşınma</option>
-              <option>Kullanım</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Açıklama</label>
-            <input type="text" class="form-control" id="addControlDesc" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Sorumlu</label>
-            <select class="form-select" id="addControlSorumlu" required>
-              <option>admin</option>
-              <option>teknisyen1</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Tarih</label>
-            <input type="date" class="form-control" id="addControlDate" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Yorum</label>
-            <input type="text" class="form-control" id="addControlYorum">
-          </div>
-          <button type="submit" class="btn btn-success w-100">Ekle</button>
-        </form>
+        <!-- Yeni kontrol ekleme formu buraya gelecek -->
       </div>
     </div>
   </div>
@@ -302,7 +250,6 @@
 <!-- Satır Detay Paneli (JS ile eklenir) -->
 <div id="rowDetailPanel"></div>
 
-<!-- ... diğer modallar ... -->
 <script>
 // Örnek veri ve toplu seçim, filtreleme, detay paneli, hızlı ekleme için temel JS altyapısı burada olmalı.
 // Tarih aralığı picker

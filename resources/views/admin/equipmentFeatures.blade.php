@@ -7,14 +7,16 @@
         align-items: center;
         margin-bottom: 1.5rem;
     }
+
     .feature-header h4 {
         font-weight: 700;
         margin-bottom: 0;
     }
+
     .filter-bar {
         background: #fff;
         border-radius: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         padding: 1rem 1.2rem;
         margin-bottom: 1.2rem;
         display: flex;
@@ -22,19 +24,23 @@
         gap: 0.5rem;
         align-items: center;
     }
-    .filter-bar select, .filter-bar input {
+
+        .filter-bar select,
+        .filter-bar input {
         min-width: 120px;
         border-radius: 0.5rem;
     }
+
     .filter-bar button {
         border-radius: 0.5rem;
     }
+
     .filter-bar select {
         background: linear-gradient(90deg, #f6f8fa 60%, #e9ecef 100%);
         border: 1.5px solid #d1d5db;
         color: #333;
         font-weight: 500;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
         padding: 0.45em 2.2em 0.45em 1em;
         appearance: none;
         position: relative;
@@ -45,126 +51,149 @@
         background-position: right 0.8em center;
         background-size: 1.2em;
     }
+
     .filter-bar select:focus {
         border-color: #0d6efd;
         box-shadow: 0 0 0 2px #0d6efd22;
         outline: none;
     }
+
     .filter-bar input[type="text"] {
         border: 1.5px solid #d1d5db;
         background: #f6f8fa;
         font-weight: 500;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
+
     .filter-bar input[type="text"]:focus {
         border-color: #0d6efd;
         box-shadow: 0 0 0 2px #0d6efd22;
         outline: none;
     }
+
     .feature-table {
         border-radius: 1rem;
         overflow: hidden;
         background: #fff;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
         margin-top: 0.5rem;
     }
+
     .feature-table thead th {
         background: #f6f8fa;
         font-weight: 600;
         border-bottom: 2px solid #e9ecef;
         vertical-align: middle;
     }
+
     .feature-table tbody tr:hover {
         background: #f1f3f7;
         transition: background 0.2s;
     }
+
     .feature-table td[contenteditable] {
         cursor: pointer;
         background: #f8fafc;
         transition: background 0.2s;
     }
+
     .feature-table td[contenteditable]:focus {
         outline: 2px solid #0d6efd;
         background: #e7f1ff;
     }
+
     .badge {
         font-size: 0.98em;
         border-radius: 0.5rem;
         padding: 0.45em 0.9em;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     }
+
     .btn {
         border-radius: 0.5rem !important;
         font-weight: 500;
         letter-spacing: 0.01em;
     }
+
     .btn-info {
         color: #fff;
         background: linear-gradient(90deg, #36b3f6 0%, #007bff 100%);
         border: none;
     }
+
     .btn-info:hover {
         background: linear-gradient(90deg, #007bff 0%, #36b3f6 100%);
     }
+
     .pagination {
         justify-content: flex-end;
         margin-top: 1.2rem;
     }
+
     .pagination .page-link {
         border-radius: 0.5rem !important;
         margin: 0 0.15em;
         color: #0d6efd;
         font-weight: 500;
     }
+
     .pagination .active .page-link {
         background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%);
         color: #fff;
         border: none;
     }
+
     .feature-suggestion {
         background: #f6f8fa;
         border-radius: 0.75rem;
         padding: 1.2rem 1.5rem;
         margin-top: 2.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
+
     .feature-suggestion h6 {
         font-weight: 700;
         color: #0d6efd;
         margin-bottom: 0.7rem;
     }
+
     .feature-suggestion ul {
         margin-bottom: 0;
         padding-left: 1.2em;
     }
+
     .feature-suggestion li {
         margin-bottom: 0.3em;
     }
+
     .info-box {
         background: #e7f1ff;
         border-left: 5px solid #0d6efd;
         border-radius: 0.75rem;
         padding: 1.2rem 1.5rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         display: flex;
         align-items: center;
         gap: 1rem;
     }
+
     .info-box i {
         font-size: 2.2rem;
         color: #0d6efd;
     }
+
     .summary-cards {
         display: flex;
         gap: 1.2rem;
         margin-bottom: 1.5rem;
         flex-wrap: wrap;
     }
+
     .summary-card {
         background: #fff;
         border-radius: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         padding: 1.2rem 2rem 1.2rem 1.2rem;
         min-width: 200px;
         flex: 1 1 200px;
@@ -172,6 +201,7 @@
         align-items: center;
         gap: 1rem;
     }
+
     .summary-card .icon {
         font-size: 2rem;
         color: #0d6efd;
@@ -183,19 +213,22 @@
         align-items: center;
         justify-content: center;
     }
+
     .summary-card .value {
         font-size: 1.6rem;
         font-weight: 700;
         color: #222;
     }
+
     .summary-card .label {
         font-size: 1rem;
         color: #666;
     }
+
     .bulk-actions-panel {
         background: #f6f8fa;
         border-radius: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         padding: 0.8rem 1.2rem;
         margin-bottom: 1.2rem;
         display: flex;
@@ -203,13 +236,77 @@
         align-items: center;
         flex-wrap: wrap;
     }
+
     .bulk-actions-panel .btn {
         min-width: 120px;
     }
+
+        .btn-add-feature {
+            background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 2px 12px #0d6efd22;
+            border-radius: 2em;
+            padding: 0.65em 1.7em;
+            font-size: 1.12em;
+            letter-spacing: 0.01em;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+            position: relative;
+            overflow: hidden;
+            border: none;
+        }
+
+        .btn-add-feature:hover,
+        .btn-add-feature:focus {
+            background: linear-gradient(90deg, #43a1f7 0%, #0d6efd 100%);
+            color: #fff;
+            box-shadow: 0 4px 18px #0d6efd33;
+            transform: translateY(-2px) scale(1.04);
+            outline: none;
+        }
+
+        .feature-table select[data-field='required'],
+        #featureRequired {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            font-size: 0.98em;
+            border-radius: 0.5rem;
+            padding: 0.25em 0.2em;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .feature-active-select{
+          border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            font-size: 0.98em;
+            border-radius: 0.5rem;
+            padding: 0.25em 0.2em;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .feature-table select[data-field='required'].evet {
+            background: #1cbb8c !important;
+            color: white !important;
+        }
+
+        .feature-table select[data-field='required'].hayir {
+            background: #dc3545 !important;
+            color: white !important;
+        }
+
+        .feature-active-select.aktif {
+            background: #1cbb8c !important;
+            color: #fff !important;
+        }
+        .feature-active-select.pasif {
+            background: #6c757d !important;
+            color: #fff !important;
+        }
 </style>
 <div class="feature-header">
     <h4 class="fw-bold">Ekipman Özellikleri</h4>
-    <button class="btn btn-add-category" data-bs-toggle="modal" data-bs-target="#addFeatureModal">
+        <button class="btn btn-add-feature" data-bs-toggle="modal" data-bs-target="#addFeatureModal">
         <i class="fas fa-plus"></i> Yeni Özellik
     </button>
 </div>
@@ -217,8 +314,11 @@
 <div class="info-box mb-3">
     <i class="fas fa-info-circle"></i>
     <div>
-        <strong>Ekipman Özellikleri</strong> sayfasında, sistemdeki tüm ekipmanlara ait teknik ve fiziksel özellikleri yönetebilirsiniz. Özellik ekleyebilir, düzenleyebilir, filtreleyebilir ve raporlayabilirsiniz. <span class="text-primary">Daha fazla bilgi için <a href="#" data-bs-toggle="modal" data-bs-target="#helpModal">Yardım</a> bölümüne bakın.</span>
-    </div>
+            <strong>Ekipman Özellikleri</strong> sayfasında, sistemdeki tüm ekipmanlara ait teknik ve fiziksel özellikleri
+            yönetebilirsiniz. Özellik ekleyebilir, düzenleyebilir, filtreleyebilir ve raporlayabilirsiniz. <span
+                class="text-primary">Daha fazla bilgi için <a href="#" data-bs-toggle="modal"
+                    data-bs-target="#helpModal">Yardım</a> bölümüne bakın.</span>
+        </div>
 </div>
 <!-- 2. Özet Kartlar -->
 <div class="summary-cards mb-3">
@@ -433,7 +533,9 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td class="editable" data-field="name" title="Düzenlemek için tıkla">Renk <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Ekipmanın rengi"><i class="fas fa-info-circle"></i></button></td>
+                <td class="editable" data-field="name" title="Düzenlemek için tıkla">Renk <button
+                        class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Ekipmanın rengi"><i
+                            class="fas fa-info-circle"></i></button></td>
             <td class="editable" data-field="category">Kask</td>
             <td class="editable" data-field="type">Metin</td>
             <td class="editable" data-field="unit">-</td>
@@ -442,7 +544,10 @@
             <td class="editable" data-field="minmax">-</td>
             <td class="editable" data-field="options">Kırmızı,Mavi,Sarı</td>
             <td class="editable" data-field="group">Fiziksel</td>
-            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="editable" data-field="active">
+                    <div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked>
+                    </div>
+                </td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -450,7 +555,9 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td class="editable" data-field="name" title="Düzenlemek için tıkla">Seri No <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Seri numarası"><i class="fas fa-info-circle"></i></button></td>
+                <td class="editable" data-field="name" title="Düzenlemek için tıkla">Seri No <button
+                        class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Seri numarası"><i
+                            class="fas fa-info-circle"></i></button></td>
             <td class="editable" data-field="category">Jeneratör</td>
             <td class="editable" data-field="type">Metin</td>
             <td class="editable" data-field="unit">-</td>
@@ -459,7 +566,10 @@
             <td class="editable" data-field="minmax">-</td>
             <td class="editable" data-field="options">-</td>
             <td class="editable" data-field="group">Teknik</td>
-            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="editable" data-field="active">
+                    <div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked>
+                    </div>
+                </td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -467,7 +577,9 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td class="editable" data-field="name" title="Düzenlemek için tıkla">Kullanım Süresi <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Toplam kullanım süresi (saat)"><i class="fas fa-info-circle"></i></button></td>
+                <td class="editable" data-field="name" title="Düzenlemek için tıkla">Kullanım Süresi <button
+                        class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip"
+                        title="Toplam kullanım süresi (saat)"><i class="fas fa-info-circle"></i></button></td>
             <td class="editable" data-field="category">Jeneratör</td>
             <td class="editable" data-field="type">Sayı</td>
             <td class="editable" data-field="unit">saat</td>
@@ -476,7 +588,10 @@
             <td class="editable" data-field="minmax">0 / 10000</td>
             <td class="editable" data-field="options">-</td>
             <td class="editable" data-field="group">Teknik</td>
-            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="editable" data-field="active">
+                    <div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox" checked>
+                    </div>
+                </td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -484,7 +599,9 @@
         </tr>
         <tr>
             <td><input type="checkbox" name="select[]"></td>
-            <td class="editable" data-field="name" title="Düzenlemek için tıkla">IP Koruma Sınıfı <button class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip" title="Toz ve suya karşı koruma seviyesi"><i class="fas fa-info-circle"></i></button></td>
+                <td class="editable" data-field="name" title="Düzenlemek için tıkla">IP Koruma Sınıfı <button
+                        class="btn btn-sm btn-light ms-1" data-bs-toggle="tooltip"
+                        title="Toz ve suya karşı koruma seviyesi"><i class="fas fa-info-circle"></i></button></td>
             <td class="editable" data-field="category">UPS</td>
             <td class="editable" data-field="type">Seçim</td>
             <td class="editable" data-field="unit">-</td>
@@ -493,7 +610,9 @@
             <td class="editable" data-field="minmax">IP20 / IP67</td>
             <td class="editable" data-field="options">IP20,IP54,IP67</td>
             <td class="editable" data-field="group">Teknik</td>
-            <td class="editable" data-field="active"><div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox"></div></td>
+                <td class="editable" data-field="active">
+                    <div class="form-check form-switch d-inline"><input class="form-check-input" type="checkbox"></div>
+                </td>
             <td>
                 <button class="btn btn-sm btn-warning">Düzenle</button>
                 <button class="btn btn-sm btn-danger">Sil</button>
@@ -550,12 +669,15 @@
     </ul>
 </div>
 <!-- Özellik Ekle Modal -->
-<div class="modal fade" id="addFeatureModal" tabindex="-1" aria-labelledby="addFeatureModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addFeatureModal" tabindex="-1" aria-labelledby="addFeatureModalLabel"
+        aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="addFeatureModalLabel"><i class="fas fa-plus-circle me-2"></i>Yeni Özellik Ekle</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                    <h5 class="modal-title" id="addFeatureModalLabel"><i class="fas fa-plus-circle me-2"></i>Yeni Özellik
+                        Ekle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Kapat"></button>
       </div>
       <div class="modal-body">
         <form>
@@ -591,7 +713,7 @@
           </div>
           <div class="mb-3">
             <label for="featureRequired" class="form-label">Zorunlu mu?</label>
-            <select class="form-select" id="featureRequired">
+                            <select class="form-select" style="border:none !important" id="featureRequired">
                 <option>Evet</option>
                 <option>Hayır</option>
             </select>
@@ -610,11 +732,13 @@
           </div>
           <div class="mb-3">
             <label for="featureOptions" class="form-label">Seçenekler (virgülle ayır)</label>
-            <input type="text" class="form-control" id="featureOptions" placeholder="Örn: Dizel,Benzin">
+                            <input type="text" class="form-control" id="featureOptions"
+                                placeholder="Örn: Dizel,Benzin">
           </div>
           <div class="mb-3">
             <label for="featureGroup" class="form-label">Grup</label>
-            <input type="text" class="form-control" id="featureGroup" placeholder="Teknik, Fiziksel, vb.">
+                            <input type="text" class="form-control" id="featureGroup"
+                                placeholder="Teknik, Fiziksel, vb.">
           </div>
         </form>
       </div>
@@ -632,7 +756,7 @@
 <script>
 // Toplu seçim checkbox
 const selectAll = document.getElementById('selectAll');
-if(selectAll) {
+        if (selectAll) {
     selectAll.addEventListener('change', function() {
         document.querySelectorAll('input[name="select[]"]')
             .forEach(cb => cb.checked = this.checked);
@@ -641,49 +765,81 @@ if(selectAll) {
 // Inline edit: hücreye tıklayınca input açılır, enter veya blur ile kaydedilir
 document.querySelectorAll('.feature-table td.editable').forEach(cell => {
     cell.addEventListener('dblclick', function(e) {
-        if(cell.querySelector('input,select')) return;
+                if (cell.querySelector('input,select')) return;
         let field = cell.getAttribute('data-field');
         let text = cell.innerText.trim();
         let input;
-        if(field==='type') {
+                if (field === 'type') {
             input = document.createElement('select');
-            ['Sayı','Metin','Seçim','Tarih','Boolean'].forEach(opt => {
-                let o = document.createElement('option'); o.value=opt; o.text=opt; if(opt===text) o.selected=true; input.appendChild(o);
-            });
-        } else if(field==='required') {
+                    ['Sayı', 'Metin', 'Seçim', 'Tarih', 'Boolean'].forEach(opt => {
+                        let o = document.createElement('option');
+                        o.value = opt;
+                        o.text = opt;
+                        if (opt === text) o.selected = true;
+                        input.appendChild(o);
+                    });
+                } else if (field === 'required') {
             input = document.createElement('select');
-            ['Evet','Hayır'].forEach(opt => {
-                let o = document.createElement('option'); o.value=opt; o.text=opt; if(text.includes(opt)) o.selected=true; input.appendChild(o);
-            });
-        } else if(field==='active') {
+                    ['Evet', 'Hayır'].forEach(opt => {
+                        let o = document.createElement('option');
+                        o.value = opt;
+                        o.text = opt;
+                        if (text.includes(opt)) o.selected = true;
+                        input.appendChild(o);
+                    });
+                    input.setAttribute('data-field', 'required');
+                    input.classList.add('feature-required-select');
+                    input.className += text.includes('Evet') ? ' evet' : ' hayir';
+                    input.onchange = function() {
+                        input.className = 'feature-required-select ' + (input.value === 'Evet' ? 'evet' : 'hayir');
+                    };
+                } else if (field === 'active') {
             input = document.createElement('select');
-            ['Aktif','Pasif'].forEach(opt => {
-                let o = document.createElement('option'); o.value=opt; o.text=opt; if(text.includes(opt)) o.selected=true; input.appendChild(o);
-            });
+                    ['Aktif', 'Pasif'].forEach(opt => {
+                        let o = document.createElement('option');
+                        o.value = opt;
+                        o.text = opt;
+                        if (text.includes(opt)) o.selected = true;
+                        input.appendChild(o);
+                    });
+                    input.setAttribute('data-field', 'active');
+                    input.classList.add('feature-active-select');
+                    input.classList.add(text.includes('Aktif') ? 'aktif' : 'pasif');
+                    input.onchange = function() {
+                        input.classList.remove('aktif', 'pasif');
+                        input.classList.add(input.value === 'Aktif' ? 'aktif' : 'pasif');
+                    };
         } else {
-            input = document.createElement('input'); input.type='text'; input.value=text; input.className='form-control form-control-sm d-inline w-auto';
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = text;
+                    input.className = 'form-control form-control-sm d-inline w-auto';
         }
         input.style.maxWidth = '120px';
         let oldHtml = cell.innerHTML;
         cell.innerHTML = '';
         cell.appendChild(input);
         input.focus();
+
         function saveEdit() {
             let val = input.value;
-            if(field==='required') {
-                cell.innerHTML = `<span class="badge bg-${val==='Evet'?'success':'danger'}">${val}</span>`;
-            } else if(field==='active') {
-                cell.innerHTML = `<span class="badge bg-${val==='Aktif'?'success':'secondary'}">${val}</span>`;
+                    if (field === 'required') {
+                        cell.innerHTML =
+                            `<span class="badge bg-${val==='Evet'?'success':'danger'}">${val}</span>`;
+                    } else if (field === 'active') {
+                        cell.innerHTML =
+                            `<span class="badge bg-${val==='Aktif'?'success':'secondary'}">${val}</span>`;
             } else {
                 cell.innerText = val;
             }
         }
+
         function cancelEdit() {
             cell.innerHTML = oldHtml;
         }
         input.addEventListener('keydown', function(ev) {
-            if(ev.key==='Enter') saveEdit();
-            if(ev.key==='Escape') cancelEdit();
+                    if (ev.key === 'Enter') saveEdit();
+                    if (ev.key === 'Escape') cancelEdit();
         });
         input.addEventListener('blur', function() {
             saveEdit();
@@ -692,8 +848,8 @@ document.querySelectorAll('.feature-table td.editable').forEach(cell => {
 });
 // Bootstrap tooltip
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl);
 });
 </script>
-@endpush
+@endpush    

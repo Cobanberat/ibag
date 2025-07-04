@@ -79,14 +79,6 @@ body.dark-mode .stats-card { background: var(--glass-bg-dark); color: var(--text
   70% { box-shadow: 0 0 0 12px #ff4d4f00; }
   100% { box-shadow: 0 0 0 0 #ff4d4f00; }
 }
-.toggle-mode-btn {
-  position: absolute; right: 2em; top: 1.2em; z-index: 10;
-  background: var(--main-gradient); color: #fff; border: none;
-  border-radius: 2em; padding: 0.5em 1.2em; font-weight: 600;
-  box-shadow: 0 2px 12px #0d6efd22;
-  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
-}
-.toggle-mode-btn:hover { background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%); transform: scale(1.05); }
 .filter-bar {
   background: var(--glass-bg);
   border-radius: 1.2rem;
@@ -230,19 +222,30 @@ body.dark-mode .filter-bar input:hover, body.dark-mode .filter-bar select:hover,
   background: #23272f !important;
   color: #fff !important;
 }
+.date-filter-input {
+  min-width: 180px;
+  width: 200px;
+}
 </style>
-<button class="toggle-mode-btn" id="toggleModeBtn"><i class="fas fa-adjust"></i> Koyu/Açık Mod</button>
 <div class="animated-title"><i class="fas fa-truck"></i> Giden-Gelen Ekipman İşlemleri</div>
 <div class="stats-bar">
   <div class="stats-card" id="statTotalCard"><span class="icon"><i class="fas fa-list"></i></span><span class="value" id="statTotal">0</span><span class="label">Toplam İşlem</span></div>
   <div class="stats-card" id="statProblemCard"><span class="icon"><i class="fas fa-exclamation-triangle"></i></span><span class="value" id="statProblem">0</span><span class="label">Eksik/Hasarlı</span><span class="pulse" id="problemPulse" style="display:none"></span></div>
   <div class="stats-card" id="statLastCard"><span class="icon"><i class="fas fa-clock"></i></span><span class="value" id="statLast">-</span><span class="label">Son İşlem</span></div>
 </div>
-<div class="filter-bar mb-3">
+<div class="filter-bar mb-3 align-items-end">
   <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Ekipman, kişi veya işlem ID ara...">
-  <input type="date" class="form-control form-control-sm" id="startDate">
-  <span>-</span>
-  <input type="date" class="form-control form-control-sm" id="endDate">
+  <div class="d-flex align-items-end" style="gap: 0.5em;">
+    <div>
+      <label for="startDate" class="form-label mb-0" style="font-size:0.95em;">Başlangıç Tarihi</label>
+      <input type="date" class="form-control form-control-sm date-filter-input" id="startDate">
+    </div>
+    <span class="mx-1" style="font-weight:600;">-</span>
+    <div>
+      <label for="endDate" class="form-label mb-0" style="font-size:0.95em;">Bitiş Tarihi</label>
+      <input type="date" class="form-control form-control-sm date-filter-input" id="endDate">
+    </div>
+  </div>
   <button class="btn btn-primary btn-sm" id="filterBtn"><i class="fas fa-filter"></i> Filtrele</button>
   <button class="btn btn-outline-secondary btn-sm ms-auto" id="clearFilterBtn"><i class="fas fa-times"></i> Temizle</button>
 </div>
@@ -566,11 +569,6 @@ window.insertEmoji = function(emoji) {
   inp.value += emoji;
   inp.focus();
 };
-// Koyu/Açık mod
-const toggleBtn = document.getElementById('toggleModeBtn');
-toggleBtn.onclick = function() {
-  document.body.classList.toggle('dark-mode');
-};
 // Eksik/Hasarlı modalı
 const statProblemCard = document.getElementById('statProblemCard');
 statProblemCard.onclick = function() {
@@ -604,6 +602,14 @@ window.showDetailModal = function(id) {
     equipGrid.querySelectorAll('.btn-detail')[idx].click();
   }
 };
+// Bugünün tarihini yyyy-mm-dd formatında al
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, '0');
+const dd = String(today.getDate()).padStart(2, '0');
+const maxDate = `${yyyy}-${mm}-${dd}`;
+document.getElementById('startDate').setAttribute('max', maxDate);
+document.getElementById('endDate').setAttribute('max', maxDate);
 </script>
 @endpush
 @endsection

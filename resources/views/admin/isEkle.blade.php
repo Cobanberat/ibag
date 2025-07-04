@@ -11,19 +11,19 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="fas fa-map-marker-alt me-1"></i> İl</label>
-                        <input type="text" class="form-control modern-input" placeholder="Örn: Ankara" required>
+                        <input type="text" class="form-control modern-input" placeholder="Konya" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="fas fa-map-pin me-1"></i> İlçe</label>
-                        <input type="text" class="form-control modern-input" placeholder="Örn: Sincan" required>
+                        <input type="text" class="form-control modern-input" placeholder="Selçuklu" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="fas fa-location-arrow me-1"></i> Mahalle</label>
-                        <input type="text" class="form-control modern-input" placeholder="Örn: Atatürk" required>
+                        <input type="text" class="form-control modern-input" placeholder="Bosna Hersek" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="fas fa-road me-1"></i> Açık Adres</label>
-                        <input type="text" class="form-control modern-input" placeholder="Cadde, sokak, bina..." required>
+                        <input type="text" class="form-control modern-input" placeholder="Örn: Hoca Ahmet Yesevi Cad. No:12 Daire:5" required>
                     </div>
                 </div>
                 <div class="row g-3 mb-4">
@@ -80,7 +80,7 @@
                             </div>
                             <div class="col-md-4 d-flex align-items-center">
                                 <span class="badge bg-success me-2"><i class="fas fa-hashtag"></i></span>
-                                <input type="number" class="form-control equipment-qty modern-input" min="1" value="1" placeholder="Adet" required disabled>
+                                <input type="number" class="form-control equipment-qty modern-input" min="1" max="50" value="1" placeholder="Örn: 2" required>
                             </div>
                             <div class="col-md-2 text-end">
                                 <button type="button" class="btn btn-outline-danger remove-equipment w-100" title="Ekipmanı kaldır"><i class="fas fa-trash"></i></button>
@@ -188,6 +188,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (personListTbody.children.length === 0) personListTable.style.display = 'none';
         }
     });
+});
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('equipment-qty')) {
+        if (parseInt(e.target.value) > 50) {
+            e.target.value = 50;
+        }
+        if (parseInt(e.target.value) < 1) {
+            e.target.value = 1;
+        }
+    }
 });
 </script>
 <style>

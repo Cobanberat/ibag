@@ -2,60 +2,9 @@
 
 @section('content')
 <div class="container-fluid p-0">
-    <!-- Breadcrumb (Sayfa Yönlendirme) -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
-            <li class="breadcrumb-item"><a href="admin/" class="text-decoration-none">Yönetim</a></li>
-            <li class="breadcrumb-item active" aria-current="page"></li>
-        </ol>
-    </nav>
+    @include('admin.partials.breadcrumb', ['pageTitle' => 'Yönetim Paneli'])
     <!-- Üst Bar: Kullanıcı Kartı, Yardım, Duyuru, Hava Durumu, Bildirimler -->
-    <div class="row g-3 mb-4 align-items-center">
-        <div class="col-lg-8 d-flex align-items-center gap-3 flex-wrap">
-            <!-- Duyuru Alanı -->
-            <div class="alert alert-info mb-0 py-2 px-3 shadow-sm"><i class="fa fa-bullhorn me-2"></i> Hoşgeldin! Sistem güncellemeleri başarıyla tamamlandı.</div>
-            <!-- Hava Durumu Kartı (örnek veriyle) -->
-            <div class="card shadow-sm border-0 mb-0" style="min-width:180px;">
-                <div class="card-body d-flex align-items-center gap-2 p-2">
-                    <i class="fa fa-cloud-sun fa-2x text-primary"></i>
-                    <div>
-                        <div class="fw-bold">İstanbul</div>
-                        <div class="small">24°C, Parçalı Bulutlu</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Bildirimler -->
-            <div class="dropdown">
-                <button class="btn btn-light shadow-sm position-relative" type="button" data-bs-toggle="dropdown"><i class="fa fa-bell"></i><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span></button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="fa fa-exclamation-circle text-warning me-2"></i> Kritik stok azaldı!</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fa fa-bug text-danger me-2"></i> Yeni arıza bildirimi</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fa fa-user-plus text-success me-2"></i> Yeni kullanıcı eklendi</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="col-lg-4 d-flex justify-content-end align-items-center gap-3">
-            <!-- Gelişmiş Arama -->
-            <div class="input-group shadow-sm" style="max-width:220px;">
-                <input type="text" class="form-control form-control-sm" placeholder="Panelde ara...">
-                <button class="btn btn-outline-secondary btn-sm"><i class="fa fa-search"></i></button>
-            </div>
-            <!-- Yardım Butonu -->
-            <button class="btn btn-outline-info btn-sm shadow-sm" data-bs-toggle="tooltip" data-bs-placement="left" title="Yardım almak için tıkla!"><i class="fa fa-question-circle"></i></button>
-            <!-- Kullanıcı Kartı -->
-            <div class="card border-0 shadow-sm mb-0" style="min-width:120px;">
-                <div class="card-body py-2 px-3 d-flex align-items-center gap-2">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff&rounded=true" width="32" height="32" alt="Avatar">
-                    <div>
-                        <div class="fw-bold small mb-0">Admin</div>
-                        <div class="text-muted small">Yönetici</div>
-                    </div>
-                    <a href="/logout" class="btn btn-sm btn-outline-danger ms-2" title="Çıkış"><i class="fa fa-sign-out-alt"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
+  
     <!-- Hızlı İşlemler ve Takvim/Son Girişler Alanı (Yan Yana) -->
     <div class="row g-3 mb-4">
         <!-- Hızlı İşlemler (Sol) -->
@@ -118,10 +67,10 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-0 pb-1"><span class="fw-bold"><i class="fa fa-server text-secondary me-1"></i>Sistem Durumu</span></div>
                 <div class="card-body p-2 d-flex gap-3 flex-wrap">
-                    <span class="badge bg-success"><i class="fa fa-database me-1"></i>Veritabanı: Aktif</span>
-                    <span class="badge bg-success"><i class="fa fa-cloud me-1"></i>API: Aktif</span>
-                    <span class="badge bg-success"><i class="fa fa-server me-1"></i>Sunucu: Aktif</span>
-                    <span class="badge bg-warning text-dark"><i class="fa fa-exclamation-triangle me-1"></i>Disk: %80</span>
+                    <span class="badge bg-success p-2 "><i class="fa fa-database me-1"></i>Veritabanı: Aktif</span>
+                    <span class="badge bg-success p-2 "><i class="fa fa-cloud me-1"></i>API: Aktif</span>
+                    <span class="badge bg-success p-2 "><i class="fa fa-server me-1"></i>Sunucu: Aktif</span>
+                    <span class="badge bg-warning p-2 text-dark"><i class="fa fa-exclamation-triangle me-1"></i>Disk: %80</span>
                 </div>
             </div>
         </div>
@@ -185,7 +134,7 @@
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
                         <div class="fw-bold fs-5">Hızlı Görev Ekle</div>
-                        <input type="text" id="quickTaskInput" class="form-control form-control-sm mt-2" placeholder="Görev yaz..." onkeydown="if(event.key==='Enter'){addTask();}">
+                        <input type="text" id="quickTaskInput" class="form-control form-control-sm mt-2" style="width:200px;" placeholder="Görev yaz..." onkeydown="if(event.key==='Enter'){addTask();}">
                     </div>
                     <button class="btn btn-outline-success btn-sm ms-2" onclick="addTask()"><i class="fa fa-plus"></i> Ekle</button>
                 </div>
@@ -195,47 +144,59 @@
     </div>
     <!-- Son İşlemler Tablosu -->
     <div class="row g-3 mb-4">
-        <div class="col-lg-8">
+        <div class="col-12 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header bg-white border-0">
                     <h5 class="card-title mb-0">Son İşlemler</h5>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0 table-lg">
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Tarih</th>
                                 <th>İşlem</th>
                                 <th>Kullanıcı</th>
                                 <th>Detay</th>
+                                <th>Açıklama</th>
+                                <th>İşlem Tipi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
+                                <td>1</td>
                                 <td>2024-06-20</td>
                                 <td><span class="badge bg-success">Ekipman Eklendi</span></td>
                                 <td>Ali Korkmaz</td>
                                 <td>HP Laptop - Envantere eklendi</td>
+                                <td>Yeni ekipman kaydı</td>
+                                <td>Donanım</td>
                             </tr>
                             <tr>
+                                <td>2</td>
                                 <td>2024-06-19</td>
                                 <td><span class="badge bg-warning">Arıza Bildirildi</span></td>
                                 <td>Ayşe Yılmaz</td>
                                 <td>Projeksiyon cihazı arızası</td>
+                                <td>Arıza bildirimi</td>
+                                <td>Bakım</td>
                             </tr>
                             <tr>
+                                <td>3</td>
                                 <td>2024-06-18</td>
                                 <td><span class="badge bg-info">Kullanıcı Eklendi</span></td>
                                 <td>Mehmet Demir</td>
                                 <td>Yeni kullanıcı kaydı</td>
+                                <td>Kullanıcı ekleme</td>
+                                <td>Yönetim</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card shadow-lg border-0 rounded-4 h-100 position-relative animate__animated animate__fadeIn">
+        <div class="col-12">
+            <div class="card shadow-lg border-0 rounded-4 h-100 position-relative animate__animated animate__fadeIn tedarik-card">
                 <div class="card-header bg-white border-0 rounded-top-4 d-flex align-items-center justify-content-between pb-2 pt-3 px-4">
                     <div class="d-flex align-items-center gap-2">
                         <span class="fs-4 text-danger"><i class="fa fa-truck-loading"></i></span>
@@ -244,37 +205,39 @@
                     <button class="btn btn-outline-primary btn-sm rounded-pill px-3" title="Ürün Ekle"><i class="fa fa-plus"></i> Ekle</button>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table mb-0 align-middle table-borderless">
+                    <table class="table mb-0 align-middle table-borderless tedarik-table table-lg">
                         <thead>
                             <tr style="background:rgba(0,0,0,0.03);">
+                                <th class="text-secondary small fw-bold py-2">ID</th>
                                 <th class="text-secondary small fw-bold py-2">Ürün Adı</th>
                                 <th class="text-secondary small fw-bold py-2">Stok</th>
                                 <th class="text-secondary small fw-bold py-2">Talep Eden</th>
                                 <th class="text-secondary small fw-bold py-2">Durum</th>
+                                <th class="text-secondary small fw-bold py-2">Açıklama</th>
+                                <th class="text-secondary small fw-bold py-2">Tarih</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="table-row-hover">
+                                <td>1</td>
                                 <td class="fw-semibold">Klavye</td>
                                 <td><span class="badge bg-light text-danger fw-bold px-2 py-1">0</span></td>
                                 <td>Ali K.</td>
                                 <td><span class="badge bg-danger bg-gradient rounded-pill px-3 py-2 fs-7">Tedarik Bekliyor</span></td>
+                                <td>Ofis için yeni klavye</td>
+                                <td>2024-06-20</td>
                             </tr>
                             <tr class="table-row-hover">
+                                <td>2</td>
                                 <td class="fw-semibold">Ethernet Kablosu</td>
                                 <td><span class="badge bg-warning text-dark fw-bold px-2 py-1">2</span></td>
                                 <td>Ayşe Y.</td>
                                 <td><span class="badge bg-warning text-dark bg-gradient rounded-pill px-3 py-2 fs-7">Az Stok</span></td>
+                                <td>Sunucu odası için</td>
+                                <td>2024-06-19</td>
                             </tr>
                         </tbody>
                     </table>
-                    <!-- Boş veri için örnek ilüstrasyon ve mesaj (gerekirse göster) -->
-                    <!--
-                    <div class="text-center py-5">
-                        <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/box.svg" width="48" class="mb-2 opacity-50" alt="Boş">
-                        <div class="text-muted">Tedarik edilmesi gereken ürün yok.</div>
-                    </div>
-                    -->
                 </div>
             </div>
         </div>
@@ -330,6 +293,18 @@
 .badge.bg-danger.bg-gradient { background: linear-gradient(90deg,#f43f5e 0%,#fbbf24 100%) !important; color: #fff !important; }
 .badge.bg-warning.bg-gradient { background: linear-gradient(90deg,#fbbf24 0%,#f43f5e 100%) !important; color: #222 !important; }
 .fs-7 { font-size: 0.93rem; }
+.tedarik-card {
+    min-width: 420px;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+.tedarik-table th, .tedarik-table td {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    font-size: 1.08rem;
+}
+.tedarik-table {
+    min-width: 400px;
+}
 </style>
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

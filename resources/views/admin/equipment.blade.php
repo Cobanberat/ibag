@@ -51,12 +51,12 @@
         </div>
         <div class="col-md-6 d-flex align-items-center justify-content-end gap-2">
             <input type="text" class="form-control w-auto" placeholder="Ekipman Adı Ara..." id="searchInput" style="max-width:180px;">
-            <select class="form-select w-auto" id="typeFilter" style="max-width:140px;">
+            <select class="form-select w-auto" id="typeFilter" style="max-width:180px;">
                 <option value="">Tüm Türler</option>
                 <option>Elektronik</option>
                 <option>El Aleti</option>
             </select>
-            <select class="form-select w-auto" id="statusFilter" style="max-width:140px;">
+            <select class="form-select w-auto" id="statusFilter" style="max-width:180px;">
                 <option value="">Tüm Durumlar</option>
                 <option>Aktif</option>
                 <option>Bakımda</option>

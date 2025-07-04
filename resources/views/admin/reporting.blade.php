@@ -96,7 +96,7 @@
       <button class="btn btn-outline-info btn-sm">Kritik Ekipman Listesi</button>
       <button class="btn btn-outline-secondary btn-sm">Tüm Talepler Özeti</button>
       <button class="btn btn-outline-dark btn-sm"><i class="fas fa-plus"></i> Yeni Favori</button>
-    </di  v>
+    </div>
   </div>
   <!-- KPI Kartları (animasyonlu uyarı, mini trend) -->
   <div class="row g-3 mb-4">
