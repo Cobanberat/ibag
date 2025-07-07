@@ -2,6 +2,7 @@
 @section('content')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
 body { background: #f8fafc; }
 .equip-header { background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2em 1.5em 1.2em 1.5em;margin-bottom:2em;display:flex;flex-direction:column;align-items:flex-start;position:relative;overflow:hidden;animation:fadeInDown .8s ease-out; }
@@ -103,11 +104,10 @@ body { background: #f8fafc; }
         <h2 style='color:#fff;'>🚀 Ekipman Analizi Paneli</h2>
         <p>Ekipmanların durumu, kullanımı, arızaları ve performansını modern, canlı ve etkileşimli olarak analiz edin.</p>
       </div>
-      <button class="btn btn-outline-light" onclick="toggleEquipDarkMode()" title="Karanlık Mod"><i class="fas fa-moon"></i></button>
     </div>
   </div>
   <div class="equip-filter-bar">
-    <input type="text" class="form-control" id="equipFilterDate" placeholder="📅 Tarih Aralığı">
+    <input type="text" class="form-control" id="equipFilterDate" placeholder="📅 Tarih Aralığı" readonly>
     <select class="form-select" id="equipFilterCategory">
       <option value="">🏷️ Kategori (Tümü)</option>
       <option>⚡ Elektrik</option>
@@ -286,6 +286,7 @@ body { background: #f8fafc; }
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 // Sayma animasyonu
 function animateEquipCount(id, target, suffix = '', duration = 1200) {
@@ -484,6 +485,15 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     showEquipSnackbar('🎉 Ekipman analizi paneli hazır!');
   }, 1000);
+});
+document.addEventListener('DOMContentLoaded', function() {
+  flatpickr("#equipFilterDate", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    minDate: "2015-01-01",
+    maxDate: "2025-12-31",
+    locale: "tr"
+  });
 });
 </script>
 @endsection 

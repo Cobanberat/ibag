@@ -595,7 +595,6 @@ statProblemCard.onclick = function() {
   document.getElementById('problemModalBody').innerHTML = html;
   new bootstrap.Modal(document.getElementById('problemModal')).show();
 };
-// Detay modalını dışarıdan açmak için
 window.showDetailModal = function(id) {
   const idx = comingGoingData.findIndex(x=>x.id===id);
   if(idx>-1) {
@@ -603,13 +602,15 @@ window.showDetailModal = function(id) {
   }
 };
 // Bugünün tarihini yyyy-mm-dd formatında al
-const today = new Date();
-const yyyy = today.getFullYear();
-const mm = String(today.getMonth() + 1).padStart(2, '0');
-const dd = String(today.getDate()).padStart(2, '0');
-const maxDate = `${yyyy}-${mm}-${dd}`;
-document.getElementById('startDate').setAttribute('max', maxDate);
-document.getElementById('endDate').setAttribute('max', maxDate);
+// const today = new Date();
+// const yyyy = today.getFullYear();
+// const mm = String(today.getMonth() + 1).padStart(2, '0');
+// const dd = String(today.getDate()).padStart(2, '0');
+// const maxDate = `${yyyy}-${mm}-${dd}`;
+document.getElementById('startDate').setAttribute('min', '2015-01-01');
+document.getElementById('startDate').setAttribute('max', '2025-12-31');
+document.getElementById('endDate').setAttribute('min', '2015-01-01');
+document.getElementById('endDate').setAttribute('max', '2025-12-31');
 </script>
 @endpush
 @endsection

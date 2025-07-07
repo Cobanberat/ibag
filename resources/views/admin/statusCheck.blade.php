@@ -12,16 +12,18 @@
   .daterange-box { position: relative; }
   .daterange-box .fa-calendar-alt { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #888; }
   .daterange-input { padding-left: 2.2rem; }
+  .clickable-alert { cursor: pointer; }
 </style>
 <!-- Bildirim ve Hatırlatıcılar -->
-<div class="alert alert-warning d-flex align-items-center justify-content-between mb-3" role="alert">
+
+<div class="alert alert-warning d-flex align-items-center justify-content-between mb-3 clickable-alert" role="alert" id="upcomingAlert">
   <div class="d-flex align-items-center">
     <i class="fas fa-bell fa-lg me-2"></i>
     <div><b>2 ekipmanda yaklaşan bakım var!</b> <span class="small">Bakım planlaması yapmayı unutmayın.</span></div>
   </div>
   <button class="btn btn-sm btn-outline-warning" id="showUpcomingBtn"><i class="fas fa-list"></i> Ürünleri Gör</button>
 </div>
-<div class="alert alert-danger d-flex align-items-center justify-content-between mb-3" role="alert">
+<div class="alert alert-danger d-flex align-items-center justify-content-between mb-3 clickable-alert" role="alert" id="overdueAlert">
   <div class="d-flex align-items-center">
     <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
     <div><b>1 ekipmanda geciken işlem var!</b> <span class="small">Acil müdahale gereklidir.</span></div>
@@ -73,6 +75,13 @@
         </tbody>
       </table>
     </div>
+    <nav>
+      <ul class="pagination justify-content-end m-3">
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+      </ul>
+    </nav>
   </div>
 </div>
 
@@ -86,7 +95,7 @@
     <i class="fas fa-calendar-alt"></i>
     <input type="text" class="form-control form-control-sm daterange-input" id="filterDateRange" placeholder="Tarih Aralığı Seçin" style="max-width:180px;">
   </div>
-  <select class="form-select form-select-sm" id="filterType" style="max-width:120px;">
+  <select class="form-select form-select-sm" id="filterType" style="max-width:180px;">
     <option value="">Tür (Tümü)</option>
     <option>Bakım</option>
     <option>Test</option>
@@ -94,7 +103,7 @@
     <option>Taşınma</option>
     <option>Kullanım</option>
   </select>
-  <select class="form-select form-select-sm" id="filterSorumlu" style="max-width:120px;">
+  <select class="form-select form-select-sm" id="filterSorumlu" style="max-width:180px;">
     <option value="">Sorumlu (Tümü)</option>
     <option>admin</option>
     <option>teknisyen1</option>
@@ -125,6 +134,13 @@
         </tbody>
       </table>
     </div>
+    <nav>
+      <ul class="pagination justify-content-end m-3">
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+      </ul>
+    </nav>
   </div>
 </div>
 
@@ -132,34 +148,10 @@
 <div id="rowDetailPanelContainer"></div>
 
 <!-- Yaklaşan Kontroller Modalı -->
-<div class="modal fade" id="upcomingModal" tabindex="-1" aria-labelledby="upcomingModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="upcomingModalLabel">Yaklaşan Kontroller</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Yaklaşan kontrollerin listesi buraya gelecek -->
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- Geciken Kontroller Modalı -->
-<div class="modal fade" id="overdueModal" tabindex="-1" aria-labelledby="overdueModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="overdueModalLabel">Geciken Kontroller</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Geciken kontrollerin listesi buraya gelecek -->
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- Yeni Kontrol Ekle Modalı -->
 <div class="modal fade" id="addControlModal" tabindex="-1" aria-labelledby="addControlModalLabel" aria-hidden="true">
@@ -244,11 +236,36 @@
         </tbody>
       </table>
     </div>
+    <nav>
+      <ul class="pagination justify-content-end m-3">
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+      </ul>
+    </nav>
   </div>
 </div>
 
 <!-- Satır Detay Paneli (JS ile eklenir) -->
 <div id="rowDetailPanel"></div>
+
+<!-- Modal -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="infoModalLabel">Detaylı Bilgi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body" id="infoModalBody">
+        <!-- İçerik JS ile doldurulacak -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // Örnek veri ve toplu seçim, filtreleme, detay paneli, hızlı ekleme için temel JS altyapısı burada olmalı.
@@ -269,5 +286,103 @@ document.getElementById('showUpcomingBtn').onclick = function() {
 document.getElementById('showOverdueBtn').onclick = function() {
   new bootstrap.Modal(document.getElementById('overdueModal')).show();
 };
+
+// Kutulara tıklanabilirlik için stil
+const style = document.createElement('style');
+style.innerHTML = `.clickable-alert { cursor: pointer; }`;
+document.head.appendChild(style);
+
+// Bakım ve gecikmiş ekipman verileri
+const upcomingMaintenances = [
+  { equipment: 'UPS 3kVA', serial: 'UPS-2025-001', date: '2025-07-25', daysLeft: 3 },
+  { equipment: 'Jeneratör', serial: 'GEN-2025-002', date: '2025-07-28', daysLeft: 6 }
+];
+const overdueMaintenances = [
+  { equipment: 'El Feneri', serial: 'FNR-2025-003', date: '2025-07-15', overdue: 2 }
+];
+
+function openInfoModal(type) {
+  let content = '';
+  if(type === 'upcoming') {
+    content = `<b>Yaklaşan Bakımlar</b>
+      <table class="table table-bordered table-sm mt-2">
+        <thead>
+          <tr>
+            <th>Ekipman</th>
+            <th>Seri No</th>
+            <th>Planlanan Tarih</th>
+            <th>Kalan Gün</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UPS 3kVA</td>
+            <td>UPS-2025-001</td>
+            <td>2025-07-25</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td>Jeneratör</td>
+            <td>GEN-2025-002</td>
+            <td>2025-07-28</td>
+            <td>6</td>
+          </tr>
+        </tbody>
+      </table>
+      <nav>
+        <ul class='pagination justify-content-end mt-3'>
+          <li class='page-item active'><a class='page-link' href='#'>1</a></li>
+          <li class='page-item'><a class='page-link' href='#'>2</a></li>
+          <li class='page-item'><a class='page-link' href='#'>3</a></li>
+        </ul>
+      </nav>`;
+  } else if(type === 'overdue') {
+    content = `<b>Geciken İşlemler</b>
+      <table class="table table-bordered table-sm mt-2">
+        <thead>
+          <tr>
+            <th>Ekipman</th>
+            <th>Seri No</th>
+            <th>Planlanan Tarih</th>
+            <th>Gecikme (gün)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>El Feneri</td>
+            <td>FNR-2025-003</td>
+            <td>2025-07-15</td>
+            <td>2</td>
+          </tr>
+        </tbody>
+      </table>
+      <nav>
+        <ul class='pagination justify-content-end mt-3'>
+          <li class='page-item active'><a class='page-link' href='#'>1</a></li>
+          <li class='page-item'><a class='page-link' href='#'>2</a></li>
+          <li class='page-item'><a class='page-link' href='#'>3</a></li>
+        </ul>
+      </nav>`;
+  }
+  document.getElementById('infoModalBody').innerHTML = content;
+  new bootstrap.Modal(document.getElementById('infoModal')).show();
+}
+// Kutulara ve butonlara tıklama eventleri
+
+document.getElementById('upcomingAlert').addEventListener('click', function(e) {
+  // Butona tıklanırsa da, kutuya tıklanırsa da modal açılır
+  openInfoModal('upcoming');
+});
+document.getElementById('showUpcomingBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  openInfoModal('upcoming');
+});
+document.getElementById('overdueAlert').addEventListener('click', function(e) {
+  openInfoModal('overdue');
+});
+document.getElementById('showOverdueBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  openInfoModal('overdue');
+});
 </script>
 @endsection

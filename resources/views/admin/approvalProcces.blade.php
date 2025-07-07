@@ -13,20 +13,6 @@
   .approval-actions .btn { margin-right: 0.2rem; }
   .approval-row.selected { background: #e0e7ff !important; }
 </style>
-<!-- Bildirim Dropdown -->
-<div class="dropdown position-fixed top-0 end-0 m-4" style="z-index:1055;">
-  <button class="btn btn-light position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="fas fa-bell fa-lg"></i>
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">2</span>
-  </button>
-  <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notifDropdown" style="min-width:320px;">
-    <li><h6 class="dropdown-header">Bildirimler</h6></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-exclamation-circle text-danger me-2"></i>2 yeni acil onay talebi var!</a></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-comment-dots text-info me-2"></i>Yorumunuza cevap geldi.</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item text-center small" href="#">Tümünü Gör</a></li>
-  </ul>
-</div>
 <!-- Hızlı Filtreler -->
 <div class="d-flex gap-2 mb-2">
   <button class="btn btn-outline-primary btn-sm">Acil Talepler</button>
@@ -143,7 +129,6 @@
           <label class="form-label">Onay/Red Açıklaması:</label>
           <div class="input-group">
             <input type="text" class="form-control" id="aiCommentInput" placeholder="Açıklama yazın...">
-            <button class="btn btn-outline-secondary" type="button" id="aiSuggestBtn"><i class="fas fa-robot"></i> AI ile Öner</button>
           </div>
         </div>
         <div class="mb-2">
@@ -315,9 +300,6 @@ if(fileUpload) {
     }
   };
 }
-// AI açıklama önerisi (örnek)
-document.getElementById('aiSuggestBtn').onclick = function() {
-  document.getElementById('aiCommentInput').value = 'Talebiniz incelenmiş ve uygun bulunmuştur. Onaylanmıştır.';
-};
+
 </script>
 @endsection

@@ -56,7 +56,7 @@
             <th>Mevcut Konum</th>
             <th>Sorumlu</th>
             <th>Lokasyon Türü</th>
-            <th class="text-end">Aksiyon</th>
+            <th class="text-start">Aksiyon</th>
           </tr>
         </thead>
         <tbody>
@@ -65,7 +65,7 @@
             <td>Ofis - Selçuklu</td>
             <td>admin</td>
             <td><span class="location-badge ofis">Ofis</span></td>
-            <td class="text-end location-actions">
+            <td class="text-start location-actions">
               <button class="btn btn-sm btn-outline-info"><i class="fas fa-history"></i> Geçmiş</button>
               <button class="btn btn-sm btn-outline-primary"><i class="fas fa-map-marker-alt"></i> Haritada</button>
               <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i> Konum Güncelle</button>
@@ -76,7 +76,7 @@
             <td>Saha - Karatay</td>
             <td>teknisyen1</td>
             <td><span class="location-badge saha">Saha</span></td>
-            <td class="text-end location-actions">
+            <td class="text-start location-actions">
               <button class="btn btn-sm btn-outline-info"><i class="fas fa-history"></i> Geçmiş</button>
               <button class="btn btn-sm btn-outline-primary"><i class="fas fa-map-marker-alt"></i> Haritada</button>
               <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i> Konum Güncelle</button>
@@ -87,7 +87,7 @@
             <td>Depo - Meram</td>
             <td>lazBerat</td>
             <td><span class="location-badge depo">Depo</span></td>
-            <td class="text-end location-actions">
+            <td class="text-start location-actions">
               <button class="btn btn-sm btn-outline-info"><i class="fas fa-history"></i> Geçmiş</button>
               <button class="btn btn-sm btn-outline-primary"><i class="fas fa-map-marker-alt"></i> Haritada</button>
               <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i> Konum Güncelle</button>
@@ -98,7 +98,7 @@
             <td>Müşteri - Ereğli</td>
             <td>teknisyen1</td>
             <td><span class="location-badge musteri">Müşteri</span></td>
-            <td class="text-end location-actions">
+            <td class="text-start location-actions">
               <button class="btn btn-sm btn-outline-info"><i class="fas fa-history"></i> Geçmiş</button>
               <button class="btn btn-sm btn-outline-primary"><i class="fas fa-map-marker-alt"></i> Haritada</button>
               <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i> Konum Güncelle</button>

@@ -6,7 +6,12 @@
 <style>
   body { background: #f6f7fb; }
   .kpi-card {
-    min-width:180px; border-radius:1.5em; box-shadow:0 4px 24px 0 #e0e7ef; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); transition: transform .15s, box-shadow .15s;
+    min-width: 170px;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius:1.5em; box-shadow:0 4px 24px 0 #e0e7ef; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); transition: transform .15s, box-shadow .15s;
     border: none; position: relative; overflow: hidden;
   }
   .kpi-card:hover { transform: translateY(-4px) scale(1.03); box-shadow:0 8px 32px 0 #b6c2e1; }
@@ -400,25 +405,29 @@ function renderTalepTable() {
   const data = filteredTalepData.length ? filteredTalepData : talepData;
   const start = (currentPage-1)*pageSize;
   const end = start+pageSize;
-  const pageData = data.slice(start,end);
   let html = '';
-  pageData.forEach((d,i)=>{
-    html += `<tr>
-      <td>${start+i+1}</td>
-      <td>${d.no}</td>
-      <td>${d.tarih}</td>
-      <td>${d.tip}</td>
-      <td>${d.ekipman}</td>
-      <td>${d.kod}</td>
-      <td>${d.bolge}</td>
-      <td>${d.eden}</td>
-      <td><span class='badge ${d.aciliyet==='Acil'?'bg-danger':'bg-warning text-dark'}'>${d.aciliyet}</span></td>
-      <td><span class='badge ${d.durum==='Onaylandı'?'bg-success':d.durum==='Reddedildi'?'bg-danger':'bg-warning text-dark'}'>${d.durum}</span></td>
-      <td>${d.dosya?`<a href='#' class='btn btn-sm btn-outline-secondary'><i class='fas fa-paperclip'></i></a>`:''}</td>
-      <td>${d.aciklama}</td>
-      <td><button class='btn btn-sm btn-outline-info' onclick='showTalepDetail(${start+i})'><i class='fas fa-eye'></i></button></td>
-    </tr>`;
-  });
+  for(let i=0; i<pageSize; i++) {
+    const d = data[start+i];
+    if(d) {
+      html += `<tr>
+        <td>${start+i+1}</td>
+        <td>${d.no}</td>
+        <td>${d.tarih}</td>
+        <td>${d.tip}</td>
+        <td>${d.ekipman}</td>
+        <td>${d.kod}</td>
+        <td>${d.bolge}</td>
+        <td>${d.eden}</td>
+        <td><span class='badge ${d.aciliyet==='Acil'?'bg-danger':'bg-warning text-dark'}'>${d.aciliyet}</span></td>
+        <td><span class='badge ${d.durum==='Onaylandı'?'bg-success':d.durum==='Reddedildi'?'bg-danger':'bg-warning text-dark'}'>${d.durum}</span></td>
+        <td>${d.dosya?`<a href='#' class='btn btn-sm btn-outline-secondary'><i class='fas fa-paperclip'></i></a>`:''}</td>
+        <td>${d.aciklama}</td>
+        <td><button class='btn btn-sm btn-outline-info' onclick='showTalepDetail(${start+i})'><i class='fas fa-eye'></i></button></td>
+      </tr>`;
+    } else {
+      html += `<tr><td colspan='13' style='height:48px;'></td></tr>`;
+    }
+  }
   document.getElementById('talepTableBody').innerHTML = html;
 }
 function renderTalepPagination() {

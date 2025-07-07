@@ -1,9 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
 <style>
 :root {
   --soft-shadow: 0 4px 24px 0 #d1d9e6;
@@ -41,11 +38,20 @@
   font-weight: 400;
   opacity: .93;
 }
-.dashboard-kpi-row {
+.dashboard-kpi-row,
+.row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-bottom: 2.2rem;
+  align-items: stretch;
+}
+.dashboard-kpi-card,
+.dashboard-box,
+.soft-chart-box,
+.calendar-box {
+  height: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
 }
 .dashboard-kpi-card {
   flex: 1 1 200px;
@@ -75,13 +81,13 @@
   box-shadow: 0 12px 32px 0 #b6c2e1;
 }
 .dashboard-kpi-icon {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  font-size: 2rem;
+  font-size: 1.2rem;
   margin-bottom: .5rem;
   background: rgba(255,255,255,0.13);
   box-shadow: 0 2px 12px #e0e7ef;
@@ -304,15 +310,7 @@
   border-color: #6366f1 !important;
   box-shadow: 0 2px 12px #6366f122;
 }
-.input-icon {
-  position: absolute;
-  left: 0.9em;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6366f1;
-  font-size: 1.1em;
-  pointer-events: none;
-}
+
 .btn, .export-btn {
   border-radius: .9em !important;
   font-weight: 600;
@@ -356,7 +354,6 @@
         <h2 style="color:#fff;font-weight:800;letter-spacing:-1px;text-shadow:0 2px 8px #6366f144;">Veri Analiz Paneli</h2>
         <p style="color:#fff;font-size:1.1em;opacity:.98;text-shadow:0 2px 8px #6366f144;">İstatistikleri ve kullanıcı aktivitelerini modern, canlı ve etkileşimli olarak görüntüleyin.</p>
       </div>
-      <button class="btn btn-outline-light" onclick="toggleDarkMode()" title="Karanlık Mod"><i class="fas fa-moon"></i></button>
     </div>
   </div>
   <div class="dashboard-box mb-4" style="background:linear-gradient(90deg,#e0e7ff 0%,#f8fafc 100%);color:#23272b;">
@@ -365,9 +362,7 @@
   </div>
   <!-- Filtre Barı -->
   <div class="filter-bar mb-4 input-group">
-    <span class="input-icon"><i class="fas fa-calendar-alt"></i></span>
-    <input type="text" class="form-control" id="filterDate" placeholder="Tarih Aralığı (örn. 01.06.2024 - 10.06.2024)">
-    <span class="input-icon"><i class="fas fa-user"></i></span>
+    <input type="text" class="form-control" id="filterDateRange" placeholder="Tarih Aralığı Seçin" readonly style="max-width:220px;">
     <select class="form-select" id="filterUser">
       <option value="">Kullanıcı (Tümü)</option>
       <option>admin</option>
@@ -375,7 +370,6 @@
       <option>mehmet</option>
       <option>fatma</option>
     </select>
-    <span class="input-icon"><i class="fas fa-tasks"></i></span>
     <select class="form-select" id="filterType">
       <option value="">İşlem Tipi (Tümü)</option>
       <option>Giriş</option>
@@ -941,18 +935,6 @@ setTimeout(()=>{
     el.style.width = activityData[i].percent+'%';
   });
 }, 200);
-// Karanlık mod toggle
-function toggleDarkMode() {
-  document.getElementById('mainPanel').classList.toggle('dark-mode');
-  showSnackbar(document.getElementById('mainPanel').classList.contains('dark-mode') ? 'Karanlık mod aktif!' : 'Aydınlık mod aktif!');
-}
-// Snackbar örneği
-function showSnackbar(msg) {
-  let sb = document.getElementById('snackbar');
-  sb.innerText = msg;
-  sb.style.display = 'block';
-  setTimeout(()=>{sb.style.display='none';}, 2200);
-}
 // Filtreleme örneği
 const allRows = [
   {user:'admin', type:'Giriş', time:'09:12'},
@@ -971,17 +953,34 @@ renderTable(allRows.slice(0,5));
 function filterTable() {
   const user = document.getElementById('filterUser').value;
   const type = document.getElementById('filterType').value;
+  const start = document.getElementById('filterStartDate').value;
+  const end = document.getElementById('filterEndDate').value;
   let filtered = allRows;
   if(user) filtered = filtered.filter(r=>r.user===user);
   if(type) filtered = filtered.filter(r=>r.type===type);
+  if(start) filtered = filtered.filter(r=>r.date.split(' ')[0] >= start);
+  if(end) filtered = filtered.filter(r=>r.date.split(' ')[0] <= end);
   renderTable(filtered.slice(0,5));
 }
 document.getElementById('filterUser').addEventListener('change', filterTable);
 document.getElementById('filterType').addEventListener('change', filterTable);
+document.getElementById('filterStartDate').addEventListener('change', filterTable);
+document.getElementById('filterEndDate').addEventListener('change', filterTable);
 document.getElementById('clearFiltersBtn').addEventListener('click', ()=>{
   document.getElementById('filterUser').value = '';
   document.getElementById('filterType').value = '';
+  document.getElementById('filterStartDate').value = '';
+  document.getElementById('filterEndDate').value = '';
   renderTable(allRows.slice(0,5));
+});
+document.addEventListener('DOMContentLoaded', function() {
+  flatpickr("#filterDateRange", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    minDate: "2015-01-01",
+    maxDate: new Date().toISOString().split('T')[0],
+    allowInput: false
+  });
 });
 </script>
 @endsection

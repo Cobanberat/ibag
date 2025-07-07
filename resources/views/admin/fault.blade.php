@@ -32,7 +32,7 @@
     color: #4a4a6a;
   }
   .fault-form .form-control, .fault-form .form-select {
-    border-radius: 0.7rem;
+    border-radius: 0;
     font-size: 1.08rem;
     min-height: 2.5rem;
     box-shadow: none;
@@ -114,7 +114,6 @@
             <div class="mb-3">
               <label class="form-label">Fotoğraf / Dosya Ekle</label>
               <input type="file" class="form-control" accept="image/*,application/pdf">
-              <div class="form-text">İsteğe bağlı. Maksimum 2 dosya, jpg/png/pdf.</div>
             </div>
             <div class="mb-3 row g-2">
               <div class="col-md-6">
