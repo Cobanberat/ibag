@@ -84,7 +84,7 @@
                     </tbody>
                 </table>
             </div>
-            <nav class="mt-3 sticky-pagination">
+            <nav class="mt-3 sticky-pagination p-2">
                 <ul class="pagination justify-content-end mb-0" id="pagination">
                     <!-- Pagination JS ile doldurulacak -->
                 </ul>
@@ -93,7 +93,7 @@
     </div>
     <!-- Ekipman Ekle Modal -->
     <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-labelledby="addEquipmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addEquipmentModalLabel">Ekipman Ekle</h5>
@@ -139,7 +139,7 @@
     </div>
     <!-- Detay Modalı -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailModalLabel">Ekipman Detayı</h5>

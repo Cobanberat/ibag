@@ -38,20 +38,11 @@
   font-weight: 400;
   opacity: .93;
 }
-.dashboard-kpi-row,
-.row {
+.dashboard-kpi-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
-}
-.dashboard-kpi-card,
-.dashboard-box,
-.soft-chart-box,
-.calendar-box {
-  height: 100%;
-  min-height: 220px;
-  display: flex;
-  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.2rem;
 }
 .dashboard-kpi-card {
   flex: 1 1 200px;
@@ -362,7 +353,7 @@
   </div>
   <!-- Filtre Barı -->
   <div class="filter-bar mb-4 input-group">
-    <input type="text" class="form-control" id="filterDateRange" placeholder="Tarih Aralığı Seçin" readonly style="max-width:220px;">
+    <!-- <input type="text" class="form-control" id="filterDateRange" placeholder="Tarih Aralığı Seçin" readonly style="max-width:220px;"> -->
     <select class="form-select" id="filterUser">
       <option value="">Kullanıcı (Tümü)</option>
       <option>admin</option>
@@ -564,7 +555,38 @@
       <thead>
         <tr><th></th><th>Kullanıcı</th><th>İşlem</th><th>Saat</th></tr>
       </thead>
-      <tbody id="lastTableBody"></tbody>
+      <tbody id="lastTableBody">
+        <tr>
+          <td><span class='avatar-circle'>A</span></td>
+          <td>admin</td>
+          <td>Giriş</td>
+          <td>09:12</td>
+        </tr>
+        <tr>
+          <td><span class='avatar-circle'>A</span></td>
+          <td>ayse</td>
+          <td>Rapor</td>
+          <td>10:05</td>
+        </tr>
+        <tr>
+          <td><span class='avatar-circle'>M</span></td>
+          <td>mehmet</td>
+          <td>Şifre</td>
+          <td>11:20</td>
+        </tr>
+        <tr>
+          <td><span class='avatar-circle'>F</span></td>
+          <td>fatma</td>
+          <td>Profil</td>
+          <td>12:30</td>
+        </tr>
+        <tr>
+          <td><span class='avatar-circle'>A</span></td>
+          <td>admin</td>
+          <td>Giriş</td>
+          <td>13:00</td>
+        </tr>
+      </tbody>
     </table>
   </div>
   <div id="snackbar">Veriler güncellendi!</div>
@@ -861,22 +883,6 @@ document.getElementById('supportDemand').innerText = supportDemand;
 animateCount('systemUptime', 99.7, '%'); animateBar('uptimeBar', 99.7);
 // Bildirim okunma oranı
 animateCount('notificationRead', 82, '%'); animateBar('notificationBar', 82);
-// Son 5 işlem tablosu highlight
-const lastRows = [
-  {user:'admin', type:'Giriş', time:'09:12', avatar:'A'},
-  {user:'ayse', type:'Rapor', time:'10:05', avatar:'A'},
-  {user:'mehmet', type:'Şifre', time:'11:20', avatar:'M'},
-  {user:'fatma', type:'Profil', time:'12:30', avatar:'F'},
-  {user:'admin', type:'Giriş', time:'13:00', avatar:'A'}
-];
-document.getElementById('lastTableBody').innerHTML = lastRows.map(d=>`
-  <tr>
-    <td><span class='avatar-circle'>${d.avatar}</span></td>
-    <td>${d.user}</td>
-    <td>${d.type}</td>
-    <td>${d.time}</td>
-  </tr>
-`).join('');
 // Mini özet kutusu
 const allData = [
   {user:'admin', date:'2024-06-10 09:12', time:12, type:'Giriş'},
@@ -974,13 +980,7 @@ document.getElementById('clearFiltersBtn').addEventListener('click', ()=>{
   renderTable(allRows.slice(0,5));
 });
 document.addEventListener('DOMContentLoaded', function() {
-  flatpickr("#filterDateRange", {
-    mode: "range",
-    dateFormat: "Y-m-d",
-    minDate: "2015-01-01",
-    maxDate: new Date().toISOString().split('T')[0],
-    allowInput: false
-  });
+  // Flatpickr kaldırıldı
 });
 </script>
 @endsection

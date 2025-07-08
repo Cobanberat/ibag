@@ -70,6 +70,14 @@
     box-shadow: 0 2px 12px #38f9d733;
     border: none;
   }
+  .fault-form .form-select {
+    border-radius: 10px 10px 0px 0px;
+    font-size: 1.08rem;
+    min-height: 2.5rem;
+    box-shadow: none;
+    border: 1.5px solid #e0e7ff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
 </style>
 <div class="container py-5">
   <div class="row justify-content-center">

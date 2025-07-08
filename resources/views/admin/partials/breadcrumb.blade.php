@@ -9,7 +9,7 @@
 <!-- Üst Bar: Duyuru, Hava Durumu, Bildirim, Arama, Kullanıcı Kartı -->
 <div class="row g-3 mb-4 align-items-center">
     <div class="col-lg-8 d-flex align-items-center gap-3 flex-wrap">
-        <div class="alert alert-info mb-0 py-2 px-3 shadow-sm"><i class="fa fa-bullhorn me-2"></i> Hoşgeldin! Sistem
+        <div class="alert alert-info mb-0 py-3 px-3 shadow-sm"><i class="fa fa-bullhorn me-2"></i> Hoşgeldin! Sistem
             güncellemeleri başarıyla tamamlandı.</div>
         <div class="card shadow-sm border-0 mb-0" style="min-width:180px;">
             <div class="card-body d-flex align-items-center gap-2 p-2">
@@ -50,7 +50,7 @@
                     <div class="fw-bold small mb-0">Admin</div>
                     <div class="text-muted small">Yönetici</div>
                 </div>
-                <a href="/{{ route('logout') }}" class="btn btn-sm btn-outline-danger ms-2" title="Çıkış"><i
+                <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger ms-2" title="Çıkış"><i
                         class="fa fa-sign-out-alt"></i></a>
             </div>
         </div>

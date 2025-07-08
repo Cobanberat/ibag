@@ -1,14 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-<!-- Gerekli kütüphaneler ve stiller -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body.dark-mode { background: #181a1b; color: #e2e8f0; }
 .member-header { background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2.2em 1.5em 1.5em 1.5em;margin-bottom:2em;display:flex;flex-direction:column;align-items:flex-start;position:relative;overflow:hidden; }
@@ -68,8 +60,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
       <h2 style="color:#fff" >👥 Üye İstatistikleri & Aktivite Raporu</h2>
       <p>Sistemdeki üyelerin istatistikleri, aktiviteleri ve rolleri hakkında detaylı analiz.</p>
       <div class="position-absolute top-0 end-0 mt-3 me-3 d-flex gap-2">
-        <button class="btn btn-light btn-sm" id="toggleThemeBtn" title="Karanlık/Aydınlık Mod"><i class="bi bi-moon"></i></button>
-        <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle"></i></button>
+        <button class="btn btn-sm" style="background:transparent;border:none;box-shadow:none;" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle" style="font-size:1.3em;color:#fff;"></i></button>
       </div>
     </div>
   </div>
@@ -99,21 +90,6 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
       <div class="member-kpi-trend up"><i class="bi bi-arrow-up"></i> %0.5 artış</div>
     </div>
   </div>
-  <div class="member-filter-bar mb-3" id="memberFilterBar">
-    <input type="text" class="form-control" id="memberFilterDate" placeholder="📅 Tarih Aralığı">
-    <select class="form-select" id="memberFilterRole" multiple>
-      <option value="Admin">Admin</option>
-      <option value="Teknisyen">Teknisyen</option>
-      <option value="Üye">Üye</option>
-    </select>
-    <select class="form-select" id="memberFilterStatus" multiple>
-      <option value="Aktif">Aktif</option>
-      <option value="Askıda">Askıda</option>
-    </select>
-    <input type="text" class="form-control" id="memberSearch" placeholder="Üye ara...">
-    <button class="btn btn-outline-primary" id="clearMemberFiltersBtn"><i class="fas fa-times"></i> Temizle</button>
-    <div id="activeFilterChips" class="d-flex flex-wrap"></div>
-  </div>
   <div class="row g-3 mb-3">
     <div class="col-lg-4 col-md-6 col-12">
       <div class="card p-3 h-100">
@@ -135,8 +111,8 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
     </div>
   </div>
   <div class="row g-3 mb-3">
-    <div class="col-lg-8 col-12">
-      <div class="card p-3 mb-2">
+    <div class="col-lg-8 col-12 w-100">
+      <div class="card p-3 mb-2 h-100 d-flex flex-column" style="height:100%;">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6 class="fw-bold mb-2" style="font-size:1.15rem;"><i class="fas fa-users"></i> Üye Listesi</h6>
           <div>
@@ -144,11 +120,27 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <button class="btn btn-outline-primary btn-sm" id="addMemberBtn" title="Yeni Üye Ekle"><i class="bi bi-plus-circle"></i></button>
           </div>
         </div>
-        <div class="table-responsive" style="overflow-x:unset;">
-          <table class="table member-table table-striped table-hover mb-0 w-100" id="memberTable">
+        <div class="member-filter-bar mb-3" id="memberFilterBar">
+          <input type="text" class="form-control" id="memberFilterDate" placeholder="📅 Tarih Aralığı">
+          <select class="form-select" id="memberFilterRole" aria-label="Rol Seç">
+            <option disabled selected>Rol Seç</option>
+            <option value="Admin">Admin</option>
+            <option value="Teknisyen">Teknisyen</option>
+            <option value="Üye">Üye</option>
+          </select>
+          <select class="form-select" id="memberFilterStatus" aria-label="Durum Seç">
+            <option disabled selected>Durum Seç</option>
+            <option value="Aktif">Aktif</option>
+            <option value="Askıda">Askıda</option>
+          </select>
+          <input type="text" class="form-control" id="memberSearch" placeholder="Üye ara...">
+          <button class="btn btn-outline-primary" id="clearMemberFiltersBtn"><i class="fas fa-times"></i> Temizle</button>
+          <div id="activeFilterChips" class="d-flex flex-wrap"></div>
+        </div>
+        <div class="table-responsive flex-grow-1" style="overflow-x:unset; height:100%; min-height:0;">
+          <table class="table member-table table-striped table-hover mb-0 w-100" id="memberTable" style="height:100%; min-height:0;">
             <thead><tr>
               <th><input type="checkbox" id="selectAllRows"></th>
-              <th></th>
               <th>#</th>
               <th>Ad Soyad</th>
               <th>Rol</th>
@@ -175,7 +167,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
 </div>
 <!-- Yardım Modalı -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="helpModalLabel">Kullanım Kılavuzu</h5>
@@ -194,12 +186,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
   </div>
 </div>
 <script>
-// Karanlık mod toggle
-const themeBtn = document.getElementById('toggleThemeBtn');
-themeBtn.addEventListener('click', function() {
-  document.body.classList.toggle('dark-mode');
-  themeBtn.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="bi bi-brightness-high"></i>' : '<i class="bi bi-moon"></i>';
-});
+document.addEventListener('DOMContentLoaded', function() {
 // Flatpickr
 flatpickr('#memberFilterDate', {mode:'range', dateFormat:'Y-m-d', locale:{rangeSeparator:' - '}});
 // KPI animasyonları
@@ -302,11 +289,26 @@ function renderMemberTable(data) {
     searching: true,
     ordering: true,
     info: true,
-    responsive: true,
+    responsive: false,
     pageLength: 10,
     lengthMenu: [10, 20, 50, 100],
-    language: {search: "Tabloda ara:"}
+    language: {search: "Tabloda ara:"},
+    drawCallback: function() {
+      // Pagination'ı daha belirgin yapmak için margin ekle
+      const pag = document.querySelector('.dataTables_paginate');
+      if(pag) pag.style.marginTop = '18px';
+    }
   });
+  // selectAllRows event listener'ını tekrar ekle
+  const selectAllRows = document.getElementById('selectAllRows');
+  if (selectAllRows) {
+    selectAllRows.addEventListener('click', function(e) {
+      e.stopPropagation(); // Tablo başlığına tıklama eventini durdur
+    });
+    selectAllRows.addEventListener('change', function() {
+      document.querySelectorAll('.member-row-check').forEach(cb=>{cb.checked = selectAllRows.checked;});
+    });
+  }
 }
 renderMemberTable(memberData);
 // Inline edit fonksiyonu
@@ -432,5 +434,15 @@ window.showMemberDetail = function(idx) {
     confirmButtonText: 'Kapat'
   });
 }
+});
+    const selectAllRows = document.getElementById('selectAllRows');
+    if (selectAllRows) {
+        selectAllRows.addEventListener('click', function(e) {
+            e.stopPropagation(); // Tablo başlığına tıklama eventini durdur
+        });
+        selectAllRows.addEventListener('change', function() {
+            document.querySelectorAll('.member-row-check').forEach(cb=>{cb.checked = selectAllRows.checked;});
+        });
+    }
 </script>
 @endsection

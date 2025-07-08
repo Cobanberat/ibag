@@ -313,7 +313,7 @@
     </div>
     <!-- Stok Girişi/Çıkışı Modal -->
     <div class="modal fade" id="stockInOutModal" tabindex="-1" aria-labelledby="stockInOutModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="stockInOutModalLabel"></h5>

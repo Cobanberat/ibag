@@ -425,7 +425,7 @@
 
 <!-- Servis Talep Modalı (örnek) -->
 <div class="modal fade" id="servisTalepModal" tabindex="-1" aria-labelledby="servisTalepModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="servisTalepModalLabel">Servis Talebi Oluştur</h5>

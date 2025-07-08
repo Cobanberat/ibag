@@ -1,6 +1,8 @@
 @extends('layouts.admin')
 @section('content')
 <!-- Gerekli kütüphaneler ve stiller -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css"/>
@@ -9,7 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
 <style>
 body.dark-mode { background: #181a1b; color: #e2e8f0; }
 .users-header { background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2.2em 1.5em 1.5em 1.5em;margin-bottom:2em;display:flex;flex-direction:column;align-items:flex-start;position:relative;overflow:hidden; }
@@ -53,6 +54,11 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
   .user-kpi-card {padding:.7em .5em;}
   .user-table th, .user-table td {font-size:.95em;}
 }
+.paging_numbers {
+  display: flex !important;
+  padding-top:3px; 
+  justify-content: flex-end !important;
+}
 </style>
 <div class="container-fluid">
   <!-- Ultra modern başlık -->
@@ -60,8 +66,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
     <h2 style=" color:white; font-size:2.7rem;font-weight:900;letter-spacing:-1px;line-height:1.1;">👤 Kullanıcılar Yönetimi</h2>
     <p style="font-size:1.2rem;font-weight:500;opacity:.98;">Sistemdeki tüm kullanıcıları görüntüleyin, yönetin ve analiz edin.</p>
     <div class="position-absolute top-0 end-0 mt-3 me-3 d-flex gap-2">
-      <button class="btn btn-light btn-sm" id="toggleThemeBtn" title="Karanlık/Aydınlık Mod"><i class="bi bi-moon"></i></button>
-      <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle"></i></button>
+      <button class="btn btn-sm" style="background:transparent;border:none;box-shadow:none;" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle" style="color:#fff;font-size:1.3em;"></i></button>
     </div>
   </div>
   <!-- Animasyonlu KPI kartları -->
@@ -94,15 +99,15 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
   <!-- Modern filtre barı -->
   <div class="user-filter-bar mb-4 shadow-sm rounded-3 p-3" id="userFilterBar" style="background:linear-gradient(120deg,#f8fafc 60%,#e0e7ff 100%);">
     <input type="text" class="form-control" id="userFilterDate" placeholder="📅 Tarih Aralığı">
-    <select class="form-select" id="userFilterRole" multiple>
+    <select class="form-select" id="userFilterRole">
       <option value="Admin">Admin</option>
       <option value="Kullanıcı">Kullanıcı</option>
     </select>
-    <select class="form-select" id="userFilterStatus" multiple>
+    <select class="form-select" id="userFilterStatus">
       <option value="Aktif">Aktif</option>
       <option value="Pasif">Pasif</option>
     </select>
-    <input type="text" class="form-control" id="userSearch" placeholder="Kullanıcı ara...">
+    <input type="text" class="form-control" id="userSearch" placeholder="Kullanıcı ara">
     <button class="btn btn-outline-primary" id="clearUserFiltersBtn"><i class="fas fa-times"></i> Sıfırla</button>
     <button class="btn btn-outline-success" id="saveUserFiltersBtn"><i class="bi bi-bookmark"></i> Kaydet</button>
     <button class="btn btn-outline-info" id="loadUserFiltersBtn"><i class="bi bi-arrow-clockwise"></i> Geri Yükle</button>
@@ -135,7 +140,93 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <th>Aksiyon</th>
           </tr>
         </thead>
-        <tbody id="userTableBody"></tbody>
+        <tbody id="userTableBody">
+          <tr>
+            <td><input type="checkbox" class="form-check-input user-row-check"></td>
+            <td><span class="user-avatar">AK</span></td>
+            <td>1</td>
+            <td>Ali Kaya</td>
+            <td>ali.kaya@example.com</td>
+            <td><span class="badge bg-primary">Admin</span></td>
+            <td><span class="badge bg-success">Aktif</span></td>
+            <td>2024-06-20 09:12</td>
+            <td>2023-12-01</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="form-check-input user-row-check"></td>
+            <td><span class="user-avatar">AY</span></td>
+            <td>2</td>
+            <td>Ayşe Yılmaz</td>
+            <td>ayse.yilmaz@example.com</td>
+            <td><span class="badge bg-primary">Admin</span></td>
+            <td><span class="badge bg-success">Aktif</span></td>
+            <td>2024-06-19 15:44</td>
+            <td>2024-01-10</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="form-check-input user-row-check"></td>
+            <td><span class="user-avatar">MD</span></td>
+            <td>3</td>
+            <td>Mehmet Demir</td>
+            <td>mehmet.demir@example.com</td>
+            <td><span class="badge bg-secondary">Kullanıcı</span></td>
+            <td><span class="badge bg-success">Aktif</span></td>
+            <td>2024-06-18 11:22</td>
+            <td>2024-02-15</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="form-check-input user-row-check"></td>
+            <td><span class="user-avatar">FK</span></td>
+            <td>4</td>
+            <td>Fatma Kaya</td>
+            <td>fatma.kaya@example.com</td>
+            <td><span class="badge bg-secondary">Kullanıcı</span></td>
+            <td><span class="badge bg-secondary">Pasif</span></td>
+            <td>2024-06-15 08:10</td>
+            <td>2024-03-05</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="form-check-input user-row-check"></td>
+            <td><span class="user-avatar">ZS</span></td>
+            <td>5</td>
+            <td>Zeynep Şahin</td>
+            <td>zeynep.sahin@example.com</td>
+            <td><span class="badge bg-secondary">Kullanıcı</span></td>
+            <td><span class="badge bg-success">Aktif</span></td>
+            <td>2024-06-10 17:30</td>
+            <td>2024-04-12</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
       </table>
       <div id="noUserDataIllu" class="no-data-illu" style="display:none;">
         <img src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/no-data.png" alt="No Data" style="max-width:180px;opacity:.7;"><br>
@@ -155,7 +246,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
 </div>
 <!-- Kullanıcı Ekle Modalı -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addUserModalLabel">Yeni Kullanıcı Ekle</h5>
@@ -175,7 +266,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
 </div>
 <!-- Kullanıcı Detay Modalı -->
 <div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="userDetailModalLabel">Kullanıcı Detayı</h5>
@@ -187,7 +278,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
 </div>
 <!-- Yardım Modalı -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="helpModalLabel">Kullanım Kılavuzu & Kısayollar</h5>
@@ -212,239 +303,89 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
   </div>
 </div>
 <script>
-// Karanlık mod toggle
-const themeBtn = document.getElementById('toggleThemeBtn');
-themeBtn.addEventListener('click', function() {
-  document.body.classList.toggle('dark-mode');
-  themeBtn.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="bi bi-brightness-high"></i>' : '<i class="bi bi-moon"></i>';
-});
-// Flatpickr
-flatpickr('#userFilterDate', {mode:'range', dateFormat:'Y-m-d', locale:{rangeSeparator:' - '}});
-// KPI animasyonları
-function animateUserCount(id, target, duration = 1200) {
-  let el = document.getElementById(id);
-  let start = Math.max(1, Math.floor(target * 0.7));
-  let startTime = null;
-  function animate(ts) {
-    if (!startTime) startTime = ts;
-    let progress = Math.min((ts - startTime) / duration, 1);
-    el.innerText = Math.floor(start + (target-start)*progress);
-    if (progress < 1) requestAnimationFrame(animate);
-    else el.innerText = target;
-  }
-  el.innerText = start;
-  requestAnimationFrame(animate);
-}
-animateUserCount('kpiTotalUser', 120);
-animateUserCount('kpiAdminUser', 8);
-animateUserCount('kpiActiveUser', 102);
-animateUserCount('kpiNewUser', 5);
-// Kullanıcı örnek veri
-let userData = [
-  {ad:'Ali Korkmaz', email:'ali@site.com', rol:'Admin', durum:'Aktif', tarih:'2024-01-12'},
-  {ad:'Ayşe Yılmaz', email:'ayse@site.com', rol:'Kullanıcı', durum:'Aktif', tarih:'2024-02-03'},
-  {ad:'Mehmet Demir', email:'mehmet@site.com', rol:'Kullanıcı', durum:'Pasif', tarih:'2024-03-15'},
-  {ad:'Fatma Kaya', email:'fatma@site.com', rol:'Kullanıcı', durum:'Aktif', tarih:'2024-04-21'},
-  {ad:'Zeynep Çelik', email:'zeynep@site.com', rol:'Admin', durum:'Aktif', tarih:'2024-05-10'},
-  {ad:'Burak Şahin', email:'burak@site.com', rol:'Kullanıcı', durum:'Aktif', tarih:'2024-06-01'},
-  {ad:'Elif Güneş', email:'elif@site.com', rol:'Kullanıcı', durum:'Pasif', tarih:'2024-06-10'}
-];
-// DataTable başlat
-let userTable = null;
-function renderUserTable(data, useDataTable = true) {
-  let html = '';
-  if(data.length===0) {
-    document.getElementById('noUserDataIllu').style.display = '';
-  } else {
-    document.getElementById('noUserDataIllu').style.display = 'none';
-  }
-  data.forEach((d,i)=>{
-    let avatar = `<span class='user-avatar' title='${d.ad}'>${d.ad.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()}</span>`;
-    html += `<tr>
-      <td><input type='checkbox' class='form-check-input user-row-check'></td>
-      <td>${avatar}</td>
-      <td>${i+1}</td>
-      <td contenteditable='true' onblur='updateUserField(${i},\"ad\",this.innerText)'>${d.ad}</td>
-      <td contenteditable='true' onblur='updateUserField(${i},\"email\",this.innerText)'>${d.email}</td>
-      <td><span class='badge bg-${d.rol==='Admin'?'primary':'success'}'>${d.rol}</span></td>
-      <td><span class='badge bg-${d.durum==='Aktif'?'success':'secondary'}'>${d.durum}</span></td>
-      <td>${d.tarih}</td>
-      <td>
-        <button class='btn btn-sm btn-outline-info' onclick='showUserDetail(${i})' title='Detay'><i class='fas fa-eye'></i></button>
-        <button class='btn btn-sm btn-outline-warning' onclick='editUser(${i})' title='Düzenle'><i class='fas fa-edit'></i></button>
-        <button class='btn btn-sm btn-outline-success' onclick='setUserStatus(${i},\"Aktif\")' title='Aktif Yap'><i class='bi bi-check2-circle'></i></button>
-        <button class='btn btn-sm btn-outline-secondary' onclick='setUserStatus(${i},\"Pasif\")' title='Pasif Yap'><i class='bi bi-slash-circle'></i></button>
-        <button class='btn btn-sm btn-outline-danger' onclick='deleteUser(${i})' title='Sil'><i class='bi bi-trash'></i></button>
-      </td>
-    </tr>`;
-  });
-  document.getElementById('userTableBody').innerHTML = html;
-  if (userTable && useDataTable) { userTable.destroy(); userTable = null; }
-  if (useDataTable) {
-    userTable = new DataTable('#userTable', {
-      paging: true,
-      searching: true,
-      ordering: true,
-      info: true,
-      responsive: true,
-      pageLength: 10,
-      lengthMenu: [10, 20, 50, 100],
-      language: {search: "Tabloda ara:"}
-    });
-  }
-}
-// Sayfa ilk yüklendiğinde DataTable ile başlat
-renderUserTable(userData, true);
-// Filtre fonksiyonu sadece HTML günceller, DataTable yok
-function filterUserTable() {
-  let roles = Array.from(userFilterRole.selectedOptions).map(o=>o.value);
-  let statuses = Array.from(userFilterStatus.selectedOptions).map(o=>o.value);
-  let filtered = userData.filter(u=>
-    (roles.length===0 || roles.includes(u.rol)) &&
-    (statuses.length===0 || statuses.includes(u.durum))
-  );
-  document.getElementById('userSearch').value = '';
-  if (userTable) { userTable.destroy(); userTable = null; }
-  renderUserTable(filtered, false);
-}
-// Inline edit fonksiyonu
-window.updateUserField = function(idx, field, value) {
-  userData[idx][field] = value;
-  showUserSnackbar('📝 Kullanıcı bilgisi güncellendi!');
-}
-// Satır silme
-window.deleteUser = function(idx) {
-  userData.splice(idx,1);
-  filterUserTable();
-  showUserSnackbar('🗑️ Kullanıcı silindi!');
-}
-// Satır durum değiştir
-window.setUserStatus = function(idx, status) {
-  userData[idx].durum = status;
-  filterUserTable();
-  showUserSnackbar(status==='Aktif'?'✅ Kullanıcı aktif yapıldı!':'⏸️ Kullanıcı pasif yapıldı!');
-}
-// Toplu seçim
-const selectAllUserRows = document.getElementById('selectAllUserRows');
-selectAllUserRows.addEventListener('change', function() {
-  document.querySelectorAll('.user-row-check').forEach(cb=>{cb.checked = selectAllUserRows.checked;});
-});
-// Toplu silme
-const bulkUserDeleteBtn = document.getElementById('bulkUserDeleteBtn');
-bulkUserDeleteBtn.addEventListener('click', function() {
-  let selected = Array.from(document.querySelectorAll('.user-row-check')).map((cb,i)=>cb.checked?i:null).filter(i=>i!==null).reverse();
-  if(selected.length===0) return showUserSnackbar('Seçili kullanıcı yok!');
-  selected.forEach(idx=>userData.splice(idx,1));
-  filterUserTable();
-  showUserSnackbar('🗑️ Seçili kullanıcılar silindi!');
-});
-// Toplu aktif yap
-const bulkUserActivateBtn = document.getElementById('bulkUserActivateBtn');
-bulkUserActivateBtn.addEventListener('click', function() {
-  document.querySelectorAll('.user-row-check').forEach((cb,i)=>{if(cb.checked) userData[i].durum='Aktif';});
-  filterUserTable();
-  showUserSnackbar('✅ Seçili kullanıcılar aktif yapıldı!');
-});
-// Toplu pasif yap
-const bulkUserDeactivateBtn = document.getElementById('bulkUserDeactivateBtn');
-bulkUserDeactivateBtn.addEventListener('click', function() {
-  document.querySelectorAll('.user-row-check').forEach((cb,i)=>{if(cb.checked) userData[i].durum='Pasif';});
-  filterUserTable();
-  showUserSnackbar('⏸️ Seçili kullanıcılar pasif yapıldı!');
-});
-// Filtre ve arama
-const userSearch = document.getElementById('userSearch');
-userSearch.addEventListener('input', function() {
-  userTable.search(this.value).draw();
-  showUserSnackbar('🔍 Arama uygulandı!');
-});
-document.getElementById('clearUserFiltersBtn').addEventListener('click', ()=>{
-  userSearch.value = '';
-  document.getElementById('userFilterRole').selectedIndex = -1;
-  document.getElementById('userFilterStatus').selectedIndex = -1;
-  document.getElementById('activeUserFilterChips').innerHTML = '';
-  renderUserTable(userData, true);
-  showUserSnackbar('🧹 Filtreler temizlendi!');
-});
-// Rol ve durum filtreleri (çoklu seçim ve chip gösterimi)
-const userFilterRole = document.getElementById('userFilterRole');
-const userFilterStatus = document.getElementById('userFilterStatus');
-const activeUserFilterChips = document.getElementById('activeUserFilterChips');
-function updateUserFilterChips() {
-  activeUserFilterChips.innerHTML = '';
-  Array.from(userFilterRole.selectedOptions).forEach(opt=>{
-    let chip = document.createElement('span');
-    chip.className = 'user-filter-chip';
-    chip.innerHTML = `<i class='bi bi-person-badge'></i> ${opt.value} <i class='bi bi-x' onclick='removeUserRoleFilter("${opt.value}")'></i>`;
-    activeUserFilterChips.appendChild(chip);
-  });
-  Array.from(userFilterStatus.selectedOptions).forEach(opt=>{
-    let chip = document.createElement('span');
-    chip.className = 'user-filter-chip';
-    chip.innerHTML = `<i class='bi bi-person-check'></i> ${opt.value} <i class='bi bi-x' onclick='removeUserStatusFilter("${opt.value}")'></i>`;
-    activeUserFilterChips.appendChild(chip);
-  });
-}
-window.removeUserRoleFilter = function(val) {
-  Array.from(userFilterRole.options).forEach(opt=>{if(opt.value===val) opt.selected=false;});
-  updateUserFilterChips();
-  filterUserTable();
-}
-window.removeUserStatusFilter = function(val) {
-  Array.from(userFilterStatus.options).forEach(opt=>{if(opt.value===val) opt.selected=false;});
-  updateUserFilterChips();
-  filterUserTable();
-}
-userFilterRole.addEventListener('change', filterUserTable);
-userFilterStatus.addEventListener('change', filterUserTable);
-updateUserFilterChips();
-// Export Excel
-const exportUserExcelBtn = document.getElementById('exportUserExcelBtn');
-exportUserExcelBtn.addEventListener('click', function() {
-  let ws = XLSX.utils.json_to_sheet(userData);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Kullanicilar");
-  XLSX.writeFile(wb, "kullanicilar.xlsx");
-  showUserSnackbar('📁 Excel dosyası indirildi!');
-});
-// Yeni kullanıcı ekle (dummy)
-document.getElementById('addUserBtn').addEventListener('click', function() {
-  userData.push({ad:'Yeni Kullanıcı', email:'yeni@site.com', rol:'Kullanıcı', durum:'Aktif', tarih:'2024-06-30'});
-  filterUserTable();
-  showUserSnackbar('➕ Yeni kullanıcı eklendi!');
-});
-// Snackbar
-function showUserSnackbar(msg) {
-  let sb = document.getElementById('userSnackbar');
-  sb.innerText = msg;
-  sb.style.display = 'block';
-  setTimeout(()=>{sb.style.display='none';}, 2200);
-}
-// Kullanıcı detay (SweetAlert2 ile modal)
-window.showUserDetail = function(idx) {
-  const d = userData[idx];
-  Swal.fire({
-    title: d.ad,
-    html: `<b>E-posta:</b> ${d.email}<br><b>Rol:</b> ${d.rol}<br><b>Durum:</b> ${d.durum}<br><b>Kayıt Tarihi:</b> ${d.tarih}`,
-    icon: d.durum==='Aktif'?'success':'info',
-    confirmButtonText: 'Kapat'
-  });
-}
-// Kullanıcı düzenle (demo)
-window.editUser = function(idx) {
-  Swal.fire({
-    title: 'Kullanıcı Düzenle',
-    html: `<input id='editAd' class='swal2-input' value='${userData[idx].ad}'><input id='editEmail' class='swal2-input' value='${userData[idx].email}'>`,
-    showCancelButton: true,
-    confirmButtonText: 'Kaydet',
-    cancelButtonText: 'İptal',
-    preConfirm: () => {
-      userData[idx].ad = document.getElementById('editAd').value;
-      userData[idx].email = document.getElementById('editEmail').value;
-      filterUserTable();
-      showUserSnackbar('✅ Kullanıcı güncellendi!');
+document.addEventListener('DOMContentLoaded', function() {
+// filterByKpi fonksiyonu: karta göre modal aç
+window.filterByKpi = function(type) {
+  let title = '', html = '';
+  if(type==='all') {title='Tüm Kullanıcılar'; html='Sistemdeki tüm kullanıcılar listeleniyor.';}
+  if(type==='admin') {title='Adminler'; html='Sistemdeki tüm adminler listeleniyor.';}
+  if(type==='active') {title='Aktif Kullanıcılar'; html='Şu anda aktif olan kullanıcılar.';}
+  if(type==='new') {title='Bu Ay Eklenenler'; html='Bu ay eklenen yeni kullanıcılar.';}
+  Swal.fire({title, html, icon:'info', confirmButtonText:'Kapat'});
+};
+// DataTable başlat ve arama inputunu bağla
+var userTable = new DataTable('#userTable', {
+  paging: true,
+  searching: true,
+  ordering: true,
+  info: false,
+  responsive: false,
+  pageLength: 10,
+  lengthMenu: [10, 20, 50, 100],
+  lengthChange: false,
+  language: {},
+  dom: 'lrtp',
+  pagingType: 'numbers',
+  drawCallback: function() {
+    // Pagination'ı kesin sağa yasla
+    var pag = document.querySelector('.dataTables_paginate');
+    if(pag) {
+      pag.classList.add('d-flex','justify-content-end','w-100');
+      pag.style.marginTop = '18px';
+      pag.style.justifyContent = 'flex-end';
+      pag.style.float = 'right';
+      pag.style.textAlign = 'right';
     }
+  }
+});
+userTable.draw();
+// Üstteki arama inputunu DataTables aramasına bağla
+var userSearch = document.getElementById('userSearch');
+if(userSearch) {
+  userSearch.placeholder = 'Kullanıcı ara';
+  userSearch.addEventListener('input', function() {
+    userTable.search(this.value).draw();
   });
 }
+// Tümünü seç checkbox
+var selectAllUserRows = document.getElementById('selectAllUserRows');
+if(selectAllUserRows) {
+  selectAllUserRows.addEventListener('change', function() {
+    document.querySelectorAll('#userTable tbody .user-row-check').forEach(cb=>{cb.checked = selectAllUserRows.checked;});
+  });
+}
+// flatpickr güvenli kontrol
+var userFilterDateEl = document.getElementById('userFilterDate');
+if(userFilterDateEl && typeof flatpickr !== 'undefined') {
+  flatpickr('#userFilterDate', {mode:'range', dateFormat:'Y-m-d', locale:{rangeSeparator:' - '}});
+}
+// Chart.js güvenli kontroller
+var roleChartEl = document.getElementById('roleChart');
+if(roleChartEl && typeof Chart !== 'undefined') {
+  new Chart(roleChartEl.getContext('2d'), {type:'bar',data:{labels:['A','B'],datasets:[{data:[1,2]}]}});
+}
+var dashboardLineEl = document.getElementById('chartjs-dashboard-line');
+if(dashboardLineEl && typeof Chart !== 'undefined') {
+  var ctx = dashboardLineEl.getContext('2d');
+  // ... Chart.js kodunuz buraya ...
+}
+// admin.js kaynaklı hataları önlemek için örnek koruma (örnek id: someId)
+var someIdEl = document.getElementById('someId');
+if(someIdEl) {
+  // someIdEl.classList.add('foo');
+  // veya someIdEl.length
+}
+// ... diğer JS kodlarınız ...
+// Rol ve durum filtreleriyle tabloyu filtrele
+var userFilterRole = document.getElementById('userFilterRole');
+var userFilterStatus = document.getElementById('userFilterStatus');
+function filterUserTable() {
+  var role = userFilterRole ? userFilterRole.value : '';
+  var status = userFilterStatus ? userFilterStatus.value : '';
+  userTable.columns(5).search(role).columns(6).search(status).draw();
+}
+if(userFilterRole) userFilterRole.addEventListener('change', filterUserTable);
+if(userFilterStatus) userFilterStatus.addEventListener('change', filterUserTable);
+});
 </script>
 @endsection

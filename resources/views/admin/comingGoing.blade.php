@@ -235,17 +235,6 @@ body.dark-mode .filter-bar input:hover, body.dark-mode .filter-bar select:hover,
 </div>
 <div class="filter-bar mb-3 align-items-end">
   <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Ekipman, kişi veya işlem ID ara...">
-  <div class="d-flex align-items-end" style="gap: 0.5em;">
-    <div>
-      <label for="startDate" class="form-label mb-0" style="font-size:0.95em;">Başlangıç Tarihi</label>
-      <input type="date" class="form-control form-control-sm date-filter-input" id="startDate">
-    </div>
-    <span class="mx-1" style="font-weight:600;">-</span>
-    <div>
-      <label for="endDate" class="form-label mb-0" style="font-size:0.95em;">Bitiş Tarihi</label>
-      <input type="date" class="form-control form-control-sm date-filter-input" id="endDate">
-    </div>
-  </div>
   <button class="btn btn-primary btn-sm" id="filterBtn"><i class="fas fa-filter"></i> Filtrele</button>
   <button class="btn btn-outline-secondary btn-sm ms-auto" id="clearFilterBtn"><i class="fas fa-times"></i> Temizle</button>
 </div>
@@ -457,18 +446,10 @@ window.gotoPage = function(page) { currentPage=page; filterData(); }
 
 function filterData() {
   const search = document.getElementById('searchInput').value.toLowerCase();
-  const start = document.getElementById('startDate').value;
-  const end = document.getElementById('endDate').value;
   let filtered = comingGoingData.filter(row => {
     let match = true;
     if(search) {
       match = row.equipment.toLowerCase().includes(search) || row.person.toLowerCase().includes(search) || row.location.toLowerCase().includes(search) || row.id.toLowerCase().includes(search);
-    }
-    if(match && start) {
-      match = row.date >= start;
-    }
-    if(match && end) {
-      match = row.date <= end;
     }
     return match;
   });
@@ -478,8 +459,6 @@ document.getElementById('filterBtn').onclick = function(e){ e.preventDefault(); 
 document.getElementById('clearFilterBtn').onclick = function(e){
   e.preventDefault();
   document.getElementById('searchInput').value = '';
-  document.getElementById('startDate').value = '';
-  document.getElementById('endDate').value = '';
   renderGrid(comingGoingData);
 };
 renderGrid(comingGoingData);
@@ -601,16 +580,6 @@ window.showDetailModal = function(id) {
     equipGrid.querySelectorAll('.btn-detail')[idx].click();
   }
 };
-// Bugünün tarihini yyyy-mm-dd formatında al
-// const today = new Date();
-// const yyyy = today.getFullYear();
-// const mm = String(today.getMonth() + 1).padStart(2, '0');
-// const dd = String(today.getDate()).padStart(2, '0');
-// const maxDate = `${yyyy}-${mm}-${dd}`;
-document.getElementById('startDate').setAttribute('min', '2015-01-01');
-document.getElementById('startDate').setAttribute('max', '2025-12-31');
-document.getElementById('endDate').setAttribute('min', '2015-01-01');
-document.getElementById('endDate').setAttribute('max', '2025-12-31');
 </script>
 @endpush
 @endsection

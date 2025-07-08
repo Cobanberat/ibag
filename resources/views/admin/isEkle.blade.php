@@ -197,6 +197,9 @@ document.addEventListener('input', function(e) {
         if (parseInt(e.target.value) < 1) {
             e.target.value = 1;
         }
+        // Değeri düzelttikten sonra tekrar fotoğraf kutularını güncelle
+        const row = e.target.closest('.equipment-row');
+        updatePhotoInputs(row);
     }
 });
 </script>

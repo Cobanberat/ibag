@@ -13,9 +13,10 @@
     justify-content: center;
     border-radius:1.5em; box-shadow:0 4px 24px 0 #e0e7ef; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); transition: transform .15s, box-shadow .15s;
     border: none; position: relative; overflow: hidden;
+    padding-bottom:1.5rem !important; 
   }
   .kpi-card:hover { transform: translateY(-4px) scale(1.03); box-shadow:0 8px 32px 0 #b6c2e1; }
-  .kpi-icon { font-size:2.6rem; margin-bottom: .5rem; filter: drop-shadow(0 2px 8px #b6c2e1); }
+  .kpi-icon { font-size:2.6rem;padding: 10px filter: drop-shadow(0 2px 8px #b6c2e1); }
   .kpi-value { font-size:2rem; font-weight:700; letter-spacing:1px; }
   .kpi-label { font-size:1.08rem; color:#6b7280; letter-spacing:.5px; }
   .kpi-card .badge { font-size:.9rem; border-radius:1em; }
@@ -126,7 +127,7 @@
         <div class="kpi-icon text-danger"><i class="fas fa-exclamation-triangle"></i></div>
         <div class="kpi-value" id="kpiFault">7 <span class="text-success"><i class="fas fa-arrow-down"></i> %2</span></div>
         <div class="kpi-label">Arızalı</div>
-        <span class="position-absolute top-0 end-0 badge bg-danger">Kritik!</span>
+        <span class="position-absolute top-0 end-0 badge bg-danger" style="margin:10px;">Kritik!</span>
         <canvas id="miniTrend3" height="18" style="width:100%;max-width:80px;"></canvas>
       </div>
     </div>
