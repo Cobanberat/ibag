@@ -23,7 +23,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'is_admin'])->group(function () {
 });
 Route::get('/admin', function () {
-    return view('admin.container');
+    return view('admin.home.index');
 })->name('admin.dashboard');
 
 Route::get('/admin/stock', function () {
@@ -35,7 +35,7 @@ Route::get('/admin/kategori', function () {
 })->name('admin.kategori');
 
 Route::get('/admin/ekipmanÖzelikleri', function () {
-    return view('admin.equipmentFeatures');
+    return view('admin.equipment.Features');
 })->name('admin.ekipman');
 
 Route::get('/admin/gidenGelen', function () {
@@ -43,7 +43,7 @@ Route::get('/admin/gidenGelen', function () {
 })->name('admin.gidenGelen');
 
 Route::get('/admin/ekipmanDurumu', function () {
-    return view('admin.equipmentStatus');
+    return view('admin.equipment.Status');
 })->name('admin.equipmentStatus');
 
 Route::get('/admin/durumKontrol', function () {
@@ -71,7 +71,7 @@ Route::get('/admin/veriAnalizi', function () {
 })->name('admin.dataAnalysis');
 
     Route::get('/admin/ekipmanAnalizi', function () {
-    return view('admin.equipmentAnalysis');
+    return view('admin.equipment.Analysis');
 })->name('admin.equipmentAnalysis');
 
 Route::get('/admin/uyeAnalizi', function () {
@@ -87,6 +87,6 @@ Route::get('/admin/isEkle', function () {
 })->name('admin.isEkle');
 
 Route::get('/admin/ekipmanlar', function () {
-    return view('admin.equipment');
+    return view('admin.equipment.index');
 })->name('admin.equipments');
 

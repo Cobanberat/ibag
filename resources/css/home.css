@@ -1,0 +1,59 @@
+.kpi-card, .quick-action-card { transition: transform .2s cubic-bezier(.4,2,.6,1.2), box-shadow .2s; }
+.kpi-card:hover, .quick-action-card:hover { transform: scale(1.04) translateY(-4px); box-shadow:0 8px 32px #6366f155; z-index:2; }
+#clock { font-variant-numeric: tabular-nums; }
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    min-width: 110px;
+    transition: transform .18s cubic-bezier(.4,2,.6,1.2), box-shadow .18s;
+}
+.quick-action-btn:hover {
+    transform: scale(1.08) translateY(-4px);
+    z-index: 2;
+    text-decoration: none;
+}
+.quick-action-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #fff;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 16px #6366f133;
+    transition: box-shadow .18s;
+}
+.bg-gradient-primary { background: linear-gradient(135deg,#6366f1 0%,#43e97b 100%); }
+.bg-gradient-danger { background: linear-gradient(135deg,#f43f5e 0%,#fbbf24 100%); }
+.bg-gradient-success { background: linear-gradient(135deg,#43e97b 0%,#6366f1 100%); }
+.bg-gradient-info { background: linear-gradient(135deg,#38bdf8 0%,#6366f1 100%); }
+.bg-gradient-warning { background: linear-gradient(135deg,#fbbf24 0%,#f43f5e 100%); }
+.bg-gradient-secondary { background: linear-gradient(135deg,#6c757d 0%,#6366f1 100%); }
+.quick-action-label {
+    font-size: .97rem;
+    color: #222;
+    font-weight: 500;
+    text-align: center;
+}
+.card.rounded-4 { border-radius: 1.25rem !important; }
+.card-header.rounded-top-4 { border-top-left-radius: 1.25rem !important; border-top-right-radius: 1.25rem !important; }
+.table-row-hover:hover { background: #f3f4f6 !important; transition: background .18s; }
+.badge.bg-danger.bg-gradient { background: linear-gradient(90deg,#f43f5e 0%,#fbbf24 100%) !important; color: #fff !important; }
+.badge.bg-warning.bg-gradient { background: linear-gradient(90deg,#fbbf24 0%,#f43f5e 100%) !important; color: #222 !important; }
+.fs-7 { font-size: 0.93rem; }
+.tedarik-card {
+    min-width: 420px;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+.tedarik-table th, .tedarik-table td {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    font-size: 1.08rem;
+}
+.tedarik-table {
+    min-width: 400px;
+}

@@ -34,6 +34,7 @@
                         kullanıcı eklendi</a></li>
             </ul>
         </div>
+
     </div>
     <div class="col-lg-4 d-flex justify-content-end align-items-center gap-3">
         <div class="input-group shadow-sm" style="width:280px;">

@@ -58,7 +58,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
   display: flex !important;
   padding-top:3px; 
   justify-content: flex-end !important;
-}
+} 
 </style>
 <div class="container-fluid">
   <!-- Ultra modern başlık -->
