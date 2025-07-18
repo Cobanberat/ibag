@@ -83,19 +83,7 @@
   }
 </style>
 
-<!-- Bildirim Zili ve Dropdown (statik) -->
-<div class="position-relative" style="z-index: 10;">
-  <div class="position-absolute end-0 mt-2 me-3">
-    <button class="btn btn-light position-relative" data-bs-toggle="dropdown" aria-expanded="false">
-      <i class="fas fa-bell"></i>
-      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">2</span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end shadow">
-      <li><span class="dropdown-item-text small"><i class="fas fa-exclamation-triangle text-warning me-1"></i> Jeneratör için bakım zamanı geldi!</span></li>
-      <li><span class="dropdown-item-text small"><i class="fas fa-tools text-success me-1"></i> Servis talebiniz işleme alındı.</span></li>
-    </ul>
-  </div>
-</div>
+
 
 <!-- Bakım Gerektiren Ekipmanlar Butonu -->
 <div class="alert alert-warning shadow-sm d-flex align-items-center justify-content-between mb-4 mt-4 p-4" role="alert" style="border-left: 6px solid #ffc107;">
@@ -170,7 +158,6 @@
         </div>
         <div class="mb-1 small"><i class="fas fa-user me-1"></i> Sorumlu: lazBerat</div>
         <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 01.05.2025</div>
-        <div class="mb-1 small"><i class="fas fa-hourglass-half me-1"></i> Kalan Süre: <span class="text-danger">0 gün</span></div>
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
         <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="1"><i class="fas fa-tools"></i> Servis Talebi</button>
@@ -197,7 +184,6 @@
         </div>
         <div class="mb-1 small"><i class="fas fa-user me-1"></i> Sorumlu: admin</div>
         <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 10.05.2025</div>
-        <div class="mb-1 small"><i class="fas fa-hourglass-half me-1"></i> Kalan Süre: 20 gün</div>
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
         <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="2"><i class="fas fa-tools"></i> Servis Talebi</button>
@@ -224,7 +210,6 @@
         </div>
         <div class="mb-1 small"><i class="fas fa-user me-1"></i> Sorumlu: teknisyen1</div>
         <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 05.06.2025</div>
-        <div class="mb-1 small"><i class="fas fa-hourglass-half me-1"></i> Kalan Süre: <span class="text-danger">-3 gün</span></div>
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
         <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="3"><i class="fas fa-tools"></i> Servis Talebi</button>
@@ -312,8 +297,6 @@
           <div class="col-md-4">
             <label class="fw-bold">Son Kullanım Yeri:</label>
             <p>Hatay - Kırıkhan</p>
-            <label class="fw-bold">Kullanım Süresi:</label>
-            <p>2 gün</p>
           </div>
           <div class="col-md-4">
             <label class="fw-bold">Sorumlu Kişi:</label>
@@ -380,8 +363,7 @@
           <div class="col-md-4">
             <label class="fw-bold">Son Kullanım Yeri:</label>
             <p>Gaziantep - Şahinbey</p>
-            <label class="fw-bold">Kullanım Süresi:</label>
-            <p>1 gün</p>
+           
           </div>
           <div class="col-md-4">
             <label class="fw-bold">Sorumlu Kişi:</label>

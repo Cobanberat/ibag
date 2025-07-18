@@ -12,7 +12,6 @@ export default defineConfig({
                 'resources/css/admin.css',
                 'resources/css/home.css',
                 'resources/js/home.js',
-
             ],
             refresh: true,
         }),
@@ -22,7 +21,7 @@ export default defineConfig({
         host: '0.0.0.0', // Tüm IP'lerden erişime izin verir
         port: 5173, // Vite varsayılan portu
         hmr: {
-            host: '192.168.1.246' // ← burayı kendi IP adresinle güncelle
-        }
-    }
+            host: '192.168.1.200', // Kendi bilgisayarının ağ IP'si
+        },
+    },
 });

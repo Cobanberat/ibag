@@ -13,7 +13,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="shortcut icon" href="img/icons/icon-48x48.png" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
 
@@ -84,12 +83,12 @@
                     </a>
                 </li>
 
-                <li class="sidebar-item{{ request()->routeIs('admin.ekipman') ? ' active' : '' }}">
+                {{-- <li class="sidebar-item{{ request()->routeIs('admin.ekipman') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.ekipman') }}">
                         <i class="align-middle" data-feather="cpu"></i>
                         <span class="align-middle">Ekipman Özellikleri</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <li class="sidebar-header">İşlem Takibi</li>
 
@@ -103,7 +102,7 @@
                 <li class="sidebar-item{{ request()->routeIs('admin.equipmentStatus') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.equipmentStatus') }}">
                         <i class="align-middle" data-feather="check-circle"></i>
-                        <span class="align-middle">Eşya Durumu</span>
+                        <span class="align-middle">Ekipman Durumu</span>
                     </a>
                 </li>
 
@@ -123,17 +122,12 @@
                     </a>
                 </li>
 
-                <li class="sidebar-item{{ request()->routeIs('admin.location') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.location') }}">
-                        <i class="align-middle" data-feather="map-pin"></i>
-                        <span class="align-middle">Konum Takibi</span>
-                    </a>
-                </li>
+             
 
-                <li class="sidebar-item{{ request()->routeIs('admin.approvalProcces') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.approvalProcces') }}">
+                <li class="sidebar-item{{ request()->routeIs('fault.status') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('fault.status') }}">
                         <i class="align-middle" data-feather="check-square"></i>
-                        <span class="align-middle">Onay Süreci</span>
+                        <span class="align-middle">Arıza Durumu</span>
                     </a>
                 </li>
 
@@ -148,7 +142,7 @@
                     </a>
                 </li>
 
-                <li class="sidebar-item{{ request()->routeIs('admin.dataAnalysis') ? ' active' : '' }}">
+                {{-- <li class="sidebar-item{{ request()->routeIs('admin.dataAnalysis') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.dataAnalysis') }}">
                         <i class="align-middle" data-feather="pie-chart"></i>
                         <span class="align-middle">Veri Analizi</span>
@@ -160,14 +154,14 @@
                         <i class="align-middle" data-feather="settings"></i>
                         <span class="align-middle">Ekipman Analizi</span>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="sidebar-item{{ request()->routeIs('admin.memberAnalysis') ? ' active' : '' }}">
+                {{-- <li class="sidebar-item{{ request()->routeIs('admin.memberAnalysis') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.memberAnalysis') }}">
                         <i class="align-middle" data-feather="users"></i>
                         <span class="align-middle">Üye Analizi</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <li class="sidebar-header">Kullanıcı</li>
 
@@ -482,23 +476,10 @@
         });
     });
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var date = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-        var defaultDate = date.getUTCFullYear() + "-" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate();
-        document.getElementById("datetimepicker-dashboard").flatpickr({
-            inline: true,
-            prevArrow: "<span title=\"Previous month\">&laquo;</span>",
-            nextArrow: "<span title=\"Next month\">&raquo;</span>",
-            defaultDate: defaultDate
-        });
-    });
-</script>
+
 @stack('scripts')
 </body>
-<!-- Flatpickr Türkçe dil dosyası -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -512,15 +493,7 @@
                 new bootstrap.Dropdown(el);
             });
         }
-        // Flatpickr Türkçe örnek
-        var fpEls = document.querySelectorAll('.flatpickr-input, [data-toggle-flatpickr]');
-        fpEls.forEach(function(el) {
-            if (typeof flatpickr !== 'undefined') {
-                flatpickr(el, {
-                    locale: 'tr'
-                });
-            }
-        });
+     
         // getContext güvenli örnek
         var canvasEls = document.querySelectorAll('canvas');
         canvasEls.forEach(function(el) {

@@ -23,13 +23,7 @@
   </div>
   <button class="btn btn-sm btn-outline-warning" id="showUpcomingBtn"><i class="fas fa-list"></i> Ürünleri Gör</button>
 </div>
-<div class="alert alert-danger d-flex align-items-center justify-content-between mb-3 clickable-alert" role="alert" id="overdueAlert">
-  <div class="d-flex align-items-center">
-    <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
-    <div><b>1 ekipmanda geciken işlem var!</b> <span class="small">Acil müdahale gereklidir.</span></div>
-  </div>
-  <button class="btn btn-sm btn-outline-danger" id="showOverdueBtn"><i class="fas fa-list"></i> Ürünleri Gör</button>
-</div>
+
 
 <!-- Acil Durumlar Tablosu -->
 <div class="card shadow-sm mb-4">
@@ -42,110 +36,24 @@
             <th>Ekipman</th>
             <th>İşlem</th>
             <th>Planlanan Tarih</th>
-            <th>Kalan/Gecikme</th>
             <th>Sorumlu</th>
             <th class="text-end">Aksiyon</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td><b>Akülü Matkap</b> <span class='badge bg-info'>İnşaat</span></td>
-            <td><span class='badge bg-danger'>Arıza</span></td>
-            <td>17.06.2025</td>
-            <td><span class='badge badge-overdue'>Bugün</span></td>
-            <td>teknisyen1</td>
-            <td class='text-end table-actions'>
-              <button class='btn btn-sm btn-outline-info'><i class='fas fa-eye'></i></button>
-              <button class='btn btn-sm btn-outline-secondary'><i class='fas fa-edit'></i></button>
-              <button class='btn btn-sm btn-outline-danger'><i class='fas fa-trash'></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Hilti Kırıcı</b> <span class='badge bg-info'>İnşaat</span></td>
-            <td><span class='badge bg-info'>Test</span></td>
-            <td>18.06.2025</td>
-            <td><span class='badge badge-overdue'>1 gün gecikti</span></td>
-            <td>teknisyen1</td>
-            <td class='text-end table-actions'>
-              <button class='btn btn-sm btn-outline-info'><i class='fas fa-eye'></i></button>
-              <button class='btn btn-sm btn-outline-secondary'><i class='fas fa-edit'></i></button>
-              <button class='btn btn-sm btn-outline-danger'><i class='fas fa-trash'></i></button>
-            </td>
-          </tr>
-        </tbody>
+        <tbody id="acilDurumlarTableBody"></tbody>
       </table>
+      <nav><ul class="pagination justify-content-end m-3" id="acilDurumlarPagination"></ul></nav>
     </div>
-    <nav>
-      <ul class="pagination justify-content-end m-3">
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-      </ul>
-    </nav>
   </div>
 </div>
 
 <!-- Gelişmiş Filtreler ve Toplu İşlem Barı -->
-<div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-  <button class="btn btn-success" id="addControlBtn"><i class="fas fa-plus"></i> Yeni Kontrol Ekle</button>
-  <button class="btn btn-outline-danger" id="bulkDeleteBtn" disabled><i class="fas fa-trash"></i> Toplu Sil</button>
-  <button class="btn btn-outline-secondary" id="bulkReportBtn" disabled><i class="fas fa-file-download"></i> Toplu Rapor İndir</button>
-  <input type="text" class="form-control form-control-sm ms-auto" style="max-width:180px;" id="searchInput" placeholder="Ara...">
-  <div class="daterange-box">
-    <i class="fas fa-calendar-alt"></i>
-    <input type="text" class="form-control form-control-sm daterange-input" id="filterDateRange" placeholder="Tarih Aralığı Seçin" style="max-width:180px;">
-  </div>
-  <select class="form-select form-select-sm" id="filterType" style="max-width:180px;">
-    <option value="">Tür (Tümü)</option>
-    <option>Bakım</option>
-    <option>Test</option>
-    <option>Arıza</option>
-    <option>Taşınma</option>
-    <option>Kullanım</option>
-  </select>
-  <select class="form-select form-select-sm" id="filterSorumlu" style="max-width:180px;">
-    <option value="">Sorumlu (Tümü)</option>
-    <option>admin</option>
-    <option>teknisyen1</option>
-  </select>
-</div>
+
 
 <!-- Kontroller Ne Zaman Yapılmış? Tablosu -->
-<div class="card shadow-sm mb-4">
-  <div class="card-header bg-dark text-white"><i class="fas fa-history me-2"></i> Kontroller Ne Zaman Yapılmış?</div>
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" id="kontrolGecmisTable">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="selectAllRows"></th>
-            <th>Ekipman</th>
-            <th>Kontrol Türü</th>
-            <th>Açıklama</th>
-            <th>Sorumlu</th>
-            <th>Tarih</th>
-            <th>Dosya</th>
-            <th>Yorum</th>
-            <th class="text-end">Aksiyon</th>
-          </tr>
-        </thead>
-        <tbody id="kontrolGecmisTbody">
-          <!-- JS ile doldurulacak -->
-        </tbody>
-      </table>
-    </div>
-    <nav>
-      <ul class="pagination justify-content-end m-3">
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-      </ul>
-    </nav>
-  </div>
-</div>
+
 
 <!-- Satır Detay Paneli (JS ile eklenir) -->
-<div id="rowDetailPanelContainer"></div>
 
 <!-- Yaklaşan Kontroller Modalı -->
 
@@ -179,70 +87,14 @@
             <th>Ekipman</th>
             <th>İşlem</th>
             <th>Planlanan Tarih</th>
-            <th>Kalan/Gecikme</th>
             <th>Sorumlu</th>
             <th class="text-end">Aksiyon</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td><b>Jeneratör 5kVA</b> <span class='badge bg-info'>Elektrik</span></td>
-            <td><span class='badge bg-warning text-dark'>Bakım</span></td>
-            <td>15.07.2025</td>
-            <td><span class='badge badge-upcoming'>28 gün</span></td>
-            <td>admin</td>
-            <td class='text-end table-actions'>
-              <button class='btn btn-sm btn-outline-info'><i class='fas fa-eye'></i></button>
-              <button class='btn btn-sm btn-outline-secondary'><i class='fas fa-edit'></i></button>
-              <button class='btn btn-sm btn-outline-danger'><i class='fas fa-trash'></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Oksijen Konsantratörü</b> <span class='badge bg-info'>Medikal</span></td>
-            <td><span class='badge bg-warning text-dark'>Bakım</span></td>
-            <td>20.06.2025</td>
-            <td><span class='badge badge-upcoming'>3 gün</span></td>
-            <td>admin</td>
-            <td class='text-end table-actions'>
-              <button class='btn btn-sm btn-outline-info'><i class='fas fa-eye'></i></button>
-              <button class='btn btn-sm btn-outline-secondary'><i class='fas fa-edit'></i></button>
-              <button class='btn btn-sm btn-outline-danger'><i class='fas fa-trash'></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Hilti Kırıcı</b> <span class='badge bg-info'>İnşaat</span></td>
-            <td><span class='badge bg-info'>Test</span></td>
-            <td>18.06.2025</td>
-            <td><span class='badge badge-upcoming'>1 gün</span></td>
-            <td>teknisyen1</td>
-            <td class='text-end table-actions'>
-              <button class='btn btn-sm btn-outline-info'><i class='fas fa-eye'></i></button>
-              <button class='btn btn-sm btn-outline-secondary'><i class='fas fa-edit'></i></button>
-              <button class='btn btn-sm btn-outline-danger'><i class='fas fa-trash'></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Akülü Matkap</b> <span class='badge bg-info'>İnşaat</span></td>
-            <td><span class='badge bg-danger'>Arıza</span></td>
-            <td>17.06.2025</td>
-            <td><span class='badge badge-overdue'>Bugün</span></td>
-            <td>teknisyen1</td>
-            <td class='text-end table-actions'>
-              <button class='btn btn-sm btn-outline-info'><i class='fas fa-eye'></i></button>
-              <button class='btn btn-sm btn-outline-secondary'><i class='fas fa-edit'></i></button>
-              <button class='btn btn-sm btn-outline-danger'><i class='fas fa-trash'></i></button>
-            </td>
-          </tr>
-        </tbody>
+        <tbody id="yapilacaklarTableBody"></tbody>
       </table>
+      <nav><ul class="pagination justify-content-end m-3" id="yapilacaklarPagination"></ul></nav>
     </div>
-    <nav>
-      <ul class="pagination justify-content-end m-3">
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-      </ul>
-    </nav>
   </div>
 </div>
 
@@ -268,121 +120,153 @@
 </div>
 
 <script>
-// Örnek veri ve toplu seçim, filtreleme, detay paneli, hızlı ekleme için temel JS altyapısı burada olmalı.
-// Tarih aralığı picker
-flatpickr('#filterDateRange', {mode:'range', dateFormat:'Y-m-d', locale:{rangeSeparator:' - '}});
-// Filtreleme fonksiyonunda tarih aralığı kontrolü
-function filterByDateRange(dateStr, rangeStr) {
-  if(!rangeStr) return true;
-  const [start, end] = rangeStr.split(' - ');
-  if(!start||!end) return true;
-  const d = new Date(dateStr);
-  return d >= new Date(start) && d <= new Date(end);
+// --- Tablo ve modal işlemleri için güvenli JS ---
+// Demo veriler
+const acilDurumlarData = [
+  { ekipman: 'Akülü Matkap', kategori: 'İnşaat', islem: 'Arıza', tarih: '17.06.2025', sorumlu: 'teknisyen1' },
+  { ekipman: 'Hilti Kırıcı', kategori: 'İnşaat', islem: 'Test', tarih: '18.06.2025', sorumlu: 'teknisyen1' },
+  { ekipman: 'Test Cihazı', kategori: 'Elektrik', islem: 'Bakım', tarih: '19.06.2025', sorumlu: 'admin' },
+];
+const yapilacaklarData = [
+  { ekipman: 'Jeneratör 5kVA', kategori: 'Elektrik', islem: 'Bakım', tarih: '15.07.2025', sorumlu: 'admin' },
+  { ekipman: 'Oksijen Konsantratörü', kategori: 'Medikal', islem: 'Bakım', tarih: '20.06.2025', sorumlu: 'admin' },
+  { ekipman: 'Hilti Kırıcı', kategori: 'İnşaat', islem: 'Test', tarih: '18.06.2025', sorumlu: 'teknisyen1' },
+  { ekipman: 'Akülü Matkap', kategori: 'İnşaat', islem: 'Arıza', tarih: '17.06.2025', sorumlu: 'teknisyen1' },
+  { ekipman: 'UPS 3kVA', kategori: 'Elektrik', islem: 'Bakım', tarih: '25.06.2025', sorumlu: 'admin' },
+];
+let acilPage = 1, acilPerPage = 2;
+let yapPage = 1, yapPerPage = 3;
+function renderAcilDurumlarTable() {
+  const tbody = document.getElementById('acilDurumlarTableBody');
+  tbody.innerHTML = '';
+  const start = (acilPage-1)*acilPerPage;
+  const end = start+acilPerPage;
+  const pageData = acilDurumlarData.slice(start, end);
+  pageData.forEach((d, i) => {
+    tbody.innerHTML += `<tr>
+      <td><b>${d.ekipman}</b> <span class='badge bg-info'>${d.kategori}</span></td>
+      <td><span class='badge bg-danger'>${d.islem}</span></td>
+      <td>${d.tarih}</td>
+      <td>${d.sorumlu}</td>
+      <td class='text-end table-actions'>
+        <button class='btn btn-sm btn-outline-info' onclick='showAcilModal(${start+i},"detay")'><i class='fas fa-eye'></i></button>
+        <button class='btn btn-sm btn-outline-secondary' onclick='showAcilModal(${start+i},"edit")'><i class='fas fa-edit'></i></button>
+        <button class='btn btn-sm btn-outline-danger' onclick='showAcilModal(${start+i},"delete")'><i class='fas fa-trash'></i></button>
+      </td>
+    </tr>`;
+  });
+  renderAcilDurumlarPagination();
 }
-// ... diğer filtreleme fonksiyonlarında filterByDateRange kullanılmalı ...
-document.getElementById('showUpcomingBtn').onclick = function() {
-  new bootstrap.Modal(document.getElementById('upcomingModal')).show();
-};
-document.getElementById('showOverdueBtn').onclick = function() {
-  new bootstrap.Modal(document.getElementById('overdueModal')).show();
-};
-
-// Kutulara tıklanabilirlik için stil
-const style = document.createElement('style');
-style.innerHTML = `.clickable-alert { cursor: pointer; }`;
-document.head.appendChild(style);
-
-// Bakım ve gecikmiş ekipman verileri
-const upcomingMaintenances = [
-  { equipment: 'UPS 3kVA', serial: 'UPS-2025-001', date: '2025-07-25', daysLeft: 3 },
-  { equipment: 'Jeneratör', serial: 'GEN-2025-002', date: '2025-07-28', daysLeft: 6 }
-];
-const overdueMaintenances = [
-  { equipment: 'El Feneri', serial: 'FNR-2025-003', date: '2025-07-15', overdue: 2 }
-];
-
-function openInfoModal(type) {
-  let content = '';
-  if(type === 'upcoming') {
-    content = `<b>Yaklaşan Bakımlar</b>
-      <table class="table table-bordered table-sm mt-2">
-        <thead>
-          <tr>
-            <th>Ekipman</th>
-            <th>Seri No</th>
-            <th>Planlanan Tarih</th>
-            <th>Kalan Gün</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>UPS 3kVA</td>
-            <td>UPS-2025-001</td>
-            <td>2025-07-25</td>
-            <td>3</td>
-          </tr>
-          <tr>
-            <td>Jeneratör</td>
-            <td>GEN-2025-002</td>
-            <td>2025-07-28</td>
-            <td>6</td>
-          </tr>
-        </tbody>
-      </table>
-      <nav>
-        <ul class='pagination justify-content-end mt-3'>
-          <li class='page-item active'><a class='page-link' href='#'>1</a></li>
-          <li class='page-item'><a class='page-link' href='#'>2</a></li>
-          <li class='page-item'><a class='page-link' href='#'>3</a></li>
-        </ul>
-      </nav>`;
-  } else if(type === 'overdue') {
-    content = `<b>Geciken İşlemler</b>
-      <table class="table table-bordered table-sm mt-2">
-        <thead>
-          <tr>
-            <th>Ekipman</th>
-            <th>Seri No</th>
-            <th>Planlanan Tarih</th>
-            <th>Gecikme (gün)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>El Feneri</td>
-            <td>FNR-2025-003</td>
-            <td>2025-07-15</td>
-            <td>2</td>
-          </tr>
-        </tbody>
-      </table>
-      <nav>
-        <ul class='pagination justify-content-end mt-3'>
-          <li class='page-item active'><a class='page-link' href='#'>1</a></li>
-          <li class='page-item'><a class='page-link' href='#'>2</a></li>
-          <li class='page-item'><a class='page-link' href='#'>3</a></li>
-        </ul>
-      </nav>`;
+function renderAcilDurumlarPagination() {
+  const pageCount = Math.ceil(acilDurumlarData.length/acilPerPage);
+  const pag = document.getElementById('acilDurumlarPagination');
+  pag.innerHTML = '';
+  for(let i=1;i<=pageCount;i++) {
+    pag.innerHTML += `<li class='page-item${i===acilPage?' active':''}'><a class='page-link' href='#' onclick='gotoAcilPage(${i});return false;'>${i}</a></li>`;
   }
-  document.getElementById('infoModalBody').innerHTML = content;
-  new bootstrap.Modal(document.getElementById('infoModal')).show();
 }
-// Kutulara ve butonlara tıklama eventleri
-
-document.getElementById('upcomingAlert').addEventListener('click', function(e) {
-  // Butona tıklanırsa da, kutuya tıklanırsa da modal açılır
-  openInfoModal('upcoming');
-});
-document.getElementById('showUpcomingBtn').addEventListener('click', function(e) {
-  e.stopPropagation();
-  openInfoModal('upcoming');
-});
-document.getElementById('overdueAlert').addEventListener('click', function(e) {
-  openInfoModal('overdue');
-});
-document.getElementById('showOverdueBtn').addEventListener('click', function(e) {
-  e.stopPropagation();
-  openInfoModal('overdue');
+function gotoAcilPage(page) {
+  acilPage = page;
+  renderAcilDurumlarTable();
+}
+window.gotoAcilPage = gotoAcilPage;
+function showAcilModal(idx, type) {
+  const d = acilDurumlarData[idx];
+  let html = '';
+  if(type==='detay') {
+    html = `<b>Detay:</b><br>Ekipman: ${d.ekipman}<br>Kategori: ${d.kategori}<br>İşlem: ${d.islem}<br>Tarih: ${d.tarih}<br>Sorumlu: ${d.sorumlu}`;
+  } else if(type==='edit') {
+    html = `<b>Düzenle:</b><br><input class='form-control mb-2' value='${d.ekipman}'><br><button class='btn btn-primary'>Kaydet</button>`;
+  } else if(type==='delete') {
+    html = `<b>Silmek istediğinize emin misiniz?</b><br><button class='btn btn-danger mt-2' onclick='deleteAcilDurum(${idx})'>Evet, Sil</button>`;
+  }
+  var modalBody = document.getElementById('infoModalBody');
+  if (modalBody) modalBody.innerHTML = html;
+  var modalEl = document.getElementById('infoModal');
+  if (modalEl && typeof bootstrap !== 'undefined') {
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+}
+window.showAcilModal = showAcilModal;
+function deleteAcilDurum(idx) {
+  acilDurumlarData.splice(idx,1);
+  renderAcilDurumlarTable();
+  var modalEl = document.getElementById('infoModal');
+  if (modalEl && typeof bootstrap !== 'undefined') {
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.hide();
+  }
+}
+window.deleteAcilDurum = deleteAcilDurum;
+// Yapılması Gerekenler için aynı yapı
+function renderYapilacaklarTable() {
+  const tbody = document.getElementById('yapilacaklarTableBody');
+  tbody.innerHTML = '';
+  const start = (yapPage-1)*yapPerPage;
+  const end = start+yapPerPage;
+  const pageData = yapilacaklarData.slice(start, end);
+  pageData.forEach((d, i) => {
+    tbody.innerHTML += `<tr>
+      <td><b>${d.ekipman}</b> <span class='badge bg-info'>${d.kategori}</span></td>
+      <td><span class='badge bg-warning text-dark'>${d.islem}</span></td>
+      <td>${d.tarih}</td>
+      <td>${d.sorumlu}</td>
+      <td class='text-end table-actions'>
+        <button class='btn btn-sm btn-outline-info' onclick='showYapModal(${start+i},"detay")'><i class='fas fa-eye'></i></button>
+        <button class='btn btn-sm btn-outline-secondary' onclick='showYapModal(${start+i},"edit")'><i class='fas fa-edit'></i></button>
+        <button class='btn btn-sm btn-outline-danger' onclick='showYapModal(${start+i},"delete")'><i class='fas fa-trash'></i></button>
+      </td>
+    </tr>`;
+  });
+  renderYapilacaklarPagination();
+}
+function renderYapilacaklarPagination() {
+  const pageCount = Math.ceil(yapilacaklarData.length/yapPerPage);
+  const pag = document.getElementById('yapilacaklarPagination');
+  pag.innerHTML = '';
+  for(let i=1;i<=pageCount;i++) {
+    pag.innerHTML += `<li class='page-item${i===yapPage?' active':''}'><a class='page-link' href='#' onclick='gotoYapPage(${i});return false;'>${i}</a></li>`;
+  }
+}
+function gotoYapPage(page) {
+  yapPage = page;
+  renderYapilacaklarTable();
+}
+window.gotoYapPage = gotoYapPage;
+function showYapModal(idx, type) {
+  const d = yapilacaklarData[idx];
+  let html = '';
+  if(type==='detay') {
+    html = `<b>Detay:</b><br>Ekipman: ${d.ekipman}<br>Kategori: ${d.kategori}<br>İşlem: ${d.islem}<br>Tarih: ${d.tarih}<br>Sorumlu: ${d.sorumlu}`;
+  } else if(type==='edit') {
+    html = `<b>Düzenle:</b><br><input class='form-control mb-2' value='${d.ekipman}'><br><button class='btn btn-primary'>Kaydet</button>`;
+  } else if(type==='delete') {
+    html = `<b>Silmek istediğinize emin misiniz?</b><br><button class='btn btn-danger mt-2' onclick='deleteYapilacak(${idx})'>Evet, Sil</button>`;
+  }
+  var modalBody = document.getElementById('infoModalBody');
+  if (modalBody) modalBody.innerHTML = html;
+  var modalEl = document.getElementById('infoModal');
+  if (modalEl && typeof bootstrap !== 'undefined') {
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+}
+window.showYapModal = showYapModal;
+function deleteYapilacak(idx) {
+  yapilacaklarData.splice(idx,1);
+  renderYapilacaklarTable();
+  var modalEl = document.getElementById('infoModal');
+  if (modalEl && typeof bootstrap !== 'undefined') {
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.hide();
+  }
+}
+window.deleteYapilacak = deleteYapilacak;
+// Sayfa yüklendiğinde tabloları render et
+window.addEventListener('DOMContentLoaded', function() {
+  renderAcilDurumlarTable();
+  renderYapilacaklarTable();
 });
 </script>
 @endsection

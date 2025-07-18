@@ -55,7 +55,7 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
   .user-table th, .user-table td {font-size:.95em;}
 }
 .paging_numbers {
-  display: flex !important;
+  display: flex !important; 
   padding-top:3px; 
   justify-content: flex-end !important;
 } 
@@ -134,7 +134,6 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <th>Ad Soyad</th>
             <th>E-posta</th>
             <th>Rol</th>
-            <th>Durum</th>
             <th>Son Giriş</th>
             <th>Kayıt Tarihi</th>
             <th>Aksiyon</th>
@@ -148,13 +147,10 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <td>Ali Kaya</td>
             <td>ali.kaya@example.com</td>
             <td><span class="badge bg-primary">Admin</span></td>
-            <td><span class="badge bg-success">Aktif</span></td>
             <td>2024-06-20 09:12</td>
             <td>2023-12-01</td>
             <td>
-              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
-              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
               <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
@@ -165,13 +161,10 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <td>Ayşe Yılmaz</td>
             <td>ayse.yilmaz@example.com</td>
             <td><span class="badge bg-primary">Admin</span></td>
-            <td><span class="badge bg-success">Aktif</span></td>
             <td>2024-06-19 15:44</td>
             <td>2024-01-10</td>
             <td>
-              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
-              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
               <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
@@ -182,13 +175,10 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <td>Mehmet Demir</td>
             <td>mehmet.demir@example.com</td>
             <td><span class="badge bg-secondary">Kullanıcı</span></td>
-            <td><span class="badge bg-success">Aktif</span></td>
             <td>2024-06-18 11:22</td>
             <td>2024-02-15</td>
             <td>
-              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
-              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
               <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
@@ -199,13 +189,10 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <td>Fatma Kaya</td>
             <td>fatma.kaya@example.com</td>
             <td><span class="badge bg-secondary">Kullanıcı</span></td>
-            <td><span class="badge bg-secondary">Pasif</span></td>
             <td>2024-06-15 08:10</td>
             <td>2024-03-05</td>
             <td>
-              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
-              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
               <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
@@ -216,13 +203,10 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
             <td>Zeynep Şahin</td>
             <td>zeynep.sahin@example.com</td>
             <td><span class="badge bg-secondary">Kullanıcı</span></td>
-            <td><span class="badge bg-success">Aktif</span></td>
             <td>2024-06-10 17:30</td>
             <td>2024-04-12</td>
             <td>
-              <button class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></button>
-              <button class="btn btn-sm btn-outline-success"><i class="bi bi-check2-circle"></i></button>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-slash-circle"></i></button>
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
               <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
@@ -236,10 +220,6 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
     </div>
     <div class="mt-2 d-flex gap-2 flex-wrap">
       <button class="btn btn-danger btn-sm" id="bulkUserDeleteBtn"><i class="bi bi-trash"></i> Seçiliyi Sil</button>
-      <button class="btn btn-success btn-sm" id="bulkUserActivateBtn"><i class="bi bi-check2-circle"></i> Seçiliyi Aktif Yap</button>
-      <button class="btn btn-secondary btn-sm" id="bulkUserDeactivateBtn"><i class="bi bi-slash-circle"></i> Seçiliyi Pasif Yap</button>
-      <button class="btn btn-warning btn-sm" id="bulkUserResetPwdBtn"><i class="bi bi-key"></i> Toplu Şifre Sıfırla</button>
-      <button class="btn btn-info btn-sm" id="bulkUserRoleBtn"><i class="bi bi-person-badge"></i> Toplu Rol Değiştir</button>
     </div>
   </div>
   <div id="userSnackbar">Veriler güncellendi!</div>
@@ -359,23 +339,13 @@ var userFilterDateEl = document.getElementById('userFilterDate');
 if(userFilterDateEl && typeof flatpickr !== 'undefined') {
   flatpickr('#userFilterDate', {mode:'range', dateFormat:'Y-m-d', locale:{rangeSeparator:' - '}});
 }
-// Chart.js güvenli kontroller
-var roleChartEl = document.getElementById('roleChart');
-if(roleChartEl && typeof Chart !== 'undefined') {
-  new Chart(roleChartEl.getContext('2d'), {type:'bar',data:{labels:['A','B'],datasets:[{data:[1,2]}]}});
-}
-var dashboardLineEl = document.getElementById('chartjs-dashboard-line');
-if(dashboardLineEl && typeof Chart !== 'undefined') {
-  var ctx = dashboardLineEl.getContext('2d');
-  // ... Chart.js kodunuz buraya ...
-}
+
 // admin.js kaynaklı hataları önlemek için örnek koruma (örnek id: someId)
 var someIdEl = document.getElementById('someId');
 if(someIdEl) {
   // someIdEl.classList.add('foo');
   // veya someIdEl.length
 }
-// ... diğer JS kodlarınız ...
 // Rol ve durum filtreleriyle tabloyu filtrele
 var userFilterRole = document.getElementById('userFilterRole');
 var userFilterStatus = document.getElementById('userFilterStatus');

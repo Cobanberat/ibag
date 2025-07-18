@@ -27,17 +27,12 @@
                     </div>
                 </div>
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold"><i class="fas fa-calendar-alt me-1"></i> Görev Tarihi</label>
-                        <input type="date" class="form-control modern-input" required>
-                    </div>
                     <div class="col-md-8">
-                        <label class="form-label fw-bold"><i class="fas fa-users me-1"></i> Giden Kişiler</label>
-                        <div class="small text-muted mb-2">Çalışan seç, ekle diyince aşağıya düşer.</div>
-                        <div class="row g-2 align-items-end mb-2 py-3 px-2 rounded modern-row bg-white shadow-sm position-relative justify-content-center" id="person-form-row">
-                            <div class="col-md-8 d-flex align-items-center justify-content-center">
+                        <label class="form-label fw-bold"><i class="fas fa-users me-1"></i> Ekip Yetkilisi</label>
+                        <div class="row g-2 align-items-end mb-2 py-3 px-2 rounded modern-row bg-white shadow-sm position-relative justify-content-center">
+                            <div class="col-md-12 d-flex align-items-center justify-content-center">
                                 <span class="badge bg-primary me-2"><i class="fas fa-user"></i></span>
-                                <select class="form-select modern-input" id="person-select">
+                                <select class="form-select modern-input" name="person-select" required>
                                     <option value="">Çalışan Seç</option>
                                     <option value="Berat Çoban">Berat Çoban</option>
                                     <option value="Ayşe Yılmaz">Ayşe Yılmaz</option>
@@ -45,20 +40,6 @@
                                     <option value="Zeynep Kaya">Zeynep Kaya</option>
                                 </select>
                             </div>
-                            <div class="col-md-3 text-center">
-                                <button type="button" class="btn btn-outline-primary btn-lg px-4" id="add-person-btn"><i class="fas fa-user-plus"></i> Ekle</button>
-                            </div>
-                        </div>
-                        <div class="table-responsive mb-2">
-                            <table class="table table-bordered table-striped align-middle mb-0" id="person-list-table" style="display:none;">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Çalışan</th>
-                                        <th style="width:40px"></th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -164,29 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
         row.querySelector('.equipment-qty').disabled = true;
         row.querySelector('.equipment-photos').style.display = 'none';
         updatePhotoInputs(row);
-    });
-    // Giden Kişiler: Select ile ekleme ve tabloya düşürme
-    const personSelect = document.getElementById('person-select');
-    const addPersonBtn = document.getElementById('add-person-btn');
-    const personListTable = document.getElementById('person-list-table');
-    const personListTbody = personListTable.querySelector('tbody');
-
-    addPersonBtn.onclick = function() {
-        const name = personSelect.value;
-        if (!name) { personSelect.classList.add('is-invalid'); return; } else { personSelect.classList.remove('is-invalid'); }
-        // Tabloya ekle
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${name}</td><td><button type="button" class="btn btn-sm btn-danger remove-person-row"><i class="fas fa-trash"></i></button></td>`;
-        personListTbody.appendChild(tr);
-        personListTable.style.display = '';
-        // Temizle
-        personSelect.value = '';
-    };
-    personListTbody.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-person-row')) {
-            e.target.closest('tr').remove();
-            if (personListTbody.children.length === 0) personListTable.style.display = 'none';
-        }
     });
 });
 document.addEventListener('input', function(e) {

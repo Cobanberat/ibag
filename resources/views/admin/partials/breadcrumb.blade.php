@@ -9,13 +9,13 @@
 <!-- Üst Bar: Duyuru, Hava Durumu, Bildirim, Arama, Kullanıcı Kartı -->
 <div class="row g-3 mb-4 align-items-center">
     <div class="col-lg-8 d-flex align-items-center gap-3 flex-wrap">
-        <div class="alert alert-info mb-0 py-3 px-3 shadow-sm"><i class="fa fa-bullhorn me-2"></i> Hoşgeldin! Sistem
-            güncellemeleri başarıyla tamamlandı.</div>
+        <div class="alert alert-info mb-0 py-3 px-3 shadow-sm"><i class="fa fa-bullhorn me-2"></i> Hoşgeldin!
+            Berat Çoban</div>
         <div class="card shadow-sm border-0 mb-0" style="min-width:180px;">
             <div class="card-body d-flex align-items-center gap-2 p-2">
                 <i class="fa fa-cloud-sun fa-2x text-primary"></i>
                 <div>
-                    <div class="fw-bold">İstanbul</div>
+                    <div class="fw-bold">Konya</div>
                     <div class="small">24°C, Parçalı Bulutlu</div>
                 </div>
             </div>

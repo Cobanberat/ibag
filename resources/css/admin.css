@@ -612,7 +612,7 @@ progress {
 }
 
 .blockquote-footer:before {
-    content: "— "
+    content: "— "
 }
 
 .img-fluid,
@@ -5325,10 +5325,6 @@ fieldset:disabled .btn {
 }
 
 @media(min-width:992px) {
-    .list-group-horizontal-lg {
-        flex-direction: row
-    }
-
     .list-group-horizontal-lg>.list-group-item:first-child:not(:last-child) {
         border-bottom-left-radius: var(--bs-list-group-border-radius);
         border-top-right-radius: 0
@@ -16097,4 +16093,3 @@ span.flatpickr-weekday {
     width: 260px
 }
 
-/*# sourceMappingURL=app.css.map*/

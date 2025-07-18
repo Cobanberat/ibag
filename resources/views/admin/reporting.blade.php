@@ -79,31 +79,8 @@
     <div id="snackbar" style="display:none;position:fixed;top:1.5em;right:2em;z-index:9999;" class="alert alert-info shadow">Yeni veri geldi!</div>
   </div>
   <!-- Otomatik Rapor Planlama ve Paylaşım -->
-  <div class="card modern-card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span><i class="fas fa-calendar-alt me-2"></i>Otomatik Rapor Planlama</span>
-      <button class="btn btn-outline-primary btn-sm"><i class="fas fa-share-alt"></i> Raporu Paylaş</button>
-    </div>
-    <div class="card-body d-flex flex-wrap gap-3 align-items-center">
-      <select class="form-select w-auto" id="planPeriod">
-        <option>Haftalık</option><option>2 Haftada Bir</option><option>Aylık</option>
-      </select>
-      <input type="email" class="form-control w-auto" placeholder="E-posta adresi">
-      <button class="btn btn-success">Planla</button>
-      <span class="text-muted small">Planlanan: Her Pazartesi 09:00</span>
-    </div>
-  </div>
   <!-- Favori Raporlarım -->
-  <div class="card modern-card mb-4">
-    <div class="card-header"><i class="fas fa-star me-2 text-warning"></i>Favori Raporlarım</div>
-    <div class="card-body d-flex flex-wrap gap-2">
-      <button class="btn btn-outline-primary btn-sm">Aylık Arıza Analizi</button>
-      <button class="btn btn-outline-success btn-sm">Bölge Bazlı Bakım Raporu</button>
-      <button class="btn btn-outline-info btn-sm">Kritik Ekipman Listesi</button>
-      <button class="btn btn-outline-secondary btn-sm">Tüm Talepler Özeti</button>
-      <button class="btn btn-outline-dark btn-sm"><i class="fas fa-plus"></i> Yeni Favori</button>
-    </div>
-  </div>
+ 
   <!-- KPI Kartları (animasyonlu uyarı, mini trend) -->
   <div class="row g-3 mb-4">
     <div class="col-md-2 col-6">
@@ -139,10 +116,10 @@
       </div>
     </div>
     <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3">
-        <div class="kpi-icon text-info"><i class="fas fa-file-alt"></i></div>
-        <div class="kpi-value" id="kpiRequests">32</div>
-        <div class="kpi-label">Toplam Talep</div>
+      <div class="card kpi-card text-center p-3" id="kpiSupplyCard" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#supplyModal">
+        <div class="kpi-icon text-info"><i class="fas fa-truck-loading"></i></div>
+        <div class="kpi-value" id="kpiSupply">3</div>
+        <div class="kpi-label">Tedarik Edilmesi Gereken Ürünler</div>
       </div>
     </div>
     <div class="col-md-2 col-6">
@@ -164,11 +141,6 @@
       <button class="type-filter-btn" data-type="Arıza" title="Arıza bildirimlerini göster"><span class="type-ico"><i class="fas fa-bolt"></i></span>Arıza</button>
       <button class="type-filter-btn" data-type="Transfer" title="Transfer taleplerini göster"><span class="type-ico"><i class="fas fa-exchange-alt"></i></span>Transfer</button>
       <button class="type-filter-btn" data-type="Satın Alma" title="Satın alma taleplerini göster"><span class="type-ico"><i class="fas fa-shopping-cart"></i></span>Satın Alma</button>
-    </div>
-    <div class="district-filter-group" id="districtFilterGroup">
-      <button class="district-filter-btn" data-district="Selçuklu" title="Selçuklu ilçesini filtrele"><span class="district-ico"><i class="fas fa-map-marker-alt"></i></span>Selçuklu</button>
-      <button class="district-filter-btn" data-district="Karatay" title="Karatay ilçesini filtrele"><span class="district-ico"><i class="fas fa-map-marker-alt"></i></span>Karatay</button>
-      <button class="district-filter-btn" data-district="Meram" title="Meram ilçesini filtrele"><span class="district-ico"><i class="fas fa-map-marker-alt"></i></span>Meram</button>
     </div>
     <div class="input-group">
       <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -205,7 +177,6 @@
             <th id="col-tip">Tip</th>
             <th id="col-ekipman">Ekipman</th>
             <th id="col-kod">Kod</th>
-            <th id="col-bolge">Bölge</th>
             <th id="col-eden">Talep Eden</th>
             <th id="col-aciliyet">Aciliyet</th>
             <th id="col-durum">Durum</th>
@@ -278,6 +249,32 @@
       </div>
     </div>
   </div>
+  <!-- Tedarik Edilmesi Gereken Ürünler Modal -->
+  <div class="modal fade" id="supplyModal" tabindex="-1" aria-labelledby="supplyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="supplyModalLabel">Tedarik Edilmesi Gereken Ürünler</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ürün Adı</th>
+                <th>Adet</th>
+                <th>Açıklama</th>
+              </tr>
+            </thead>
+            <tbody id="supplyTableBody">
+              <!-- JS ile doldurulacak -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 flatpickr('#filterDate', {mode:'range', dateFormat:'Y-m-d'});
@@ -332,11 +329,23 @@ const talepData = [
   {no:'T2024008', tarih:'2024-06-08', tip:'Bakım', ekipman:'Jeneratör', kod:'EQ-001', bolge:'Karatay', eden:'admin', aciliyet:'Normal', durum:'Onaylandı', dosya:'', aciklama:'Yağ değişimi'},
   {no:'T2024009', tarih:'2024-06-09', tip:'Arıza', ekipman:'Oksijen Konsantratörü', kod:'EQ-002', bolge:'Meram', eden:'teknisyen2', aciliyet:'Acil', durum:'Reddedildi', dosya:'ariza2.pdf', aciklama:'Düşük basınç'},
   {no:'T2024010', tarih:'2024-06-10', tip:'Satın Alma', ekipman:'Akülü Matkap', kod:'EQ-004', bolge:'Selçuklu', eden:'admin', aciliyet:'Normal', durum:'Bekliyor', dosya:'', aciklama:'Yedek parça alımı'},
-  // ... daha fazla satır eklenebilir ...
+  {no:'T2024011', tarih:'2024-06-11', tip:'Arıza', ekipman:'UPS', kod:'EQ-008', bolge:'Karatay', eden:'teknisyen3', aciliyet:'Acil', durum:'Onaylandı', dosya:'ups.pdf', aciklama:'Akü değişimi yapıldı'},
+  {no:'T2024012', tarih:'2024-06-12', tip:'Arıza', ekipman:'Klima', kod:'EQ-009', bolge:'Selçuklu', eden:'admin', aciliyet:'Normal', durum:'Onaylandı', dosya:'', aciklama:'Gaz dolumu ve bakım'},
+  {no:'T2024013', tarih:'2024-06-13', tip:'Arıza', ekipman:'Su Pompası', kod:'EQ-010', bolge:'Meram', eden:'teknisyen2', aciliyet:'Acil', durum:'Onaylandı', dosya:'pompa.jpg', aciklama:'Motor sargısı değişti'},
+  {no:'T2024014', tarih:'2024-06-14', tip:'Arıza', ekipman:'Asansör', kod:'EQ-011', bolge:'Karatay', eden:'teknisyen1', aciliyet:'Normal', durum:'Onaylandı', dosya:'asansor.pdf', aciklama:'Kabin sensörü arızası giderildi'},
+  {no:'T2024015', tarih:'2024-06-15', tip:'Arıza', ekipman:'Yangın Alarmı', kod:'EQ-012', bolge:'Selçuklu', eden:'admin', aciliyet:'Acil', durum:'Onaylandı', dosya:'', aciklama:'Dedektör değişimi yapıldı'},
+  {no:'T2024016', tarih:'2024-06-16', tip:'Arıza', ekipman:'Jeneratör', kod:'EQ-001', bolge:'Meram', eden:'teknisyen3', aciliyet:'Normal', durum:'Onaylandı', dosya:'jeneratör.pdf', aciklama:'Yakıt sistemi temizlendi'},
+  {no:'T2024017', tarih:'2024-06-17', tip:'Arıza', ekipman:'Matkap', kod:'EQ-013', bolge:'Karatay', eden:'teknisyen2', aciliyet:'Acil', durum:'Onaylandı', dosya:'matkap.jpg', aciklama:'Kömür değişimi yapıldı'},
+  {no:'T2024018', tarih:'2024-06-18', tip:'Arıza', ekipman:'Kompresör', kod:'EQ-005', bolge:'Selçuklu', eden:'admin', aciliyet:'Normal', durum:'Onaylandı', dosya:'', aciklama:'Basınç anahtarı değişti'},
+  {no:'T2024019', tarih:'2024-06-19', tip:'Arıza', ekipman:'Kaynak Makinesi', kod:'EQ-006', bolge:'Meram', eden:'teknisyen1', aciliyet:'Acil', durum:'Onaylandı', dosya:'kaynak2.jpg', aciklama:'Fan tamiri yapıldı'},
+  {no:'T2024020', tarih:'2024-06-20', tip:'Arıza', ekipman:'Oksijen Konsantratörü', kod:'EQ-002', bolge:'Karatay', eden:'teknisyen3', aciliyet:'Normal', durum:'Onaylandı', dosya:'oksijen.pdf', aciklama:'Filtre değişimi ve genel bakım'}
 ];
-// Talep tipi ve ilçe filtreleri
+
+// Sadece tamir (arızası onaylanmış) ekipmanlar
+const tamirGorenler = talepData.filter(d => d.tip === 'Arıza' && d.durum === 'Onaylandı');
+
+// Talep tipi filtreleri
 let selectedTypes = [];
-let selectedDistricts = [];
 const typeBtns = document.querySelectorAll('.type-filter-btn');
 typeBtns.forEach(btn => {
   btn.onclick = function() {
@@ -352,25 +361,9 @@ typeBtns.forEach(btn => {
     applyFilters();
   };
 });
-const districtBtns = document.querySelectorAll('.district-filter-btn');
-districtBtns.forEach(btn => {
-  btn.onclick = function() {
-    const district = btn.dataset.district;
-    if(selectedDistricts.includes(district)) {
-      selectedDistricts = selectedDistricts.filter(d=>d!==district);
-      btn.classList.remove('selected');
-    } else {
-      selectedDistricts.push(district);
-      btn.classList.add('selected');
-    }
-    updateActiveFilters();
-    applyFilters();
-  };
-});
 function updateActiveFilters() {
   let html = '';
   if(selectedTypes.length) html += selectedTypes.map(t=>`<span class='filter-chip'>${t}</span>`).join('');
-  if(selectedDistricts.length) html += selectedDistricts.map(b=>`<span class='filter-chip'>${b}</span>`).join('');
   document.getElementById('activeFilters').innerHTML = html;
 }
 // Tabloyu filtrele (detaylı)
@@ -380,11 +373,10 @@ let currentPage = 1;
 function applyFilters() {
   const searchVal = document.getElementById('searchInput').value.toLowerCase();
   const multiVal = document.getElementById('multiColSearch').value.toLowerCase();
-  filteredTalepData = talepData.filter(d => {
+  // Sadece tamir görenler üzerinden filtrele
+  filteredTalepData = tamirGorenler.filter(d => {
     // Tip filtresi
     if(selectedTypes.length && !selectedTypes.includes(d.tip)) return false;
-    // İlçe filtresi
-    if(selectedDistricts.length && !selectedDistricts.includes(d.bolge)) return false;
     // Arama
     if(searchVal) {
       const all = Object.values(d).join(' ').toLowerCase();
@@ -403,7 +395,7 @@ function applyFilters() {
 document.getElementById('searchInput').oninput = applyFilters;
 // Tabloyu ve pagination'ı filtreli veriyle göster
 function renderTalepTable() {
-  const data = filteredTalepData.length ? filteredTalepData : talepData;
+  const data = filteredTalepData.length ? filteredTalepData : tamirGorenler; // Sadece tamir görenleri göster
   const start = (currentPage-1)*pageSize;
   const end = start+pageSize;
   let html = '';
@@ -417,7 +409,6 @@ function renderTalepTable() {
         <td>${d.tip}</td>
         <td>${d.ekipman}</td>
         <td>${d.kod}</td>
-        <td>${d.bolge}</td>
         <td>${d.eden}</td>
         <td><span class='badge ${d.aciliyet==='Acil'?'bg-danger':'bg-warning text-dark'}'>${d.aciliyet}</span></td>
         <td><span class='badge ${d.durum==='Onaylandı'?'bg-success':d.durum==='Reddedildi'?'bg-danger':'bg-warning text-dark'}'>${d.durum}</span></td>
@@ -426,13 +417,13 @@ function renderTalepTable() {
         <td><button class='btn btn-sm btn-outline-info' onclick='showTalepDetail(${start+i})'><i class='fas fa-eye'></i></button></td>
       </tr>`;
     } else {
-      html += `<tr><td colspan='13' style='height:48px;'></td></tr>`;
+      html += `<tr><td colspan='12' style='height:48px;'></td></tr>`;
     }
   }
   document.getElementById('talepTableBody').innerHTML = html;
 }
 function renderTalepPagination() {
-  const data = filteredTalepData.length ? filteredTalepData : talepData;
+  const data = filteredTalepData.length ? filteredTalepData : tamirGorenler; // Sadece tamir görenleri göster
   const pageCount = Math.ceil(data.length/pageSize);
   let html = '';
   
@@ -459,7 +450,7 @@ function gotoTalepPage(page) {
   renderTalepPagination();
 }
 function showTalepDetail(idx) {
-  const d = (filteredTalepData.length ? filteredTalepData : talepData)[idx];
+  const d = (filteredTalepData.length ? filteredTalepData : tamirGorenler)[idx]; // Sadece tamir görenleri göster
   let html = `<div class='row mb-2'><div class='col-4 fw-bold'>Talep No:</div><div class='col-8'>${d.no}</div></div>`;
   html += `<div class='row mb-2'><div class='col-4 fw-bold'>Tarih:</div><div class='col-8'>${d.tarih}</div></div>`;
   html += `<div class='row mb-2'><div class='col-4 fw-bold'>Tip:</div><div class='col-8'>${d.tip}</div></div>`;
@@ -508,7 +499,7 @@ new Chart(document.getElementById('miniTrend3'), {type:'line',data:{labels:['','
 function toggleColumns() { showSnackbar('Kolon gizle/göster özelliği örnek!'); }
 function shareTable() { showSnackbar('Tablo paylaşma özelliği örnek!'); }
 function saveFilterCombo() {
-  const combo = (selectedTypes.join(',')||'Tümü')+' | '+(selectedDistricts.join(',')||'Tümü');
+  const combo = (selectedTypes.join(',')||'Tümü');
   const el = document.createElement('span');
   el.className = 'filter-chip';
   el.innerText = combo;
@@ -523,6 +514,26 @@ function filterFromChart() { selectedTypes=['Arıza']; updateActiveFilters(); ap
 function comparePeriods() { showSnackbar('Dönem karşılaştırma özelliği örnek!'); }
 // Canlı veri simülasyonu
 setTimeout(()=>showSnackbar('Yeni veri geldi!'), 5000);
+
+// Tedarik edilmesi gereken ürünler örnek veri
+const supplyData = [
+  { name: 'Akülü Matkap', adet: 2, aciklama: 'Yedek parça bekleniyor' },
+  { name: 'Oksijen Konsantratörü', adet: 1, aciklama: 'Arızalı, yeni sipariş verildi' },
+  { name: 'Jeneratör Yağı', adet: 5, aciklama: 'Stokta yok' }
+];
+
+function renderSupplyTable() {
+  let html = '';
+  supplyData.forEach((item, idx) => {
+    html += `<tr><td>${idx+1}</td><td>${item.name}</td><td>${item.adet}</td><td>${item.aciklama}</td></tr>`;
+  });
+  document.getElementById('supplyTableBody').innerHTML = html;
+  document.getElementById('kpiSupply').innerText = supplyData.length;
+}
+
+// Modal açıldığında tabloyu doldur
+const supplyModal = document.getElementById('supplyModal');
+supplyModal.addEventListener('show.bs.modal', renderSupplyTable);
 
 // Kolon gizleme/gösterme fonksiyonları
 let hiddenColumns = [];
@@ -553,7 +564,6 @@ function getColumnIndex(columnName) {
     'tip': 3,
     'ekipman': 4,
     'kod': 5,
-    'bolge': 6,
     'eden': 7,
     'aciliyet': 8,
     'durum': 9,
@@ -570,7 +580,6 @@ function getColumnDisplayName(columnName) {
     'tip': 'Tip',
     'ekipman': 'Ekipman',
     'kod': 'Kod',
-    'bolge': 'Bölge',
     'eden': 'Talep Eden',
     'aciliyet': 'Aciliyet',
     'durum': 'Durum',
@@ -635,7 +644,7 @@ function showAllColumns() {
   });
   
   // Tüm ikonları güncelle
-  const columnNames = ['talepNo', 'tarih', 'tip', 'ekipman', 'kod', 'bolge', 'eden', 'aciliyet', 'durum', 'dosya', 'aciklama'];
+  const columnNames = ['talepNo', 'tarih', 'tip', 'ekipman', 'kod', 'eden', 'aciliyet', 'durum', 'dosya', 'aciklama'];
   columnNames.forEach(columnName => {
     const icon = document.querySelector(`#icon-${columnName}`);
     if (icon) icon.className = 'fas fa-check';
@@ -645,7 +654,7 @@ function showAllColumns() {
 }
 
 function hideAllColumns() {
-  const columnNames = ['talepNo', 'tarih', 'tip', 'ekipman', 'kod', 'bolge', 'eden', 'aciliyet', 'durum', 'dosya', 'aciklama'];
+  const columnNames = ['talepNo', 'tarih', 'tip', 'ekipman', 'kod', 'eden', 'aciliyet', 'durum', 'dosya', 'aciklama'];
   hiddenColumns = [...columnNames];
   
   columnNames.forEach(columnName => {

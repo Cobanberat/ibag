@@ -105,16 +105,7 @@
                 <option>Akülü Matkap</option>
               </select>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Arıza Tipi</label>
-              <select class="form-select" required>
-                <option value="">Seçiniz...</option>
-                <option>Elektriksel</option>
-                <option>Mekanik</option>
-                <option>Yazılımsal</option>
-                <option>Diğer</option>
-              </select>
-            </div>
+      
             <div class="mb-3">
               <label class="form-label">Açıklama</label>
               <textarea class="form-control" rows="3" placeholder="Arızanın detaylarını yazınız..." required></textarea>
@@ -124,7 +115,7 @@
               <input type="file" class="form-control" accept="image/*,application/pdf">
             </div>
             <div class="mb-3 row g-2">
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Öncelik</label>
                 <select class="form-select" required>
                   <option value="">Seçiniz...</option>
@@ -133,29 +124,16 @@
                   <option>Acil</option>
                 </select>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">Sorumlu</label>
-                <select class="form-select" required>
-                  <option value="">Seçiniz...</option>
-                  <option>admin</option>
-                  <option>teknisyen1</option>
-                </select>
-              </div>
+            
             </div>
             <div class="mb-3 row g-2">
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Tespit Tarihi</label>
                 <input type="date" class="form-control" required>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">İletişim (Telefon/E-posta)</label>
-                <input type="text" class="form-control" placeholder="Telefon veya e-posta" required>
-              </div>
+            
             </div>
-            <div class="mb-3">
-              <label class="form-label">Ek Not</label>
-              <textarea class="form-control" rows="2" placeholder="Varsa ek bilgi yazınız..."></textarea>
-            </div>
+            
             <div class="d-grid gap-2 mt-4">
               <button type="submit" class="btn btn-main btn-lg shadow-sm"><i class="fas fa-paper-plane me-1"></i> Arızayı Bildir</button>
             </div>

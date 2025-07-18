@@ -159,21 +159,11 @@
             <option>Az Stok</option>
             <option>Tükendi</option>
         </select>
-        <select class="form-select form-select-sm" id="filterLocation" style="width: 150px;">
-            <option value="">Konum Seç</option>
-            <option>Depo A</option>
-            <option>Depo B</option>
-            <option>Depo C</option>
-        </select>
         <input type="text" class="form-control form-control-sm" id="filterSearch" style="width: 200px;" placeholder="Ürün ara...">
         <button class="btn btn-sm btn-outline-secondary" id="filterBtn"><i class="fas fa-filter"></i> Filtrele</button>
-        <button class="btn btn-sm btn-outline-success"><i class="fas fa-file-excel"></i> Excel</button>
-        <button class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i> PDF</button>
-        <button type="button" class="btn btn-outline-primary ms-2" id="bulkCategoryBtn"><i class="fas fa-layer-group"></i> Toplu Kategori Değiştir</button>
-        <button type="button" class="btn btn-outline-info ms-2" id="bulkLocationBtn"><i class="fas fa-map-marker-alt"></i> Toplu Konum Değiştir</button>
-        <button type="button" class="btn btn-add-product" data-bs-toggle="modal" data-bs-target="#addProductModal">
-            <i class="fas fa-plus"></i> Yeni Ürün
-        </button>
+        <a href="{{ route('stock.create') }}" class="btn btn-add-product d-flex align-items-center gap-2">
+            <i class="fas fa-plus"></i> Yeni Ekipman
+        </a>
     </div>
     <!-- Ürün Ekle Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
@@ -202,17 +192,8 @@
                             <input type="number" class="form-control" name="quantity" min="0" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Kritik Seviye</label>
+                            <label class="form-label">İhtiyaç Adet</label>
                             <input type="number" class="form-control" name="critical" min="0" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Konum</label>
-                            <select class="form-select" name="location" required>
-                                <option value="">Seçiniz</option>
-                                <option>Depo A</option>
-                                <option>Depo B</option>
-                                <option>Depo C</option>
-                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Açıklama</label>
@@ -258,60 +239,7 @@
             </div>
         </div>
     </div>
-    <!-- Toplu Konum Değiştir Modal -->
-    <div class="modal fade" id="bulkLocationModal" tabindex="-1" aria-labelledby="bulkLocationModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-slide-down">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bulkLocationModalLabel"><i class="fas fa-map-marker-alt me-2"></i>Toplu Konum Değiştir</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="bulkLocationForm">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Yeni Konum</label>
-                            <select class="form-select" name="newLocation" required>
-                                <option value="">Seçiniz</option>
-                                <option>Depo A</option>
-                                <option>Depo B</option>
-                                <option>Depo C</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                        <button type="submit" class="btn btn-primary">Güncelle</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- Hareketler Modal -->
-    <div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="logModalLabel"><i class="fas fa-history me-2"></i>Stok Hareketleri</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-sm table-bordered mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tarih</th>
-                                <th>İşlem</th>
-                                <th>Miktar</th>
-                                <th>Açıklama</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Stok Girişi/Çıkışı Modal -->
+    <!-- Stok Girişi/Çıkışı Modalı -->
     <div class="modal fade" id="stockInOutModal" tabindex="-1" aria-labelledby="stockInOutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -344,7 +272,32 @@
             </div>
         </div>
     </div>
-    <!-- Ürün Fotoğrafı Modal -->
+    <!-- Stok Hareketleri Modalı -->
+    <div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logModalLabel"><i class="fas fa-history me-2"></i>Stok Hareketleri</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tarih</th>
+                                <th>İşlem</th>
+                                <th>Miktar</th>
+                                <th>Açıklama</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Ürün Fotoğrafı Modalı -->
     <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -358,50 +311,8 @@
             </div>
         </div>
     </div>
-    <!-- Toplu İşlem Modalı -->
-    <div class="modal fade" id="bulkActionModal" tabindex="-1" aria-labelledby="bulkActionModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-slide-down">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bulkActionModalLabel"><i class="fas fa-cogs me-2"></i>Seçili Ekipmanlara İşlem Yap</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="bulkActionForm">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">İşlem Tipi Seç</label>
-                            <select class="form-select" id="bulkActionType" required>
-                                <option value="">Seçiniz</option>
-                                <option value="category">Kategori Değiştir</option>
-                                <option value="location">Konum Değiştir</option>
-                            </select>
-                        </div>
-                        <div class="mb-3 d-none" id="bulkCategorySelect">
-                            <label class="form-label">Yeni Kategori</label>
-                            <select class="form-select" id="bulkNewCategory">
-                                <option value="">Seçiniz</option>
-                                <option>Donanım</option>
-                                <option>Ağ</option>
-                            </select>
-                        </div>
-                        <div class="mb-3 d-none" id="bulkLocationSelect">
-                            <label class="form-label">Yeni Konum</label>
-                            <select class="form-select" id="bulkNewLocation">
-                                <option value="">Seçiniz</option>
-                                <option>Depo A</option>
-                                <option>Depo B</option>
-                                <option>Depo C</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                        <button type="submit" class="btn btn-primary">Uygula</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <form>
         <div class="card mt-2 p-2" style="border-radius:1.2rem;box-shadow:0 4px 24px #0d6efd11;">
             <div class="card-body p-0">
@@ -414,7 +325,6 @@
                             <th>Miktar</th>
                             <th>Kritik Seviye</th>
                             <th>Stok Durumu</th>
-                            <th>Konum</th>
                             <th>Durum</th>
                             <th>İşlemler</th>
                         </tr>
@@ -442,16 +352,12 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-    <!-- Flatpickr Datepicker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // Demo ürün verisi
         let products = [
-            {id:1, name:'Klavye', category:'Donanım', quantity:12, critical:5, location:'Depo A', desc:'Son bakımda tuşlar değiştirildi.', history:'2024-03-01 giriş, 2024-03-10 çıkış, 2024-03-15 bakım', status:'Yeterli', photo:'', log:[{date:'2024-03-01', type:'Giriş', amount:12, desc:'İlk stok'}]},
-            {id:2, name:'Ethernet Kablosu', category:'Ağ', quantity:3, critical:5, location:'Depo B', desc:'Kablo başı değiştirildi.', history:'2024-02-20 giriş, 2024-03-05 çıkış', status:'Az Stok', photo:'', log:[{date:'2024-02-20', type:'Giriş', amount:5, desc:'Depo yenileme'},{date:'2024-03-05', type:'Çıkış', amount:2, desc:'Kullanım'}]},
-            {id:3, name:'Monitör', category:'Donanım', quantity:0, critical:2, location:'Depo C', desc:'Panel arızası nedeniyle stokta yok.', history:'2024-01-10 giriş, 2024-02-01 çıkış', status:'Tükendi', photo:'', log:[{date:'2024-01-10', type:'Giriş', amount:2, desc:'Yeni monitör'},{date:'2024-02-01', type:'Çıkış', amount:2, desc:'Arıza'}]}
+            {id:1, name:'Klavye', category:'Donanım', quantity:12, critical:5, desc:'Son bakımda tuşlar değiştirildi.', history:'2024-03-01 giriş, 2024-03-10 çıkış, 2024-03-15 bakım', status:'Yeterli', photo:'', log:[{date:'2024-03-01', type:'Giriş', amount:12, desc:'İlk stok'}]},
+            {id:2, name:'Ethernet Kablosu', category:'Ağ', quantity:3, critical:5, desc:'Kablo başı değiştirildi.', history:'2024-02-20 giriş, 2024-03-05 çıkış', status:'Az Stok', photo:'', log:[{date:'2024-02-20', type:'Giriş', amount:5, desc:'Depo yenileme'},{date:'2024-03-05', type:'Çıkış', amount:2, desc:'Kullanım'}]},
+            {id:3, name:'Monitör', category:'Donanım', quantity:0, critical:2, desc:'Panel arızası nedeniyle stokta yok.', history:'2024-01-10 giriş, 2024-02-01 çıkış', status:'Tükendi', photo:'', log:[{date:'2024-01-10', type:'Giriş', amount:2, desc:'Yeni monitör'},{date:'2024-02-01', type:'Çıkış', amount:2, desc:'Arıza'}]}
         ];
         let perPage = 5;
         let currentPage = 1;
@@ -471,9 +377,8 @@
             let filtered = products.filter(p => {
                 let cat = document.getElementById('filterCategory').value;
                 let stat = document.getElementById('filterStatus').value;
-                let loc = document.getElementById('filterLocation').value;
                 let search = document.getElementById('filterSearch').value.toLowerCase();
-                return (!cat || p.category===cat) && (!stat || p.status===stat) && (!loc || p.location===loc) && (!search || p.name.toLowerCase().includes(search));
+                return (!cat || p.category===cat) && (!stat || p.status===stat) && (!search || p.name.toLowerCase().includes(search));
             });
             let total = filtered.length;
             let start = (currentPage-1)*perPage;
@@ -492,7 +397,6 @@
                     <td contenteditable="true">${p.quantity}</td>
                     <td contenteditable="true">${p.critical}</td>
                     <td><div class="progress" style="height: 10px;"><div class="progress-bar bg-${p.status==='Yeterli'?'success':p.status==='Az Stok'?'warning':'danger'}" style="width: ${Math.min(100,Math.round((p.quantity/(p.critical||1))*100))}%"></div></div></td>
-                    <td>${p.location}</td>
                     <td>${getBadge(p.status)}</td>
                     <td>
                         <button type="button" class="btn btn-sm btn-success stockInBtn" data-id="${p.id}" data-type="Giriş"><i class="fas fa-plus"></i></button>
@@ -504,13 +408,14 @@
                     </td>
                 </tr>
                 <tr class="collapse bg-light" id="${rowId}">
-                    <td colspan="9">
+                    <td colspan="8">
                         <strong>Ürün Geçmişi:</strong> ${p.history || '-'}<br>
                         <strong>Ek Açıklama:</strong> ${p.desc || '-'}
                     </td>
                 </tr>`;
             });
-            document.getElementById('stockTableBody').innerHTML = tbody;
+            var tbodyEl = document.getElementById('stockTableBody');
+            if (tbodyEl) tbodyEl.innerHTML = tbody;
             renderPagination(total);
         }
         function renderPagination(total) {
@@ -519,172 +424,153 @@
             for(let i=1;i<=pageCount;i++) {
                 pag += `<li class="page-item${i===currentPage?' active':''}"><a class="page-link" href="#" onclick="gotoPage(${i});return false;">${i}</a></li>`;
             }
-            document.getElementById('pagination').innerHTML = pag;
+            var pagEl = document.getElementById('pagination');
+            if (pagEl) pagEl.innerHTML = pag;
         }
         window.gotoPage = function(page) { currentPage=page; renderTable(); }
-        document.getElementById('filterBtn').onclick = function(e){ e.preventDefault(); currentPage=1; renderTable(); };
-        document.getElementById('filterCategory').onchange = document.getElementById('filterStatus').onchange = document.getElementById('filterLocation').onchange = function(){ currentPage=1; renderTable(); };
-        document.getElementById('filterSearch').oninput = function(){ currentPage=1; renderTable(); };
-        document.getElementById('addProductForm').onsubmit = function(e){
-            e.preventDefault();
-            let f = e.target;
-            let newId = products.length ? Math.max(...products.map(p=>p.id))+1 : 1;
-            let photo = '';
-            if(f.photo.files && f.photo.files[0]) {
-                photo = URL.createObjectURL(f.photo.files[0]);
-            }
-            products.push({
-                id: newId,
-                name: f.name.value,
-                category: f.category.value,
-                quantity: parseInt(f.quantity.value),
-                critical: parseInt(f.critical.value),
-                location: f.location.value,
-                desc: f.desc.value,
-                history: '-',
-                status: (parseInt(f.quantity.value)===0?'Tükendi':parseInt(f.quantity.value)<=parseInt(f.critical.value)?'Az Stok':'Yeterli'),
-                photo: photo,
-                log: []
-            });
-            f.reset();
-            var modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
-            modal.hide();
-            renderTable();
-        };
-        document.getElementById('stockTableBody').onclick = function(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            let id = btn.getAttribute('data-id');
-            if(btn.classList.contains('deleteBtn')) {
-                products = products.filter(p=>p.id!=id);
-                renderTable();
-            }
-            if(btn.classList.contains('stockInBtn') || btn.classList.contains('stockOutBtn')) {
-                let type = btn.getAttribute('data-type');
-                let product = products.find(p=>p.id==id);
-                document.getElementById('stockInOutModalLabel').innerText = type === 'Giriş' ? 'Stok Girişi' : 'Stok Çıkışı';
-                let form = document.getElementById('stockInOutForm');
-                form.productId.value = id;
-                form.type.value = type;
-                form.amount.value = '';
-                form.desc.value = '';
-                form.date.value = new Date().toISOString().slice(0,10);
-                new bootstrap.Modal(document.getElementById('stockInOutModal')).show();
-            }
-            if(btn.classList.contains('logBtn')) {
-                let product = products.find(p=>p.id==id);
-                let logBody = '';
-                (product.log||[]).forEach(l => {
-                    logBody += `<tr><td>${l.date}</td><td>${l.type}</td><td>${l.amount}</td><td>${l.desc||''}</td></tr>`;
+        var filterBtn = document.getElementById('filterBtn');
+        if (filterBtn) filterBtn.onclick = function(e){ e.preventDefault(); currentPage=1; renderTable(); };
+        var filterCategory = document.getElementById('filterCategory');
+        var filterStatus = document.getElementById('filterStatus');
+        if (filterCategory) filterCategory.onchange = function(){ currentPage=1; renderTable(); };
+        if (filterStatus) filterStatus.onchange = function(){ currentPage=1; renderTable(); };
+        var filterSearch = document.getElementById('filterSearch');
+        if (filterSearch) filterSearch.oninput = function(){ currentPage=1; renderTable(); };
+        var addProductForm = document.getElementById('addProductForm');
+        if (addProductForm) {
+            addProductForm.onsubmit = function(e){
+                e.preventDefault();
+                let f = e.target;
+                let newId = products.length ? Math.max(...products.map(p=>p.id))+1 : 1;
+                let photo = '';
+                if(f.photo && f.photo.files && f.photo.files[0]) {
+                    photo = URL.createObjectURL(f.photo.files[0]);
+                }
+                products.push({
+                    id: newId,
+                    name: f.name.value,
+                    category: f.category.value,
+                    quantity: parseInt(f.quantity.value),
+                    critical: parseInt(f.critical.value),
+                    desc: f.desc.value,
+                    history: '-',
+                    status: (parseInt(f.quantity.value)===0?'Tükendi':parseInt(f.quantity.value)<=parseInt(f.critical.value)?'Az Stok':'Yeterli'),
+                    photo: photo,
+                    log: []
                 });
-                document.getElementById('logTableBody').innerHTML = logBody || '<tr><td colspan="4" class="text-center">Hareket yok</td></tr>';
-                new bootstrap.Modal(document.getElementById('logModal')).show();
+                f.reset();
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
+                if (modal) modal.hide();
+                renderTable();
+            };
+        }
+        var stockTableBody = document.getElementById('stockTableBody');
+        if (stockTableBody) {
+            stockTableBody.onclick = function(e) {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                let id = btn.getAttribute('data-id');
+                if(btn.classList.contains('deleteBtn')) {
+                    products = products.filter(p=>p.id!=id);
+                    renderTable();
+                }
+                if(btn.classList.contains('stockInBtn') || btn.classList.contains('stockOutBtn')) {
+                    let type = btn.getAttribute('data-type');
+                    let product = products.find(p=>p.id==id);
+                    var label = document.getElementById('stockInOutModalLabel');
+                    if (label) label.innerText = type === 'Giriş' ? 'Stok Girişi' : 'Stok Çıkışı';
+                    let form = document.getElementById('stockInOutForm');
+                    if (form && product) {
+                        form.productId.value = id;
+                        form.type.value = type;
+                        form.amount.value = '';
+                        form.desc.value = '';
+                        form.date.value = new Date().toISOString().slice(0,10);
+                        new bootstrap.Modal(document.getElementById('stockInOutModal')).show();
+                    }
+                }
+                if(btn.classList.contains('logBtn')) {
+                    let product = products.find(p=>p.id==id);
+                    let logBody = '';
+                    (product.log||[]).forEach(l => {
+                        logBody += `<tr><td>${l.date}</td><td>${l.type}</td><td>${l.amount}</td><td>${l.desc||''}</td></tr>`;
+                    });
+                    var logTableBody = document.getElementById('logTableBody');
+                    if (logTableBody) logTableBody.innerHTML = logBody || '<tr><td colspan="4" class="text-center">Hareket yok</td></tr>';
+                    new bootstrap.Modal(document.getElementById('logModal')).show();
+                }
+                if(btn.classList.contains('photoBtn')) {
+                    let product = products.find(p=>p.id==id);
+                    var modalPhoto = document.getElementById('modalPhoto');
+                    if (modalPhoto) modalPhoto.src = product.photo || '';
+                    new bootstrap.Modal(document.getElementById('photoModal')).show();
+                }
+                if(btn.classList.contains('editBtn')) {
+                    // (Düzenle işlemi için kod eklenebilir)
+                }
+            };
+        }
+        var stockInOutForm = document.getElementById('stockInOutForm');
+        if (stockInOutForm) {
+            stockInOutForm.onsubmit = function(e) {
+                e.preventDefault();
+                let f = e.target;
+                let product = products.find(p=>p.id==f.productId.value);
+                let amount = parseInt(f.amount.value);
+                let type = f.type.value;
+                if(type==='Giriş') product.quantity += amount;
+                if(type==='Çıkış') product.quantity = Math.max(0, product.quantity-amount);
+                product.status = (product.quantity===0?'Tükendi':product.quantity<=product.critical?'Az Stok':'Yeterli');
+                product.log = product.log || [];
+                product.log.unshift({date:f.date.value, type:type, amount:amount, desc:f.desc.value});
+                var modal = bootstrap.Modal.getInstance(document.getElementById('stockInOutModal'));
+                if (modal) modal.hide();
+                renderTable();
+            };
+        }
+        var deleteSelected = document.getElementById('deleteSelected');
+        if (deleteSelected) {
+            deleteSelected.onclick = function(e) {
+                e.preventDefault();
+                let checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
+                products = products.filter(p=>!checked.includes(p.id));
+                renderTable();
+            };
+        }
+        var selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.onchange = function() {
+                document.querySelectorAll('input[name="select[]"]').forEach(cb => cb.checked = this.checked);
             }
-            if(btn.classList.contains('photoBtn')) {
-                let product = products.find(p=>p.id==id);
-                document.getElementById('modalPhoto').src = product.photo || '';
-                new bootstrap.Modal(document.getElementById('photoModal')).show();
-            }
-            if(btn.classList.contains('editBtn')) {
-                // (Düzenle işlemi için kod eklenebilir)
-            }
-        };
-        document.getElementById('stockInOutForm').onsubmit = function(e) {
-            e.preventDefault();
-            let f = e.target;
-            let product = products.find(p=>p.id==f.productId.value);
-            let amount = parseInt(f.amount.value);
-            let type = f.type.value;
-            if(type==='Giriş') product.quantity += amount;
-            if(type==='Çıkış') product.quantity = Math.max(0, product.quantity-amount);
-            product.status = (product.quantity===0?'Tükendi':product.quantity<=product.critical?'Az Stok':'Yeterli');
-            product.log = product.log || [];
-            product.log.unshift({date:f.date.value, type:type, amount:amount, desc:f.desc.value});
-            var modal = bootstrap.Modal.getInstance(document.getElementById('stockInOutModal'));
-            modal.hide();
-            renderTable();
-        };
-        document.getElementById('deleteSelected').onclick = function(e) {
-            e.preventDefault();
-            let checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
-            products = products.filter(p=>!checked.includes(p.id));
-            renderTable();
-        };
-        document.getElementById('selectAll').onchange = function() {
-            document.querySelectorAll('input[name="select[]"]').forEach(cb => cb.checked = this.checked);
-        };
-        // Toplu Kategori/Konum Değiştir
-        document.getElementById('bulkCategoryBtn').onclick = function(){
-            new bootstrap.Modal(document.getElementById('bulkCategoryModal')).show();
-        };
-        document.getElementById('bulkLocationBtn').onclick = function(){
-            new bootstrap.Modal(document.getElementById('bulkLocationModal')).show();
-        };
-        document.getElementById('bulkCategoryForm').onsubmit = function(e){
-            e.preventDefault();
-            let newCat = e.target.newCategory.value;
-            let checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
-            products.forEach(p=>{if(checked.includes(p.id))p.category=newCat;});
-            var modal = bootstrap.Modal.getInstance(document.getElementById('bulkCategoryModal'));
-            modal.hide();
-            renderTable();
-        };
-        document.getElementById('bulkLocationForm').onsubmit = function(e){
-            e.preventDefault();
-            let newLoc = e.target.newLocation.value;
-            let checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
-            products.forEach(p=>{if(checked.includes(p.id))p.location=newLoc;});
-            var modal = bootstrap.Modal.getInstance(document.getElementById('bulkLocationModal'));
-            modal.hide();
-            renderTable();
-        };
-        document.addEventListener('DOMContentLoaded', function() {
-            flatpickr('#stockInOutForm input[name="date"]', {
-                dateFormat: 'd.m.Y',
-                locale: 'tr',
-                maxDate: 'today',
-                allowInput: true,
-                monthSelectorType: 'dropdown',
-                showMonths: 1
-            });
-        });
+        }
+        // Toplu Kategori Değiştir
+        var bulkCategoryBtn = document.getElementById('bulkCategoryBtn');
+        if (bulkCategoryBtn) {
+            bulkCategoryBtn.onclick = function(){
+                new bootstrap.Modal(document.getElementById('bulkCategoryModal')).show();
+            };
+        }
+        var bulkCategoryForm = document.getElementById('bulkCategoryForm');
+        if (bulkCategoryForm) {
+            bulkCategoryForm.onsubmit = function(e){
+                e.preventDefault();
+                let newCat = e.target.newCategory.value;
+                let checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
+                products.forEach(p=>{if(checked.includes(p.id))p.category=newCat;});
+                var modal = bootstrap.Modal.getInstance(document.getElementById('bulkCategoryModal'));
+                if (modal) modal.hide();
+                renderTable();
+            };
+        }
         // Seçili ekipmanlara işlem yap butonu aktif/pasif
         function updateBulkActionBtn() {
             const anyChecked = document.querySelectorAll('input[name="select[]"]:checked').length > 0;
-            document.getElementById('bulkActionBtn').disabled = !anyChecked;
+            var bulkActionBtn = document.getElementById('bulkActionBtn');
+            if (bulkActionBtn) bulkActionBtn.disabled = !anyChecked;
         }
-        document.getElementById('stockTableBody').addEventListener('change', updateBulkActionBtn);
-        document.getElementById('selectAll').addEventListener('change', updateBulkActionBtn);
-        // Butona tıklayınca modal aç
-        document.getElementById('bulkActionBtn').onclick = function(e) {
-            e.preventDefault();
-            document.getElementById('bulkActionType').value = '';
-            document.getElementById('bulkCategorySelect').classList.add('d-none');
-            document.getElementById('bulkLocationSelect').classList.add('d-none');
-            new bootstrap.Modal(document.getElementById('bulkActionModal')).show();
-        };
-        // İşlem tipi seçilince ilgili select göster
-        document.getElementById('bulkActionType').onchange = function() {
-            document.getElementById('bulkCategorySelect').classList.toggle('d-none', this.value !== 'category');
-            document.getElementById('bulkLocationSelect').classList.toggle('d-none', this.value !== 'location');
-        };
-        // Form submit
-        document.getElementById('bulkActionForm').onsubmit = function(e) {
-            e.preventDefault();
-            const type = document.getElementById('bulkActionType').value;
-            const checked = Array.from(document.querySelectorAll('input[name="select[]"]:checked')).map(cb=>parseInt(cb.getAttribute('data-id')));
-            if(type === 'category') {
-                const newCat = document.getElementById('bulkNewCategory').value;
-                products.forEach(p=>{if(checked.includes(p.id))p.category=newCat;});
-            }
-            if(type === 'location') {
-                const newLoc = document.getElementById('bulkNewLocation').value;
-                products.forEach(p=>{if(checked.includes(p.id))p.location=newLoc;});
-            }
-            var modal = bootstrap.Modal.getInstance(document.getElementById('bulkActionModal'));
-            modal.hide();
-            renderTable();
-        };
+        var stockTableBody2 = document.getElementById('stockTableBody');
+        if (stockTableBody2) stockTableBody2.addEventListener('change', updateBulkActionBtn);
+        if (selectAll) selectAll.addEventListener('change', updateBulkActionBtn);
         renderTable();
     </script>
 @endpush

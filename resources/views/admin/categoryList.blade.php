@@ -167,7 +167,8 @@
         </tr>
     </thead>
     <tbody id="categoryTableBody">
-        <!-- JS ile doldurulacak -->
+  
+
     </tbody>
 </table>
 <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 p-2">
@@ -309,13 +310,13 @@ function renderTable() {
     let tbody = '';
     pageData.forEach(c => {
         tbody += `<tr>
-            <td><input type="checkbox" class="rowCheck" data-id="${c.id}"></td>
-            <td><span class="category-color" style="background:${c.color}"></span> <i class="fas ${c.icon} me-1 text-primary"></i> <span class="fw-bold">${c.name}</span></td>
-            <td>${c.desc||''}</td>
-            <td>${c.productCount}</td>
-            <td>${c.date}</td>
-            <td><span class="category-color" style="background:${c.color}"></span></td>
-            <td class="category-actions">
+            <td class="table-success"><input type="checkbox" class="rowCheck" data-id="${c.id}"></td>
+            <td class="table-success"><span class="category-color" style="background:${c.color}"></span> <i class="fas ${c.icon} me-1 text-primary"></i> <span class="fw-bold">${c.name}</span></td>
+            <td class="table-success">${c.desc||''}</td>
+            <td class="table-success">${c.productCount}</td>
+            <td class="table-success">${c.date}</td>
+            <td class="table-success"><span class="category-color" style="background:${c.color}"></span></td>
+            <td class="category-actions table-success">
                 <button type="button" class="btn btn-sm btn-info detailBtn" data-id="${c.id}"><i class="fas fa-info-circle"></i></button>
                 <button type="button" class="btn btn-sm btn-warning editBtn" data-id="${c.id}"><i class="fas fa-edit"></i></button>
                 <button type="button" class="btn btn-sm btn-danger deleteBtn" data-id="${c.id}"><i class="fas fa-trash"></i></button>

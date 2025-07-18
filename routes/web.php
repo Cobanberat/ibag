@@ -27,16 +27,19 @@ Route::get('/admin', function () {
 })->name('admin.dashboard');
 
 Route::get('/admin/stock', function () {
-    return view('admin.stock');
+    return view('admin.stock.index');
 })->name('admin.stock');
+Route::get('/admin/Ekle', function () {
+    return view('admin.stock.create');
+})->name('stock.create');
 
 Route::get('/admin/kategori', function () {
     return view('admin.categoryList');
 })->name('admin.kategori');
 
-Route::get('/admin/ekipmanÖzelikleri', function () {
-    return view('admin.equipment.Features');
-})->name('admin.ekipman');
+// Route::get('/admin/ekipmanÖzelikleri', function () {
+//     return view('admin.equipment.Features');
+// })->name('admin.ekipman');
 
 Route::get('/admin/gidenGelen', function () {
     return view('admin.comingGoing');
@@ -50,33 +53,29 @@ Route::get('/admin/durumKontrol', function () {
     return view('admin.statusCheck');
 })->name('admin.statusCheck');
 
-Route::get('/admin/arizabildirimi', function () {
-    return view('admin.fault');
+Route::get('/admin/ArizaBildirimi', function () {
+    return view('admin.fault.index');
 })->name('admin.fault');
 
-Route::get('/admin/konumTakibi', function () {
-    return view('admin.location');
-})->name('admin.location');
-
-Route::get('/admin/onaySureci', function () {
-    return view('admin.approvalProcces');
-})->name('admin.approvalProcces');
+Route::get('/admin/ArizaDurumu', function () {
+    return view('admin.fault.Status');
+})->name('fault.status');
 
 Route::get('/admin/raporlama', function () {
     return view('admin.reporting');
 })->name('admin.reporting');
 
-Route::get('/admin/veriAnalizi', function () {
-    return view('admin.dataAnalysis');
-})->name('admin.dataAnalysis');
+// Route::get('/admin/veriAnalizi', function () {
+//     return view('admin.dataAnalysis');
+// })->name('admin.dataAnalysis');
 
-    Route::get('/admin/ekipmanAnalizi', function () {
-    return view('admin.equipment.Analysis');
-})->name('admin.equipmentAnalysis');
+//     Route::get('/admin/ekipmanAnalizi', function () {
+//     return view('admin.equipment.Analysis');
+// })->name('admin.equipmentAnalysis');
 
-Route::get('/admin/uyeAnalizi', function () {
-    return view('admin.memberAnalysis');
-})->name('admin.memberAnalysis');
+// Route::get('/admin/uyeAnalizi', function () {
+//     return view('admin.memberAnalysis');
+// })->name('admin.memberAnalysis');
 
 Route::get('/admin/kullanicilar', function () {
     return view('admin.users');

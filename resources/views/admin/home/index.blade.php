@@ -23,10 +23,7 @@
                         <div class="quick-action-icon bg-gradient-danger"><i class="fa fa-bug"></i></div>
                         <div class="quick-action-label">Arıza Bildir</div>
                     </a> 
-                    <a href="{{route('admin.location')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Konum takibi yap">
-                        <div class="quick-action-icon bg-gradient-success"><i class="fa fa-map-marker-alt"></i></div>
-                        <div class="quick-action-label">Konum Takibi</div>
-                    </a>
+                  
                     <a href="{{route('admin.users')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Kullanıcıları yönet">
                         <div class="quick-action-icon bg-gradient-info"><i class="fa fa-users-cog"></i></div>
                         <div class="quick-action-label">Kullanıcı Yönetimi</div>
@@ -147,20 +144,19 @@
         </div>
         <div class="col-12 mb-4">
             <div class="card shadow h-100">
-                 <div class="d-flex align-items-center gap-2 p-2">
-                        <span class="fs-4 text-danger"><i class="fa fa-truck-loading"></i></span>
-                        <span class="fw-bold fs-5">Tedarik Edilmesi Gereken Ürünler</span>
+                 <div class="d-flex align-items-center gap-2 p-1">
+                        <span class="fs-6 text-danger"><i class="fa fa-truck-loading"></i></span>
+                        <span class="fw-bold" style="font-size:1.05rem;">Tedarik Edilmesi Gereken Ürünler</span>
                     </div>
-                <div class="card-body p-0">
-                   <table class="table mb-0 align-middle tedarik-table table-lg">
+                <div class="card-body p-1">
+                   <table class="table table-sm mb-0 align-middle tedarik-table table-lg">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Ürün Adı</th>
                                 <th>Stok</th>
-                                <th>Talep Eden</th>
+                                <th>Kritik Seviye</th>
                                 <th>Durum</th>
-                                <th>Açıklama</th>
                                 <th>Tarih</th>
                             </tr>
                         </thead>
@@ -169,18 +165,16 @@
                                 <td>1</td>
                                 <td>Klavye</td>
                                 <td><span>0</span></td>
-                                <td>Ali K.</td>
+                                <td>5</td>
                                 <td><span class="badge bg-info">Tedarik Bekliyor</span></td>
-                                <td>Ofis için yeni klavye</td>
                                 <td>2024-06-20</td>
                             </tr>
                             <tr class="table-row-hover">
                                 <td>2</td>
                                 <td>Ethernet Kablosu</td>
                                 <td>2</td>
-                                <td>Ayşe Y.</td>
+                                <td>10</td>
                                 <td><span span class="badge bg-danger">Az Stok</span></td>
-                                <td>Sunucu odası için</td>
                                 <td>2024-06-19</td>
                             </tr>
                         </tbody>
@@ -195,3 +189,11 @@
 
 
 @endsection
+
+<style>
+/* Tedarik Edilmesi Gereken Ürünler tablosu için kompakt görünüm */
+.tedarik-table th, .tedarik-table td { padding: 0.18em 0.35em !important; font-size: 0.89em; height: 24px; vertical-align: middle; }
+.tedarik-table thead th { background: #f3f6fa; }
+.tedarik-table tbody tr { transition: background 0.12s; }
+.tedarik-table tbody tr:hover { background: #f1f5fb; }
+</style>
