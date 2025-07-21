@@ -1,0 +1,262 @@
+    body,
+    .bg-light {
+        background: #f6f8fb !important;
+    }
+
+    .category-card {
+        border: none;
+        border-radius: 1.2rem;
+        box-shadow: 0 4px 24px #0d6efd11;
+        background: #fff;
+        margin-bottom: 1.5rem;
+        padding: 1.2rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: box-shadow 0.18s, transform 0.18s;
+    }
+
+    .category-card:hover {
+        box-shadow: 0 8px 32px #0d6efd22;
+        transform: translateY(-4px) scale(1.03);
+    }
+
+    .category-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7em;
+        background: #f6f8fa;
+        box-shadow: 0 1px 4px #0d6efd11;
+        margin-right: 0.7em;
+    }
+
+    .category-color {
+        width: 1.5em;
+        height: 1.5em;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5em;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px #0d6efd11;
+    }
+
+    .category-title {
+        font-size: 1.18em;
+        font-weight: 600;
+    }
+
+    .category-desc {
+        color: #666;
+        font-size: 1em;
+    }
+
+    .category-actions .btn {
+        margin-right: 0.3em;
+    }
+
+    .filter-bar {
+        background: #fff;
+        border-radius: 1.2rem;
+        box-shadow: 0 2px 12px #0d6efd11;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        align-items: center;
+    }
+
+    .filter-bar select,
+    .filter-bar input {
+        min-width: 140px;
+        border-radius: 0.7rem;
+        font-size: 1.08em;
+        background: #f8fafc;
+        border: 1.5px solid #d1d5db;
+        box-shadow: 0 1px 4px #0d6efd08;
+    }
+
+    .filter-bar input[type="text"]:focus,
+    .filter-bar select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px #0d6efd22;
+        outline: none;
+    }
+
+    .filter-bar button {
+        border-radius: 0.7rem;
+        font-size: 1.08em;
+        font-weight: 500;
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    }
+
+    .btn-add-category {
+        background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 2px 12px #0d6efd22;
+        border-radius: 2em;
+        padding: 0.65em 1.7em;
+        font-size: 1.12em;
+        letter-spacing: 0.01em;
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-add-category:hover,
+    .btn-add-category:focus {
+        background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%);
+        color: #fff;
+        box-shadow: 0 4px 18px #0d6efd33;
+        transform: translateY(-2px) scale(1.04);
+        outline: none;
+    }
+
+    .btn-add-category i {
+        font-size: 1.25em;
+        margin-right: 0.5em;
+        background: #fff;
+        color: #0d6efd;
+        border-radius: 50%;
+        padding: 0.18em 0.22em 0.18em 0.22em;
+        box-shadow: 0 1px 4px #0d6efd22;
+        transition: background 0.18s, color 0.18s;
+        display: inline-block;
+    }
+
+    .btn-add-category:hover i {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .table {
+        border-radius: 1.2rem;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 4px 24px #0d6efd11;
+    }
+
+    .table thead th {
+        font-weight: 700;
+        border-bottom: 2px solid #e9ecef;
+        font-size: 1.08em;
+    }
+
+    .table-hover tbody tr:hover {
+        background: #e7f1ff !important;
+        transition: background 0.2s;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background: #f8fafc;
+    }
+
+    .table td,
+    .table th {
+        vertical-align: middle !important;
+    }
+
+    .badge {
+        font-size: 1.05em;
+        border-radius: 0.7rem;
+        padding: 0.5em 1em;
+        box-shadow: 0 1px 4px #0d6efd11;
+        font-weight: 600;
+    }
+
+    .btn {
+        border-radius: 0.7rem !important;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+    }
+
+    .btn-info {
+        color: #fff;
+        background: linear-gradient(90deg, #36b3f6 0%, #007bff 100%);
+        border: none;
+    }
+
+    .btn-info:hover {
+        background: linear-gradient(90deg, #007bff 0%, #36b3f6 100%);
+    }
+
+    .btn-warning {
+        color: #fff;
+        background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(90deg, #ff9800 0%, #ffc107 100%);
+    }
+
+    .btn-danger {
+        background: linear-gradient(90deg, #dc3545 0%, #ff6f6f 100%);
+        border: none;
+        color: #fff;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(90deg, #ff6f6f 0%, #dc3545 100%);
+        color: #fff;
+    }
+
+    .pagination .page-link {
+        border-radius: 0.7rem !important;
+        margin: 0 0.15em;
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .pagination .active .page-link {
+        background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%);
+        color: #fff;
+        border: none;
+    }
+
+    .modal-content {
+        border-radius: 1.2rem;
+        box-shadow: 0 4px 32px #0d6efd18;
+    }
+
+    .modal-header {
+        background: linear-gradient(90deg, #0d6efd 60%, #36b3f6 100%);
+        color: #fff;
+        border-top-left-radius: 1.2rem;
+        border-top-right-radius: 1.2rem;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.25em;
+        letter-spacing: 0.01em;
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px #0d6efd22;
+    }
+
+    .modal-footer {
+        background: #f6f8fa;
+        border-bottom-left-radius: 1.2rem;
+        border-bottom-right-radius: 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+        .category-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.7em;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            gap: 0.7em;
+        }
+    }

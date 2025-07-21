@@ -1,0 +1,177 @@
+.filter-bar {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+.filter-bar select,
+.filter-bar input {
+    min-width: 120px;
+    border-radius: 0.5rem;
+}
+.filter-bar button {
+    border-radius: 0.5rem;
+}
+.filter-bar select {
+    background: linear-gradient(90deg, #f6f8fa 60%, #e9ecef 100%);
+    border: 1.5px solid #d1d5db;
+    color: #333;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    padding: 0.45em 2.2em 0.45em 1em;
+    appearance: none;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-image:
+        url('data:image/svg+xml;utf8,<svg fill="%230d6efd" height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7.293 7.293a1 1 0 011.414 0L10 8.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.8em center;
+    background-size: 1.2em;
+}
+.filter-bar select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 2px #0d6efd22;
+    outline: none;
+}
+.filter-bar input[type="text"] {
+    border: 1.5px solid #d1d5db;
+    background: #f6f8fa;
+    font-weight: 500;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-bar input[type="text"]:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 2px #0d6efd22;
+    outline: none;
+}
+.feature-table {
+    border-radius: 1rem;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin-top: 0.5rem;
+}
+.feature-table thead th {
+    background: #f6f8fa;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    vertical-align: middle;
+}
+.feature-table tbody tr:hover {
+    background: #f1f3f7;
+    transition: background 0.2s;
+}
+.feature-table td[contenteditable] {
+    cursor: pointer;
+    background: #f8fafc;
+    transition: background 0.2s;
+}
+.feature-table td[contenteditable]:focus {
+    outline: 2px solid #0d6efd;
+    background: #e7f1ff;
+}
+.badge {
+    font-size: 0.98em;
+    border-radius: 0.5rem;
+    padding: 0.45em 0.9em;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.btn {
+    border-radius: 0.5rem !important;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+.btn-info {
+    color: #fff;
+    background: linear-gradient(90deg, #36b3f6 0%, #007bff 100%);
+    border: none;
+}
+.btn-info:hover {
+    background: linear-gradient(90deg, #007bff 0%, #36b3f6 100%);
+}
+.pagination {
+    justify-content: flex-end;
+    margin-top: 1.2rem;
+}
+.pagination .page-link {
+    border-radius: 0.5rem !important;
+    margin: 0 0.15em;
+    color: #0d6efd;
+    font-weight: 500;
+}
+.pagination .active .page-link {
+    background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%);
+    color: #fff;
+    border: none;
+}
+.info-box {
+    background: #e7f1ff;
+    border-left: 5px solid #0d6efd;
+    border-radius: 0.75rem;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.info-box i {
+    font-size: 2.2rem;
+    color: #0d6efd;
+}
+.summary-cards {
+    display: flex;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.summary-card {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1.2rem 2rem 1.2rem 1.2rem;
+    min-width: 200px;
+    flex: 1 1 200px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.summary-card .icon {
+    font-size: 2rem;
+    color: #0d6efd;
+    background: #e7f1ff;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.summary-card .value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #222;
+}
+.summary-card .label {
+    font-size: 1rem;
+    color: #666;
+}
+.bulk-actions-panel {
+    background: #f6f8fa;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.bulk-actions-panel .btn {
+    min-width: 120px;
+}

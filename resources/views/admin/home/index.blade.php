@@ -5,7 +5,6 @@
     @include('admin.partials.breadcrumb', ['pageTitle' => 'Yönetim Paneli'])
     <!-- Üst Bar: Kullanıcı Kartı, Yardım, Duyuru, Hava Durumu, Bildirimler -->
    @vite('resources/css/home.css')
-   @vite('resources/js/home.js')
 
     <div class="row g-3 mb-4">
         <!-- Hızlı İşlemler (Sol) -->
@@ -186,14 +185,9 @@
     </div>
     <div id="snackbar" class="position-fixed bottom-0 end-0 m-4 bg-dark text-white px-4 py-2 rounded shadow" style="display:none;z-index:9999;">Mesaj</div>
 </div>
+@vite('resources/js/home.js')
 
 
 @endsection
 
-<style>
-/* Tedarik Edilmesi Gereken Ürünler tablosu için kompakt görünüm */
-.tedarik-table th, .tedarik-table td { padding: 0.18em 0.35em !important; font-size: 0.89em; height: 24px; vertical-align: middle; }
-.tedarik-table thead th { background: #f3f6fa; }
-.tedarik-table tbody tr { transition: background 0.12s; }
-.tedarik-table tbody tr:hover { background: #f1f5fb; }
-</style>
+

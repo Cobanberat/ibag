@@ -9,9 +9,9 @@
     <meta name="author" content="AdminKit">
     <meta name="keywords"
         content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/favicon.ico" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
@@ -19,14 +19,14 @@
     <link rel="canonical" href="https://demo-basic.adminkit.io/" />
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome (ikonlar için) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css"/>
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-    <!-- Font Awesome (ikonlar için, örn: fas fa-trash-alt) -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous">
-    </script>
+   
 
 
     <!-- Bootstrap 5 CSS -->
@@ -34,6 +34,7 @@
     <title>IBAG</title>
     @vite(['resources/css/admin.css'])
     @vite(['resources/js/admin.js'])
+
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
@@ -182,38 +183,9 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav navbar-align d-flex align-items-center">
-                    <li class="nav-item">
-                        <!-- From Uiverse.io by Type-Delta -->
-                        <label for="themeToggle" class="themeToggle st-sunMoonThemeToggleBtn" type="checkbox">
-                            <input type="checkbox" id="themeToggle" class="themeToggleInput" />
-                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"
-                                stroke="none">
-                                <mask id="moon-mask">
-                                    <rect x="0" y="0" width="20" height="20" fill="white"></rect>
-                                    <circle cx="11" cy="3" r="8" fill="black"></circle>
-                                </mask>
-                                <circle class="sunMoon" cx="10" cy="10" r="8" mask="url(#moon-mask)">
-                                </circle>
-                                <g>
-                                    <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
-                                    <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
-                                    <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
-                                    <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
-                                    <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
-                                    <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
-                                </g>
-                            </svg>
-                        </label>
-
-                    </li>
+                   
                     <li class="nav-item dropdown">
-                        <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#"
-                            data-bs-toggle="dropdown">
-                            <i class="align-middle" data-feather="settings"></i>
-                        </a>
-
-                        <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#"
-                            data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <span
                                 class="avatar bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-1"
                                 style="width:36px;height:36px;font-weight:700;font-size:1.2rem;">B</span>
@@ -263,14 +235,16 @@
     </div>
 </div>
 </div>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var ctx = document.getElementById("chartjs-dashboard-line").getContext("2d");
+document.addEventListener("DOMContentLoaded", function() {
+    var canvasLine = document.getElementById("chartjs-dashboard-line");
+    if (canvasLine) {
+        var ctx = canvasLine.getContext("2d");
         var gradient = ctx.createLinearGradient(0, 0, 0, 225);
         gradient.addColorStop(0, "rgba(215, 227, 244, 1)");
         gradient.addColorStop(1, "rgba(215, 227, 244, 0)");
-        // Line chart
-        new Chart(document.getElementById("chartjs-dashboard-line"), {
+        new Chart(canvasLine, {
             type: "line",
             data: {
                 labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
@@ -333,12 +307,14 @@
                 }
             }
         });
-    });
+    }
+});
 </script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Pie chart
-        new Chart(document.getElementById("chartjs-dashboard-pie"), {
+document.addEventListener("DOMContentLoaded", function() {
+    var canvasPie = document.getElementById("chartjs-dashboard-pie");
+    if (canvasPie) {
+        new Chart(canvasPie, {
             type: "pie",
             data: {
                 labels: ["Chrome", "Firefox", "IE"],
@@ -361,12 +337,14 @@
                 cutoutPercentage: 75
             }
         });
-    });
+    }
+});
 </script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Bar chart
-        new Chart(document.getElementById("chartjs-dashboard-bar"), {
+document.addEventListener("DOMContentLoaded", function() {
+    var canvasBar = document.getElementById("chartjs-dashboard-bar");
+    if (canvasBar) {
+        new Chart(canvasBar, {
             type: "bar",
             data: {
                 labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
@@ -407,10 +385,13 @@
                 }
             }
         });
-    });
+    }
+});
 </script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
+    var worldMap = document.getElementById("world_map");
+    if (worldMap && typeof jsVectorMap !== 'undefined') {
         var markers = [{
                 coords: [31.230391, 121.473701],
                 name: "Shanghai"
@@ -474,17 +455,30 @@
         window.addEventListener("resize", () => {
             map.updateSize();
         });
-    });
+    }
+});
 </script>
 
 @stack('scripts')
 </body>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Bootstrap JS (bundle, Popper ile birlikte) sadece bir kez ve en sonda -->
+<!-- Bootstrap JS (bundle, Popper ile birlikte) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Flatpickr -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- xlsx (Excel için) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+
+
 <script>
     // Bootstrap dropdownları initialize et
     document.addEventListener('DOMContentLoaded', function() {

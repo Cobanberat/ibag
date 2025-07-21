@@ -1,0 +1,326 @@
+  body {
+      background: #f6f7fb;
+  }
+
+  .kpi-card {
+      min-width: 170px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-radius: 1.5em;
+      box-shadow: 0 4px 24px 0 #e0e7ef;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+      transition: transform .15s, box-shadow .15s;
+      border: none;
+      position: relative;
+      overflow: hidden;
+      padding-bottom: 1.5rem !important;
+  }
+
+  .kpi-card:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 8px 32px 0 #b6c2e1;
+  }
+
+  .kpi-icon {
+      font-size: 2.6rem;
+      padding: 10px;
+      filter: drop-shadow(0 2px 8px #b6c2e1);
+  }
+
+  .kpi-value {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+  }
+
+  .kpi-label {
+      font-size: 1.08rem;
+      color: #6b7280;
+      letter-spacing: .5px;
+  }
+
+  .kpi-card .badge {
+      font-size: .9rem;
+      border-radius: 1em;
+  }
+
+  .kpi-card .position-absolute {
+      right: 1.2em;
+      top: 1.2em;
+  }
+
+  .modern-card {
+      border-radius: 1.3em;
+      box-shadow: 0 2px 16px #e0e7ef;
+      border: none;
+      background: #fff;
+  }
+
+  .modern-card .card-header {
+      border-radius: 1.3em 1.3em 0 0;
+      background: linear-gradient(90deg, #e0e7ff 0, #f8fafc 100%);
+      font-weight: 600;
+      font-size: 1.1rem;
+  }
+
+  .modern-table th,
+  .modern-table td {
+      vertical-align: middle;
+  }
+
+  .modern-table th {
+      background: #f3f6fa;
+      font-weight: 600;
+      color: #4b5563;
+      border-top: none;
+  }
+
+  .modern-table tr {
+      transition: background .12s;
+  }
+
+  .modern-table tr:hover {
+      background: #f1f5fb;
+  }
+
+  .pagination .page-link {
+      border-radius: 1em;
+      margin: 0 2px;
+      color: #6366f1;
+      border: none;
+      background: #f3f6fa;
+      transition: all 0.2s ease;
+  }
+
+  .pagination .page-item.active .page-link {
+      background: #6366f1;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+      font-weight: 600;
+  }
+
+  .pagination .page-item.active .page-link:hover {
+      background: #5a5fd8;
+      color: #fff;
+  }
+
+  .pagination .page-link:hover {
+      background: #e0e7ff;
+      color: #6366f1;
+      transform: translateY(-1px);
+  }
+
+  .filter-bar {
+      background: linear-gradient(90deg, #f3f6fa 0, #e0e7ff 100%);
+      border-radius: 1.2em;
+      box-shadow: 0 2px 12px #e0e7ef;
+      padding: .7em 1em;
+      margin-bottom: 1.5em;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7em;
+      align-items: center;
+  }
+
+  .filter-bar .input-group {
+      flex: 1 1 180px;
+      min-width: 160px;
+  }
+
+  .filter-bar .form-select,
+  .filter-bar .form-control {
+      border-radius: 1em;
+      border: none;
+      background: #f7f8fa;
+      font-size: .98rem;
+  }
+
+  .filter-bar .input-group-text {
+      background: transparent;
+      border: none;
+      color: #6366f1;
+      font-size: 1.1em;
+  }
+
+  .filter-bar .btn {
+      border-radius: 1em;
+      font-weight: 500;
+      min-width: 90px;
+  }
+
+  .filter-chip {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #6366f1;
+      border-radius: 1em;
+      padding: .2em .8em;
+      margin-right: .3em;
+      font-size: .95em;
+      font-weight: 500;
+  }
+
+  .chart-card {
+      border-radius: 1.3em;
+      box-shadow: 0 2px 16px #e0e7ef;
+      border: none;
+      background: #fff;
+  }
+
+  .chart-card h6 {
+      font-weight: 600;
+      font-size: 1.08rem;
+      display: flex;
+      align-items: center;
+      gap: .5em;
+  }
+
+  .chart-card h6 i {
+      color: #6366f1;
+  }
+
+  #map {
+      border-radius: 1.3em;
+      box-shadow: 0 2px 16px #e0e7ef;
+  }
+
+  @media (max-width: 768px) {
+
+      .kpi-card,
+      .modern-card,
+      .chart-card {
+          min-width: unset;
+      }
+
+      .filter-bar {
+          flex-direction: column;
+          gap: .5em;
+          padding: .7em .5em;
+      }
+
+      .filter-bar .btn {
+          min-width: unset;
+          width: 100%;
+      }
+  }
+
+  .type-filter-group {
+      display: flex;
+      gap: .5em;
+  }
+
+  .type-filter-btn {
+      border: none;
+      outline: none;
+      background: #f3f6fa;
+      color: #6366f1;
+      border-radius: 1.2em;
+      padding: .45em 1.1em;
+      font-weight: 600;
+      font-size: 1.01em;
+      display: flex;
+      align-items: center;
+      gap: .5em;
+      transition: .13s;
+      cursor: pointer;
+      box-shadow: 0 1px 4px #e0e7ef;
+  }
+
+  .type-filter-btn.selected {
+      background: #6366f1;
+      color: #fff;
+      box-shadow: 0 2px 8px #b6c2e1;
+  }
+
+  .type-filter-btn .type-ico {
+      font-size: 1.1em;
+  }
+
+  .type-filter-btn[data-type='Bakım'] {
+      --type-color: #ffc107;
+  }
+
+  .type-filter-btn[data-type='Arıza'] {
+      --type-color: #dc3545;
+  }
+
+  .type-filter-btn[data-type='Transfer'] {
+      --type-color: #6c757d;
+  }
+
+  .type-filter-btn[data-type='Satın Alma'] {
+      --type-color: #17a2b8;
+  }
+
+  .type-filter-btn .type-ico {
+      color: var(--type-color);
+  }
+
+  .type-filter-btn.selected .type-ico {
+      color: #fff;
+  }
+
+  .type-filter-btn:hover:not(.selected) {
+      background: #e0e7ff;
+  }
+
+  .type-filter-btn[title] {
+      position: relative;
+  }
+
+  .type-filter-btn[title]:hover:after {
+      content: attr(title);
+      position: absolute;
+      left: 50%;
+      top: 110%;
+      transform: translateX(-50%);
+      background: #222;
+      color: #fff;
+      font-size: .92em;
+      padding: .3em .7em;
+      border-radius: .7em;
+      white-space: nowrap;
+      z-index: 10;
+  }
+
+  .district-filter-group {
+      display: flex;
+      gap: .5em;
+  }
+
+  .district-filter-btn {
+      border: none;
+      outline: none;
+      background: #f3f6fa;
+      color: #6366f1;
+      border-radius: 1.2em;
+      padding: .45em 1.1em;
+      font-weight: 600;
+      font-size: 1.01em;
+      display: flex;
+      align-items: center;
+      gap: .5em;
+      transition: .13s;
+      cursor: pointer;
+      box-shadow: 0 1px 4px #e0e7ef;
+  }
+
+  .district-filter-btn.selected {
+      background: #17a2b8;
+      color: #fff;
+      box-shadow: 0 2px 8px #b6c2e1;
+  }
+
+  .district-filter-btn .district-ico {
+      font-size: 1.1em;
+      color: #17a2b8;
+  }
+
+  .district-filter-btn.selected .district-ico {
+      color: #fff;
+  }
+
+  .district-filter-btn:hover:not(.selected) {
+      background: #e0e7ff;
+  }

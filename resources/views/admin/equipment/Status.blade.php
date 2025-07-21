@@ -1,89 +1,8 @@
 @extends('layouts.admin')
 @section('content')
-<style>
-  .equipment-card {
-    overflow: hidden;
-    border-radius: 1rem;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.04);
-    transition: box-shadow 0.3s, transform 0.3s;
-    background: #fff;
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  .equipment-card.fade-in {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
-  }
-  .equipment-img-box {
-    position: relative;
-    height: 170px;
-    background: #f5f5f5;
-    overflow: hidden;
-  }
-  .equipment-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s cubic-bezier(.4,0,.2,1), filter 0.4s;
-    filter: brightness(0.92) saturate(1.1);
-  }
-  .equipment-card:hover .equipment-img {
-    transform: scale(1.08);
-    filter: brightness(1) saturate(1.2) blur(1px);
-  }
-  .equipment-img-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg,rgba(0,0,0,0.18) 60%,rgba(0,0,0,0.45) 100%);
-    z-index: 1;
-  }
-  .equipment-title-bar {
-    position: absolute;
-    left: 0; right: 0; top: 0;
-    z-index: 2;
-    padding: 0.5rem 1rem 0.5rem 1rem;
-    background: rgba(255,255,255,0.7);
-    border-bottom-left-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(2px);
-  }
-  .equipment-status {
-    font-size: 0.95rem;
-    font-weight: 600;
-    padding: 0.3em 0.8em;
-    border-radius: 1em;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  .favorite-btn {
-    background: rgba(255,255,255,0.8) !important;
-    border: none;
-    border-radius: 50%;
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  .favorite-btn.favorited i {
-    color: #ffc107 !important;
-    animation: fav-pop 0.4s;
-  }
-  @keyframes fav-pop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.4); }
-    100% { transform: scale(1); }
-  }
-  .equipment-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.5rem;
-    color: #bbb;
-    background: linear-gradient(135deg,#f7e7ce 0%,#e0e7ff 100%);
-  }
-</style>
 
 
+@vite(['resources/css/equipmentStatus.css'])
 
 <!-- Bakım Gerektiren Ekipmanlar Butonu -->
 <div class="alert alert-warning shadow-sm d-flex align-items-center justify-content-between mb-4 mt-4 p-4" role="alert" style="border-left: 6px solid #ffc107;">
@@ -437,53 +356,5 @@
   </div>
 </div>
 
-@push('scripts')
-<script>
-  // Fade-in animasyonu
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.equipment-card').forEach(function(card, i) {
-      setTimeout(function() {
-        card.classList.add('fade-in');
-      }, 100 + i * 120);
-    });
-  });
-  // Favori butonu animasyonu
-  document.querySelectorAll('.favorite-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      btn.classList.toggle('favorited');
-      var icon = btn.querySelector('i');
-      icon.classList.toggle('far');
-      icon.classList.toggle('fas');
-    });
-  });
-  // Detay ve servis talep butonları (önceki gibi)
-  document.querySelectorAll('.detay-gor-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var eid = btn.getAttribute('data-eid');
-      var modalId = '';
-      if(eid === '1') modalId = '#detayModal1';
-      if(eid === '3') modalId = '#detayModal3';
-      if(modalId) {
-        var modal = new bootstrap.Modal(document.querySelector(modalId));
-        modal.show();
-      }
-    });
-  });
-  document.querySelectorAll('.servis-talep-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var modal = new bootstrap.Modal(document.getElementById('servisTalepModal'));
-      modal.show();
-    });
-  });
-  // Bakım Gerektiren Ekipmanlar Modalı Aç
-  var bakimBtn = document.getElementById('bakimEkipmanModalBtn');
-  if(bakimBtn) {
-    bakimBtn.addEventListener('click', function() {
-      var modal = new bootstrap.Modal(document.getElementById('bakimEkipmanModal'));
-      modal.show();
-    });
-  }
-</script>
-@endpush
+@vite(['resources/js/equipmentStatus.js'])
 @endsection

@@ -34,7 +34,7 @@ Route::get('/admin/Ekle', function () {
 })->name('stock.create');
 
 Route::get('/admin/kategori', function () {
-    return view('admin.categoryList');
+    return view('admin.category.index');
 })->name('admin.kategori');
 
 // Route::get('/admin/ekipmanÖzelikleri', function () {
@@ -42,7 +42,7 @@ Route::get('/admin/kategori', function () {
 // })->name('admin.ekipman');
 
 Route::get('/admin/gidenGelen', function () {
-    return view('admin.comingGoing');
+    return view('admin.comingGoing.index');
 })->name('admin.gidenGelen');
 
 Route::get('/admin/ekipmanDurumu', function () {
@@ -50,7 +50,7 @@ Route::get('/admin/ekipmanDurumu', function () {
 })->name('admin.equipmentStatus');
 
 Route::get('/admin/durumKontrol', function () {
-    return view('admin.statusCheck');
+    return view('admin.statusCheck.index');
 })->name('admin.statusCheck');
 
 Route::get('/admin/ArizaBildirimi', function () {
@@ -62,11 +62,11 @@ Route::get('/admin/ArizaDurumu', function () {
 })->name('fault.status');
 
 Route::get('/admin/raporlama', function () {
-    return view('admin.reporting');
+    return view('admin.reporting.index');
 })->name('admin.reporting');
 
 // Route::get('/admin/veriAnalizi', function () {
-//     return view('admin.dataAnalysis');
+//     return view('admin.analysis.dataAnalysis');
 // })->name('admin.dataAnalysis');
 
 //     Route::get('/admin/ekipmanAnalizi', function () {
@@ -74,15 +74,15 @@ Route::get('/admin/raporlama', function () {
 // })->name('admin.equipmentAnalysis');
 
 // Route::get('/admin/uyeAnalizi', function () {
-//     return view('admin.memberAnalysis');
+//     return view('admin.analysis.memberAnalysis');
 // })->name('admin.memberAnalysis');
 
 Route::get('/admin/kullanicilar', function () {
-    return view('admin.users');
+    return view('admin.users.index');
 })->name('admin.users');
 
 Route::get('/admin/isEkle', function () {
-    return view('admin.isEkle');
+    return view('admin.works.index');
 })->name('admin.isEkle');
 
 Route::get('/admin/ekipmanlar', function () {

@@ -1,0 +1,10 @@
+.table thead th { background: #f7f7fa; font-weight: bold; }
+.badge-overdue { background: #ff4d4f; color: #fff; }
+.badge-upcoming { background: #ffec3d; color: #333; }
+.badge-done { background: #28a745; color: #fff; }
+.table-actions .btn { margin-right: 0.2rem; }
+.row-detail-panel { background: #f8f9fa; border-bottom: 2px solid #e0e7ff; }
+.daterange-box { position: relative; }
+.daterange-box .fa-calendar-alt { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #888; }
+.daterange-input { padding-left: 2.2rem; }
+.clickable-alert { cursor: pointer; }

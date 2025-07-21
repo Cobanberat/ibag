@@ -1,84 +1,13 @@
 @extends('layouts.admin')
 @section('content')
+@vite(['resources/css/fault.css'])
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
         <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
         <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
         <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Arıza Bildirimi' }}</li>
     </ol>
-</nav><style>
-  .fault-card {
-    border-radius: 1.5rem;
-    box-shadow: 0 4px 32px rgba(80,80,180,0.08), 0 1.5px 4px rgba(80,80,180,0.04);
-    background: #fff;
-    overflow: hidden;
-  }
-  .fault-header {
-    background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%);
-    color: #fff;
-    border-top-left-radius: 1.5rem;
-    border-top-right-radius: 1.5rem;
-    padding: 1.2rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .fault-header i {
-    font-size: 2.2rem;
-    opacity: 0.85;
-  }
-  .fault-form .form-label {
-    font-weight: 600;
-    color: #4a4a6a;
-  }
-  .fault-form .form-control, .fault-form .form-select {
-    border-radius: 0;
-    font-size: 1.08rem;
-    min-height: 2.5rem;
-    box-shadow: none;
-    border: 1.5px solid #e0e7ff;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .fault-form .form-control:focus, .fault-form .form-select:focus {
-    border-color: #6a82fb;
-    box-shadow: 0 0 0 2px #6a82fb33;
-  }
-  .fault-form textarea.form-control {
-    min-height: 80px;
-  }
-  .fault-form .btn-main {
-    background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%);
-    color: #fff;
-    font-weight: 600;
-    border: none;
-    border-radius: 0.7rem;
-    font-size: 1.15rem;
-    padding: 0.8rem 0;
-    box-shadow: 0 2px 12px #6a82fb22;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  .fault-form .btn-main:hover, .fault-form .btn-main:focus {
-    background: linear-gradient(90deg, #fc5c7d 0%, #6a82fb 100%);
-    box-shadow: 0 4px 24px #fc5c7d22;
-    color: #fff;
-  }
-  .fault-success {
-    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-    color: #222;
-    border-radius: 0.7rem;
-    font-weight: 600;
-    box-shadow: 0 2px 12px #38f9d733;
-    border: none;
-  }
-  .fault-form .form-select {
-    border-radius: 10px 10px 0px 0px;
-    font-size: 1.08rem;
-    min-height: 2.5rem;
-    box-shadow: none;
-    border: 1.5px solid #e0e7ff;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-</style>
+</nav>
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-7">
@@ -143,18 +72,5 @@
     </div>
   </div>
 </div>
-<script>
-// Demo: Form submit sonrası başarı mesajı göster
-const form = document.getElementById('faultForm');
-if(form) {
-  form.onsubmit = function(e) {
-    e.preventDefault();
-    document.getElementById('faultSuccessAlert').classList.remove('d-none');
-    setTimeout(()=>{
-      document.getElementById('faultSuccessAlert').classList.add('d-none');
-      form.reset();
-    }, 2500);
-  };
-}
-</script>
+@vite(['resources/js/fault.js'])
 @endsection

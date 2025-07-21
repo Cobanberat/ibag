@@ -1,0 +1,66 @@
+.modern-card {
+    border-radius: 1.2rem !important;
+    overflow: hidden;
+    box-shadow: 0 4px 32px #0d6efd18 !important;
+}
+.modern-gradient {
+    background: linear-gradient(90deg, #0d6efd 60%, #36b3f6 100%) !important;
+    border-top-left-radius: 1.2rem !important;
+    border-top-right-radius: 1.2rem !important;
+    box-shadow: 0 2px 12px #0d6efd22;
+}
+.bg-gradient {
+    background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%) !important;
+}
+.btn-gradient {
+    background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%) !important;
+    color: #fff !important;
+    border: none;
+    box-shadow: 0 2px 8px #0d6efd22;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-radius: 0.7rem;
+    transition: background 0.2s;
+}
+.btn-gradient:hover {
+    background: linear-gradient(90deg, #0d6efd 0%, #36b3f6 100%) !important;
+    color: #fff !important;
+}
+.modern-row {
+    border-radius: 1rem !important;
+    border: 1.5px solid #e3eafc !important;
+    margin-bottom: 1.1rem !important;
+    transition: box-shadow 0.2s, background 0.2s;
+}
+.modern-row:hover {
+    box-shadow: 0 4px 16px #0d6efd22 !important;
+    background: #f0f6ff !important;
+}
+.modern-input {
+    border-radius: 0.7rem !important;
+    border: 1.5px solid #d1d5db !important;
+    background: #f8fafc !important;
+    font-weight: 500;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.modern-input:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 2px #0d6efd22 !important;
+    outline: none !important;
+}
+.photo-upload-box {
+    border: 1.5px solid #e3eafc;
+    border-radius: 0.8rem;
+    background: #f8fafc;
+    min-height: 80px;
+    margin-bottom: 0.5rem;
+    transition: box-shadow 0.2s, border 0.2s;
+}
+.photo-upload-box:hover {
+    box-shadow: 0 2px 12px #0d6efd22;
+    border-color: #36b3f6;
+}
+.badge.bg-gradient {
+    background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%) !important;
+    color: #fff !important;
+}

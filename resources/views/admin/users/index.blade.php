@@ -1,65 +1,8 @@
 @extends('layouts.admin')
 @section('content')
 <!-- Gerekli kütüphaneler ve stiller -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<style>
-body.dark-mode { background: #181a1b; color: #e2e8f0; }
-.users-header { background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2.2em 1.5em 1.5em 1.5em;margin-bottom:2em;display:flex;flex-direction:column;align-items:flex-start;position:relative;overflow:hidden; }
-.users-header h2 { font-size:2.3rem;font-weight:900;margin-bottom:.3em;letter-spacing:-1px;line-height:1.1; }
-.users-header p { font-size:1.15rem;font-weight:500;opacity:.98; }
-.user-kpi-row { display:flex;gap:1em;margin-bottom:1.5em;flex-wrap:wrap;justify-content:space-between; }
-.user-kpi-card { flex:1 1 160px;min-width:140px;max-width:100%;background:linear-gradient(135deg,#43e97b 0%,#6366f1 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:1em .8em .8em .8em;display:flex;flex-direction:column;align-items:center;position:relative;transition:all .3s cubic-bezier(0.4,0,0.2,1);cursor:pointer;overflow:visible; }
-.user-kpi-card:hover { transform:translateY(-6px) scale(1.04);box-shadow:0 12px 40px rgba(99,102,241,0.18); }
-.user-kpi-icon { width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:1.2rem;margin-bottom:.3rem;background:rgba(99,102,241,0.12);color:#fff;box-shadow:0 2px 8px #e0e7ef;transition:all .3s cubic-bezier(0.4,0,0.2,1); }
-.user-kpi-card:hover .user-kpi-icon { background:#fff!important;color:#6366f1!important;transform: rotate(360deg);transition: all .5s cubic-bezier(0.4,0,0.2,1); }
-.user-kpi-value { font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:.1rem;letter-spacing:-1px; }
-.user-kpi-label { font-size:.93rem;color:#e0e7ef;font-weight:500;text-align:center; }
-.user-kpi-trend { font-size:.92em; font-weight:600; margin-top:.2em; }
-.user-kpi-trend.up { color:#43e97b; }
-.user-kpi-trend.down { color:#dc3545; }
-.user-filter-bar { background:linear-gradient(120deg,#f8fafc 60%,#e0e7ff 100%);border-radius:1.2em;box-shadow:0 2px 12px #e0e7ef;padding:1em 1em;margin-bottom:1.5em;display:flex;flex-wrap:wrap;gap:.7em;align-items:center; }
-.user-filter-bar .form-control, .user-filter-bar .form-select { border-radius:.9em;border:1.5px solid #e0e7ef;background:#fff;font-size:1em;min-width:120px;padding:.6em 1em;transition:all .3s ease; }
-.user-filter-bar .form-control:focus, .user-filter-bar .form-select:focus { border-color:#6366f1;box-shadow:0 2px 12px rgba(99,102,241,0.2);transform:scale(1.02); }
-.user-filter-chip {background:#6366f1;color:#fff;border-radius:1em;padding:.2em .8em;margin-right:.4em;font-size:.95em;display:inline-flex;align-items:center;gap:.3em;}
-.user-filter-chip .bi-x {cursor:pointer;}
-.user-table th, .user-table td { padding:.7em 1em; font-size:1.05em; }
-.user-table th { color:#6366f1;background:#f3f6fa;font-weight:700;position:sticky;top:0;z-index:10; }
-.user-table tr { border-bottom:1px solid #e0e7ef;transition:all .2s ease; }
-.user-table tr:hover { background:linear-gradient(90deg,rgba(99,102,241,0.05) 0%,rgba(67,233,123,0.05) 100%);transform:scale(1.01);box-shadow:0 2px 8px rgba(99,102,241,0.1); }
-.user-table tr:last-child { border-bottom:none; }
-.user-table tr:nth-child(even) { background:#f8fafc; }
-.user-avatar {width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1 0%,#43e97b 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1em;box-shadow:0 2px 8px #e0e7ef;margin-right:.5em;}
-.dark-mode .users-header, .dark-mode .user-filter-bar, .dark-mode .card { background:#23272b!important; color:#e2e8f0!important; }
-.dark-mode .user-table th { background:#2d3748!important; color:#e2e8f0!important; }
-.dark-mode .user-table tr:nth-child(even) { background:#23272b!important; }
-#userSnackbar { display:none;position:fixed;bottom:30px;right:30px;z-index:9999;background:linear-gradient(135deg,#6366f1 0%,#43e97b 100%);color:#fff;padding:1em 2em;border-radius:1em;box-shadow:0 4px 20px rgba(99,102,241,0.3);font-weight:600; }
-.no-data-illu {text-align:center;padding:2em 0;opacity:.7;}
-@media (max-width: 900px) {
-  .user-kpi-row {flex-direction:column;gap:.7em;}
-  .users-header {padding:1.2em .7em 1em .7em;}
-  .user-filter-bar {flex-direction:column;gap:.5em;}
-}
-@media (max-width: 600px) {
-  .users-header h2 {font-size:1.3rem;}
-  .users-header p {font-size:.95rem;}
-  .user-kpi-card {padding:.7em .5em;}
-  .user-table th, .user-table td {font-size:.95em;}
-}
-.paging_numbers {
-  display: flex !important; 
-  padding-top:3px; 
-  justify-content: flex-end !important;
-} 
-</style>
+@vite('resources/css/users.css')
+
 <div class="container-fluid">
   <!-- Ultra modern başlık -->
   <div class="users-header w-100 position-relative mb-4" style="background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2.5em 2em 2em 2em;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;">
@@ -282,80 +225,5 @@ body.dark-mode { background: #181a1b; color: #e2e8f0; }
     </div>
   </div>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-// filterByKpi fonksiyonu: karta göre modal aç
-window.filterByKpi = function(type) {
-  let title = '', html = '';
-  if(type==='all') {title='Tüm Kullanıcılar'; html='Sistemdeki tüm kullanıcılar listeleniyor.';}
-  if(type==='admin') {title='Adminler'; html='Sistemdeki tüm adminler listeleniyor.';}
-  if(type==='active') {title='Aktif Kullanıcılar'; html='Şu anda aktif olan kullanıcılar.';}
-  if(type==='new') {title='Bu Ay Eklenenler'; html='Bu ay eklenen yeni kullanıcılar.';}
-  Swal.fire({title, html, icon:'info', confirmButtonText:'Kapat'});
-};
-// DataTable başlat ve arama inputunu bağla
-var userTable = new DataTable('#userTable', {
-  paging: true,
-  searching: true,
-  ordering: true,
-  info: false,
-  responsive: false,
-  pageLength: 10,
-  lengthMenu: [10, 20, 50, 100],
-  lengthChange: false,
-  language: {},
-  dom: 'lrtp',
-  pagingType: 'numbers',
-  drawCallback: function() {
-    // Pagination'ı kesin sağa yasla
-    var pag = document.querySelector('.dataTables_paginate');
-    if(pag) {
-      pag.classList.add('d-flex','justify-content-end','w-100');
-      pag.style.marginTop = '18px';
-      pag.style.justifyContent = 'flex-end';
-      pag.style.float = 'right';
-      pag.style.textAlign = 'right';
-    }
-  }
-});
-userTable.draw();
-// Üstteki arama inputunu DataTables aramasına bağla
-var userSearch = document.getElementById('userSearch');
-if(userSearch) {
-  userSearch.placeholder = 'Kullanıcı ara';
-  userSearch.addEventListener('input', function() {
-    userTable.search(this.value).draw();
-  });
-}
-// Tümünü seç checkbox
-var selectAllUserRows = document.getElementById('selectAllUserRows');
-if(selectAllUserRows) {
-  selectAllUserRows.addEventListener('change', function() {
-    document.querySelectorAll('#userTable tbody .user-row-check').forEach(cb=>{cb.checked = selectAllUserRows.checked;});
-  });
-}
-// flatpickr güvenli kontrol
-var userFilterDateEl = document.getElementById('userFilterDate');
-if(userFilterDateEl && typeof flatpickr !== 'undefined') {
-  flatpickr('#userFilterDate', {mode:'range', dateFormat:'Y-m-d', locale:{rangeSeparator:' - '}});
-}
-
-// admin.js kaynaklı hataları önlemek için örnek koruma (örnek id: someId)
-var someIdEl = document.getElementById('someId');
-if(someIdEl) {
-  // someIdEl.classList.add('foo');
-  // veya someIdEl.length
-}
-// Rol ve durum filtreleriyle tabloyu filtrele
-var userFilterRole = document.getElementById('userFilterRole');
-var userFilterStatus = document.getElementById('userFilterStatus');
-function filterUserTable() {
-  var role = userFilterRole ? userFilterRole.value : '';
-  var status = userFilterStatus ? userFilterStatus.value : '';
-  userTable.columns(5).search(role).columns(6).search(status).draw();
-}
-if(userFilterRole) userFilterRole.addEventListener('change', filterUserTable);
-if(userFilterStatus) userFilterStatus.addEventListener('change', filterUserTable);
-});
-</script>
+@vite('resources/js/users.js')
 @endsection
