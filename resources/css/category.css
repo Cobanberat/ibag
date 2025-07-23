@@ -139,6 +139,7 @@
         overflow: hidden;
         background: #fff;
         box-shadow: 0 4px 24px #0d6efd11;
+        font-size: 0.93em;
     }
 
     .table thead th {
@@ -159,6 +160,9 @@
     .table td,
     .table th {
         vertical-align: middle !important;
+        padding: 0.55rem 0.7rem !important;
+        font-size: 0.93em;
+        line-height: 1.7;
     }
 
     .badge {

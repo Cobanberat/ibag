@@ -1,5 +1,13 @@
 @extends('layouts.admin')
 @section('content')
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+      <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
+      <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Kategoriler' }}</li>
+  </ol>
+</nav>
+
   @vite(['resources/css/category.css'])
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h3 class="fw-bold mb-0">Kategoriler</h3>
@@ -20,9 +28,9 @@
         <i class="fas fa-plus"></i> Yeni Kategori
     </button>
 </div>
-<table class="table table-hover table-striped mb-0" id="categoryTable">
+<table class="table table-hover table-striped mb-0" id="categoryTable" style="font-size:0.95em;">
     <thead>
-        <tr>
+        <tr> 
             <th><input type="checkbox" id="selectAll"></th>
             <th>Kategori</th>
             <th>Açıklama</th>
@@ -33,8 +41,91 @@
         </tr>
     </thead>
     <tbody id="categoryTableBody">
-  
-
+      <!-- Düz HTML, recursive örnek -->
+      <tr>
+        <td><input type="checkbox"></td>
+        <td><b>Donanım</b></td>
+        <td>Donanım ürünleri</td>
+        <td>12</td>
+        <td>2024-03-20</td>
+        <td><span style="background:#0d6efd;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="padding-left:2.2em;">↳ Bilgisayar</td>
+        <td>Masaüstü ve dizüstü bilgisayarlar</td>
+        <td>5</td>
+        <td>2024-03-18</td>
+        <td><span style="background:#198754;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="padding-left:4em;">↳ Dizüstü</td>
+        <td>Laptoplar</td>
+        <td>2</td>
+        <td>2024-03-15</td>
+        <td><span style="background:#ffc107;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="padding-left:6em;">↳ Oyun Laptopu</td>
+        <td>Yüksek performanslı laptoplar</td>
+        <td>1</td>
+        <td>2024-03-14</td>
+        <td><span style="background:#fd7e14;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td><b>Ağ</b></td>
+        <td>Ağ ekipmanları</td>
+        <td>8</td>
+        <td>2024-03-12</td>
+        <td><span style="background:#dc3545;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="padding-left:2.2em;">↳ Router</td>
+        <td>Yönlendiriciler</td>
+        <td>3</td>
+        <td>2024-03-11</td>
+        <td><span style="background:#20c997;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="padding-left:4em;">↳ Kablosuz Router</td>
+        <td>Wi-Fi yönlendiriciler</td>
+        <td>2</td>
+        <td>2024-03-10</td>
+        <td><span style="background:#6610f2;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
+        <td class="category-actions">
+          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
     </tbody>
 </table>
 <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 p-2">

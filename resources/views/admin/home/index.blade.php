@@ -93,6 +93,39 @@
         <div class="col-12 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">Tedarik Edilmesi Gereken Ürünler</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 table-lg">
+                        <thead>
+                            <tr>
+                                <th>Ekipman Adı</th>
+                                <th>Kritik Seviye</th>
+                                <th>Adet Sayısı</th>
+                                <th>Son Kullanım Tarihi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Jeneratör</td>
+                                <td>2</td>
+                                <td>5</td>
+                                <td>02-05-2025</td>   
+                            </tr>
+                            <tr>
+                                <td>Hilti</td>
+                                <td>1</td>
+                                <td>2</td>
+                                <td>02-05-2025</td>   
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-white border-0">
                     <h5 class="card-title mb-0">Son İşlemler</h5>
                 </div>
                 <div class="card-body p-0">
@@ -141,47 +174,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 mb-4">
-            <div class="card shadow h-100">
-                 <div class="d-flex align-items-center gap-2 p-1">
-                        <span class="fs-6 text-danger"><i class="fa fa-truck-loading"></i></span>
-                        <span class="fw-bold" style="font-size:1.05rem;">Tedarik Edilmesi Gereken Ürünler</span>
-                    </div>
-                <div class="card-body p-1">
-                   <table class="table table-sm mb-0 align-middle tedarik-table table-lg">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Ürün Adı</th>
-                                <th>Stok</th>
-                                <th>Kritik Seviye</th>
-                                <th>Durum</th>
-                                <th>Tarih</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="table-row-hover">
-                                <td>1</td>
-                                <td>Klavye</td>
-                                <td><span>0</span></td>
-                                <td>5</td>
-                                <td><span class="badge bg-info">Tedarik Bekliyor</span></td>
-                                <td>2024-06-20</td>
-                            </tr>
-                            <tr class="table-row-hover">
-                                <td>2</td>
-                                <td>Ethernet Kablosu</td>
-                                <td>2</td>
-                                <td>10</td>
-                                <td><span span class="badge bg-danger">Az Stok</span></td>
-                                <td>2024-06-19</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-     
+       
     </div>
     <div id="snackbar" class="position-fixed bottom-0 end-0 m-4 bg-dark text-white px-4 py-2 rounded shadow" style="display:none;z-index:9999;">Mesaj</div>
 </div>

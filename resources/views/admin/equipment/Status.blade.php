@@ -3,7 +3,13 @@
 
 
 @vite(['resources/css/equipmentStatus.css'])
-
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+      <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
+      <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Ekipman Durumu' }}</li>
+  </ol>
+</nav>
 <!-- Bakım Gerektiren Ekipmanlar Butonu -->
 <div class="alert alert-warning shadow-sm d-flex align-items-center justify-content-between mb-4 mt-4 p-4" role="alert" style="border-left: 6px solid #ffc107;">
   <div class="d-flex align-items-center">
@@ -138,6 +144,10 @@
     </div>
   </div>
 </div>
+<!-- Pagination Bar (JS ile doldurulacak) -->
+<nav aria-label="Ekipman Sayfalama" class="mt-3">
+  <ul class="pagination justify-content-end" id="equipmentPagination"></ul>
+</nav>
 
 <!-- Bakım Gerektiren Ekipmanlar Modal -->
 <div class="modal fade" id="bakimEkipmanModal" tabindex="-1" aria-labelledby="bakimEkipmanModalLabel" aria-hidden="true">

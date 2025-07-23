@@ -28,6 +28,14 @@
         <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
       </div>
       <div class="mb-3">
+        <label for="category" class="form-label">Kategori</label>
+        <select type="number" class="form-control" id="category" name="category" required>
+          <option value="" selected>Kategori Seç</option>
+          <option value="elektrik">Elektrik</option>
+          <option value="Delici">Delici</option>
+        </select>
+      </div>
+      <div class="mb-3">
         <label for="photo" class="form-label">Resim</label>
         <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
       </div>

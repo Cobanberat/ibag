@@ -15,12 +15,12 @@
         Kritik seviyenin altına düşen ürünler var! Lütfen stokları kontrol edin.
     </div>
     <div class="filter-bar mb-2">
-        <select class="form-select form-select-sm" id="filterCategory" style="width: 150px;">
+        <select class="form-select form-select-sm border-0" id="filterCategory" style="width: 150px; background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
             <option value="">Kategori Seç</option>
             <option>Donanım</option>
             <option>Ağ</option>
         </select>
-        <select class="form-select form-select-sm" id="filterStatus" style="width: 150px;">
+        <select class="form-select form-select-sm border-0" id="filterStatus" style="width: 150px; background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
             <option value="">Durum Seç</option>
             <option>Yeterli</option>
             <option>Az Stok</option>
@@ -48,7 +48,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Kategori</label>
-                            <select class="form-select" name="category" required>
+                            <select class="form-select border-0" name="category" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
                                 <option value="">Seçiniz</option>
                                 <option>Donanım</option>
                                 <option>Ağ</option>
@@ -91,7 +91,7 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Yeni Kategori</label>
-                            <select class="form-select" name="newCategory" required>
+                            <select class="form-select border-0" name="newCategory" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
                                 <option value="">Seçiniz</option>
                                 <option>Donanım</option>
                                 <option>Ağ</option>
@@ -114,7 +114,7 @@
                     <h5 class="modal-title" id="stockInOutModalLabel"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="stockInOutForm">
+                <form id="stockInOutForm" enctype="multipart/form-data">
                     <div class="modal-body">
                         <input type="hidden" name="productId">
                         <input type="hidden" name="type">
@@ -130,6 +130,10 @@
                             <label class="form-label">Tarih</label>
                             <input type="date" class="form-control" name="date" required value="{{ date('Y-m-d') }}">
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ürün Fotoğrafı</label>
+                            <input type="file" class="form-control" name="photo" accept="image/*">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
@@ -141,7 +145,7 @@
     </div>
     <!-- Stok Hareketleri Modalı -->
     <div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="logModalLabel"><i class="fas fa-history me-2"></i>Stok Hareketleri</h5>
@@ -182,7 +186,7 @@
     <form>
         <div class="card mt-2 p-2" style="border-radius:1.2rem;box-shadow:0 4px 24px #0d6efd11;">
             <div class="card-body p-0">
-                <table class="table table-hover table-striped mb-0" id="stockTable">
+                <table class="table table-hover table-striped mb-0" id="stockTable" style="font-size:0.95em;">
                     <thead class="table-light">
                         <tr>
                             <th><input type="checkbox" id="selectAll"></th>
@@ -196,7 +200,49 @@
                         </tr>
                     </thead>
                     <tbody id="stockTableBody">
-                        <!-- JS ile doldurulacak -->
+                      <!-- Düz HTML örnek ürünler -->
+                      <tr class="table-success">
+                        <td><input type="checkbox" name="select[]"></td>
+                        <td><span class="fw-bold">Klavye</span></td>
+                        <td>Donanım</td>
+                        <td>12</td>
+                        <td>5</td>
+                        <td><div class="progress" style="height: 10px;"><div class="progress-bar bg-success" style="width: 100%"></div></div></td>
+                        <td><span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span></td>
+                        <td class="category-actions">
+                          <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+                          <button class="btn btn-outline-info btn-sm" style="padding:0.6em 1.25em;font-size:1.15em;border-radius:1.5em;"><i class="fas fa-image"></i></button>
+                          <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+                        </td>
+                      </tr>
+                      <tr class="table-warning">
+                        <td><input type="checkbox" name="select[]"></td>
+                        <td><span class="fw-bold">Ethernet Kablosu</span></td>
+                        <td>Ağ</td>
+                        <td>3</td>
+                        <td>5</td>
+                        <td><div class="progress" style="height: 10px;"><div class="progress-bar bg-warning" style="width: 60%"></div></div></td>
+                        <td><span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span></td>
+                        <td class="category-actions">
+                          <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+                          <button class="btn btn-outline-info btn-sm" style="padding:0.6em 1.25em;font-size:1.15em;border-radius:1.5em;"><i class="fas fa-image"></i></button>
+                          <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+                        </td>
+                      </tr>
+                      <tr class="table-danger">
+                        <td><input type="checkbox" name="select[]"></td>
+                        <td><span class="fw-bold">Monitör</span></td>
+                        <td>Donanım</td>
+                        <td>0</td>
+                        <td>2</td>
+                        <td><div class="progress" style="height: 10px;"><div class="progress-bar bg-danger" style="width: 0%"></div></div></td>
+                        <td><span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span></td>
+                        <td class="category-actions">
+                          <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
+                          <button class="btn btn-outline-info btn-sm" style="padding:0.6em 1.25em;font-size:1.15em;border-radius:1.5em;"><i class="fas fa-image"></i></button>
+                          <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
+                        </td>
+                      </tr>
                     </tbody>
                 </table>
             </div>
