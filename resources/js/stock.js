@@ -44,10 +44,10 @@
                     <td><div class="progress" style="height: 10px;"><div class="progress-bar bg-${p.status==='Yeterli'?'success':p.status==='Az Stok'?'warning':'danger'}" style="width: ${Math.min(100,Math.round((p.quantity/(p.critical||1))*100))}%"></div></div></td>
                     <td>${getBadge(p.status)}</td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-success stockInBtn" data-id="${p.id}" data-type="Giriş"><i class="fas fa-plus"></i></button>
-                        <button type="button" class="btn btn-sm btn-danger stockOutBtn" data-id="${p.id}" data-type="Çıkış"><i class="fas fa-minus"></i></button>
-                        <button type="button" class="btn btn-sm btn-secondary logBtn" data-id="${p.id}"><i class="fas fa-history"></i></button>
-                        <button type="button" class="btn btn-sm btn-info photoBtn" data-id="${p.id}"><i class="fas fa-image"></i></button>
+                        <button type="button" class="btn btn-sm btn-success pt-2 pb-2 stockInBtn" data-id="${p.id}" data-type="Giriş"><i class="fas fa-plus"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger pt-2 pb-2 stockOutBtn" data-id="${p.id}" data-type="Çıkış"><i class="fas fa-minus"></i></button>
+                        <button type="button" class="btn btn-sm btn-secondary pt-2 pb-2 logBtn" data-id="${p.id}"><i class="fas fa-history"></i></button>
+                        <button type="button" class="btn btn-sm btn-info photoBtn pt-2 pb-2" data-id="${p.id}"><i class="fas fa-image"></i></button>
                         <button type="button" class="btn btn-sm btn-warning editBtn" data-id="${p.id}">Düzenle</button>
                         <button type="button" class="btn btn-sm btn-danger deleteBtn" data-id="${p.id}">Sil</button>
                     </td>
@@ -130,7 +130,6 @@
                         form.type.value = type;
                         form.amount.value = '';
                         form.desc.value = '';
-                        form.date.value = new Date().toISOString().slice(0,10);
                         new bootstrap.Modal(document.getElementById('stockInOutModal')).show();
                     }
                 }

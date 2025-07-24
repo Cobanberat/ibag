@@ -127,10 +127,6 @@
                             <textarea class="form-control" name="desc" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Tarih</label>
-                            <input type="date" class="form-control" name="date" required value="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="mb-3">
                             <label class="form-label">Ürün Fotoğrafı</label>
                             <input type="file" class="form-control" name="photo" accept="image/*">
                         </div>

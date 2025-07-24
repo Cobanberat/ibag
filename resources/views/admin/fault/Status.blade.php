@@ -103,7 +103,41 @@
                                             <th>İşlemler</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="faultyTableBody"></tbody>
+                                    <tbody id="faultyTableBody">
+<tr>
+    <td>Matkap</td>
+    <td>2024-06-18</td>
+    <td><span class='badge bg-warning text-dark'>Normal</span></td>
+    <td>Çalışmıyor, motor arızası</td>
+    <td><span class='badge bg-danger'>Arızalı</span></td>
+    <td>
+      <button class='btn btn-success btn-sm me-1 faulty-fix-btn'><i class='fas fa-check'></i></button>
+      <button class='btn btn-outline-info btn-sm faulty-detail-btn'><i class='fas fa-eye'></i></button>
+    </td>
+</tr>
+<tr>
+    <td>Projeksiyon Cihazı</td>
+    <td>2024-06-17</td>
+    <td><span class='badge bg-danger'>Acil</span></td>
+    <td>Güç gelmiyor</td>
+    <td><span class='badge bg-danger'>Arızalı</span></td>
+    <td>
+      <button class='btn btn-success btn-sm me-1 faulty-fix-btn'><i class='fas fa-check'></i></button>
+      <button class='btn btn-outline-info btn-sm faulty-detail-btn'><i class='fas fa-eye'></i></button>
+    </td>
+</tr>
+<tr>
+    <td>Jeneratör 5kVA</td>
+    <td>2024-06-16</td>
+    <td><span class='badge bg-warning text-dark'>Normal</span></td>
+    <td>Yağ kaçağı var</td>
+    <td><span class='badge bg-danger'>Arızalı</span></td>
+    <td>
+      <button class='btn btn-success btn-sm me-1 faulty-fix-btn'><i class='fas fa-check'></i></button>
+      <button class='btn btn-outline-info btn-sm faulty-detail-btn'><i class='fas fa-eye'></i></button>
+    </td>
+</tr>
+</tbody>
                                 </table>
                                 <!-- Pagination -->
                                 <nav>
@@ -132,45 +166,49 @@
                                     <th>Sonuç</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Jeneratör 5kVA</td>
-                                    <td>2024-05-10</td>
-                                    <td>Mekanik</td>
-                                    <td><span class="badge bg-warning text-dark">Normal</span></td>
-                                    <td>Periyodik bakım yapıldı</td>
-                                    <td>Ofis 1</td>
-                                    <td><span class="badge bg-success">Giderildi</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Oksijen Konsantratörü</td>
-                                    <td>2024-04-22</td>
-                                    <td>Elektriksel</td>
-                                    <td><span class="badge bg-danger">Acil</span></td>
-                                    <td>Sigorta değişimi</td>
-                                    <td>Depo</td>
-                                    <td><span class="badge bg-success">Giderildi</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Projeksiyon Cihazı</td>
-                                    <td>2024-03-15</td>
-                                    <td>Elektriksel</td>
-                                    <td><span class="badge bg-danger">Acil</span></td>
-                                    <td>Kablo tamiri</td>
-                                    <td>Toplantı Salonu</td>
-                                    <td><span class="badge bg-success">Giderildi</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Matkap</td>
-                                    <td>2024-02-10</td>
-                                    <td>Mekanik</td>
-                                    <td><span class="badge bg-warning text-dark">Normal</span></td>
-                                    <td>Bakım yapıldı</td>
-                                    <td>Depo</td>
-                                    <td><span class="badge bg-success">Giderildi</span></td>
-                                </tr>
-                            </tbody>
+                            <tbody id="historyTableBody">
+<tr>
+    <td>Jeneratör 5kVA</td>
+    <td>2024-05-10</td>
+    <td>Mekanik</td>
+    <td><span class='badge bg-warning text-dark'>Normal</span></td>
+    <td>Periyodik bakım yapıldı</td>
+    <td>Ofis 1</td>
+    <td><span class='badge bg-success'>Giderildi</span></td>
+</tr>
+<tr>
+    <td>Oksijen Konsantratörü</td>
+    <td>2024-04-22</td>
+    <td>Elektriksel</td>
+    <td><span class='badge bg-danger'>Acil</span></td>
+    <td>Sigorta değişimi</td>
+    <td>Depo</td>
+    <td><span class='badge bg-success'>Giderildi</span></td>
+</tr>
+<tr>
+    <td>Projeksiyon Cihazı</td>
+    <td>2024-03-15</td>
+    <td>Elektriksel</td>
+    <td><span class='badge bg-danger'>Acil</span></td>
+    <td>Kablo tamiri</td>
+    <td>Toplantı Salonu</td>
+    <td><span class='badge bg-success'>Giderildi</span></td>
+</tr>
+<tr>
+    <td>Matkap</td>
+    <td>2024-02-10</td>
+    <td>Mekanik</td>
+    <td><span class='badge bg-warning text-dark'>Normal</span></td>
+    <td>Bakım yapıldı</td>
+    <td>Depo</td>
+    <td><span class='badge bg-success'>Giderildi</span></td>
+</tr>
+</tbody>
                         </table>
+                        <!-- Pagination -->
+                        <nav>
+                            <ul class="pagination justify-content-end my-2" id="historyPagination"></ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -192,166 +230,147 @@
         </div>
     </div>
     <script>
-        // Arızalı Olanlar tablosu için veri ve pagination
-        const faultyData = [{
-                ekipman: 'Matkap',
-                tarih: '2024-06-18',
-                tip: 'Mekanik',
-                aciliyet: 'Normal',
-                aciklama: 'Çalışmıyor, motor arızası',
-                lokasyon: 'Depo',
-                durum: 'Arızalı',
-                resim: 'https://cdn.pixabay.com/photo/2016/03/31/19/14/drill-1299342_1280.png'
-            },
-            {
-                ekipman: 'Projeksiyon Cihazı',
-                tarih: '2024-06-17',
-                tip: 'Elektriksel',
-                aciliyet: 'Acil',
-                aciklama: 'Güç gelmiyor',
-                lokasyon: 'Toplantı Salonu',
-                durum: 'Arızalı',
-                resim: 'https://cdn.pixabay.com/photo/2013/07/12/13/58/projector-147413_1280.png'
-            },
-            {
-                ekipman: 'Jeneratör 5kVA',
-                tarih: '2024-06-16',
-                tip: 'Mekanik',
-                aciliyet: 'Normal',
-                aciklama: 'Yağ kaçağı var',
-                lokasyon: 'Ofis 1',
-                durum: 'Arızalı',
-                resim: 'https://cdn.pixabay.com/photo/2012/04/13/21/07/generator-33637_1280.png'
-            }
-        ];
         const pageSize = 2;
         let currentPage = 1;
-        // --- Filtreleme için yardımcılar ---
-        function getUnique(arr, key) {
-            return [...new Set(arr.map(item => item[key]))];
-        }
+        let currentHistoryPage = 1;
 
-        function populateFilters() {
-            // Lokasyon kaldırıldı
-            // Aciliyet
-            const urgencySel = document.getElementById('filterUrgency');
-            const urgencies = getUnique(faultyData, 'aciliyet');
-            urgencies.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u;
-                opt.textContent = u;
-                urgencySel.appendChild(opt);
-            });
-        }
-        // --- Filtreleme işlemi ---
-        let filteredData = faultyData.slice();
-
-        function applyFilters() {
-            // Lokasyon kaldırıldı
+        function applyFiltersAndPaginate() {
+            // Arızalı Olanlar Tablosu
+            const rows = Array.from(document.querySelectorAll('#faultyTableBody tr'));
             const urgency = document.getElementById('filterUrgency').value;
             const search = document.getElementById('filterSearch').value.trim().toLowerCase();
-            filteredData = faultyData.filter(d => {
-                return (urgency === '' || d.aciliyet === urgency) &&
-                    (search === '' || d.ekipman.toLowerCase().includes(search) || d.aciklama.toLowerCase().includes(
-                        search));
+            let filtered = rows.filter(tr => {
+                const tds = tr.querySelectorAll('td');
+                const aciliyet = tds[2].innerText.trim();
+                const ekipman = tds[0].innerText.trim().toLowerCase();
+                const aciklama = tds[3].innerText.trim().toLowerCase();
+                let show = true;
+                if (urgency && aciliyet !== urgency) show = false;
+                if (search && !(ekipman.includes(search) || aciklama.includes(search))) show = false;
+                return show;
             });
-            currentPage = 1;
-            renderFaultyTable();
-        }
-        // --- Tablo render'ı filtreli veriyle ---
-        function renderFaultyTable() {
-            const tbody = document.getElementById('faultyTableBody');
-            tbody.innerHTML = '';
+            // Pagination
+            rows.forEach(tr => tr.style.display = 'none');
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredData.slice(start, end);
-            if (pageData.length === 0) {
-                tbody.innerHTML =
-                    `<tr><td colspan="6" class="text-center text-muted py-4">Kriterlere uygun kayıt bulunamadı.</td></tr>`;
-            } else {
-                pageData.forEach((d, i) => {
-                    tbody.innerHTML += `<tr>
-        <td>${d.ekipman}</td>
-        <td>${d.tarih}</td>
-        <td><span class='badge ${d.aciliyet==='Acil'?'bg-danger':'bg-warning text-dark'}'>${d.aciliyet}</span></td>
-        <td>${d.aciklama}</td>
-        <!-- <td>${d.lokasyon}</td> kaldırıldı -->
-        <td><span class='badge bg-danger'>Arızalı</span></td>
-        <td>
-          <button class='btn btn-success btn-sm me-1 faulty-fix-btn' data-idx='${faultyData.indexOf(d)}'><i class='fas fa-check'></i></button>
-          <button class='btn btn-outline-info btn-sm faulty-detail-btn' data-idx='${faultyData.indexOf(d)}'><i class='fas fa-eye'></i></button>
-        </td>
-      </tr>`;
-                });
-            }
-            renderFaultyPagination();
-            attachFaultyBtnEvents();
-        }
+            filtered.slice(start, end).forEach(tr => tr.style.display = '');
+            renderPagination('faultyPagination', filtered.length, pageSize, currentPage, gotoFaultyPage);
 
-        function renderFaultyPagination() {
-            const pageCount = Math.ceil(filteredData.length / pageSize);
-            const pag = document.getElementById('faultyPagination');
-            pag.innerHTML = '';
+            // Geçmiş İşlemler Tablosu
+            const hRows = Array.from(document.querySelectorAll('#historyTableBody tr'));
+            let hFiltered = hRows.filter(tr => {
+                const tds = tr.querySelectorAll('td');
+                const aciliyet = tds[3].innerText.trim();
+                const ekipman = tds[0].innerText.trim().toLowerCase();
+                const aciklama = tds[4].innerText.trim().toLowerCase();
+                let show = true;
+                if (urgency && aciliyet !== urgency) show = false;
+                if (search && !(ekipman.includes(search) || aciklama.includes(search))) show = false;
+                return show;
+            });
+            hRows.forEach(tr => tr.style.display = 'none');
+            const hStart = (currentHistoryPage - 1) * pageSize;
+            const hEnd = hStart + pageSize;
+            hFiltered.slice(hStart, hEnd).forEach(tr => tr.style.display = '');
+            renderPagination('historyPagination', hFiltered.length, pageSize, currentHistoryPage, gotoHistoryPage);
+        }
+        function renderPagination(ulId, total, pageSize, current, gotoFunc) {
+            const ul = document.getElementById(ulId);
+            if (!ul) return;
+            ul.innerHTML = '';
+            const pageCount = Math.ceil(total / pageSize);
             for (let i = 1; i <= pageCount; i++) {
-                pag.innerHTML +=
-                    `<li class='page-item${i===currentPage?' active':''}'><a class='page-link' href='#' onclick='gotoFaultyPage(${i});return false;'>${i}</a></li>`;
+                const li = document.createElement('li');
+                li.className = 'page-item' + (i === current ? ' active' : '');
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = i;
+                a.onclick = function(e) { e.preventDefault(); gotoFunc(i); };
+                li.appendChild(a);
+                ul.appendChild(li);
             }
         }
-
-        function gotoFaultyPage(page) {
-            currentPage = page;
-            renderFaultyTable();
-        }
-        window.gotoFaultyPage = gotoFaultyPage;
-
-        function attachFaultyBtnEvents() {
-            document.querySelectorAll('.faulty-detail-btn').forEach(btn => {
-                btn.onclick = function() {
-                    const idx = parseInt(btn.getAttribute('data-idx'));
-                    showFaultyDetail(idx);
-                };
-            });
-            document.querySelectorAll('.faulty-fix-btn').forEach(btn => {
-                btn.onclick = function() {
-                    const idx = parseInt(btn.getAttribute('data-idx'));
-                    markFaultyFixed(idx);
-                };
-            });
-        }
-
-        function showFaultyDetail(idx) {
-            const d = faultyData[idx];
-            let html =
-                `<div class='text-center mb-3'><img src='${d.resim}' alt='${d.ekipman}' class='img-fluid rounded shadow' style='max-height:160px;'></div>`;
-            html += `<div class='mb-2'><span class='fw-bold'>Ekipman:</span> ${d.ekipman}</div>`;
-            html +=
-                `<div class='mb-2'><span class='fw-bold'>Aciliyet:</span> <span class='badge ${d.aciliyet==='Acil'?'bg-danger':'bg-warning text-dark'}'>${d.aciliyet}</span></div>`;
-            html += `<div class='mb-2'><span class='fw-bold'>Açıklama:</span> ${d.aciklama}</div>`;
-            // Lokasyon kaldırıldı
-            html += `<div class='mb-2'><span class='fw-bold'>Bildirim Tarihi:</span> ${d.tarih}</div>`;
-            html +=
-                `<div class='mb-2'><span class='fw-bold'>Durum:</span> <span class='badge bg-danger'>Arızalı</span></div>`;
-            const modalBody = document.getElementById('faultyDetailBody');
-            if (modalBody) modalBody.innerHTML = html;
-            const modalEl = document.getElementById('faultyDetailModal');
-            if (modalEl && typeof bootstrap !== 'undefined') {
-                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        function gotoFaultyPage(page) { currentPage = page; applyFiltersAndPaginate(); }
+        function gotoHistoryPage(page) { currentHistoryPage = page; applyFiltersAndPaginate(); }
+        document.getElementById('filterUrgency').onchange = function() { currentPage = 1; currentHistoryPage = 1; applyFiltersAndPaginate(); };
+        document.getElementById('filterSearch').oninput = function() { currentPage = 1; currentHistoryPage = 1; applyFiltersAndPaginate(); };
+        // Buton eventleri (örnek: detay ve arıza giderildi modalı açma)
+        document.querySelectorAll('.faulty-detail-btn').forEach(btn => {
+            btn.onclick = function() {
+                // Detay modalı açma işlemi
+                const tr = btn.closest('tr');
+                const tds = tr.querySelectorAll('td');
+                const ekipman = tds[0].innerText.trim();
+                const tarih = tds[1].innerText.trim();
+                const aciliyet = tds[2].innerHTML.trim();
+                const aciklama = tds[3].innerText.trim();
+                const durum = tds[4].innerHTML.trim();
+                let html = '';
+                html += `<div class='mb-2'><span class='fw-bold'>Ekipman:</span> ${ekipman}</div>`;
+                html += `<div class='mb-2'><span class='fw-bold'>Aciliyet:</span> <span style='font-size:1.1em;'>${aciliyet}</span></div>`;
+                html += `<div class='mb-2'><span class='fw-bold'>Açıklama:</span> ${aciklama}</div>`;
+                html += `<div class='mb-2'><span class='fw-bold'>Bildirim Tarihi:</span> ${tarih}</div>`;
+                html += `<div class='mb-2'><span class='fw-bold'>Durum:</span> ${durum}</div>`;
+                document.getElementById('faultyDetailBody').innerHTML = html;
+                var modal = new bootstrap.Modal(document.getElementById('faultyDetailModal'));
                 modal.show();
-            }
+            };
+        });
+        document.querySelectorAll('.faulty-fix-btn').forEach(btn => {
+            btn.onclick = function() {
+                // Arıza giderildi modalı açma işlemi burada yapılabilir
+                var modal = new bootstrap.Modal(document.getElementById('faultFixedModal'));
+                modal.show();
+            };
+        });
+        function populateUrgencySelect() {
+            const select = document.getElementById('filterUrgency');
+            const allRows = document.querySelectorAll('#faultyTableBody tr, #historyTableBody tr');
+            const aciliyetSet = new Set();
+            allRows.forEach(tr => {
+                const tds = tr.querySelectorAll('td');
+                // Arızalı tablosunda 3. td, geçmişte 4. td
+                let aciliyet = '';
+                if (tds[2]) aciliyet = tds[2].innerText.trim();
+                if (tds[3] && !aciliyet) aciliyet = tds[3].innerText.trim();
+                if (aciliyet) aciliyetSet.add(aciliyet);
+            });
+            select.innerHTML = '<option value="">Tümü</option>';
+            Array.from(aciliyetSet).forEach(a => {
+                select.innerHTML += `<option value="${a}">${a}</option>`;
+            });
         }
-
-        function markFaultyFixed(idx) {
-            faultyData.splice(idx, 1);
-            applyFilters();
-            if ((currentPage - 1) * pageSize >= filteredData.length && currentPage > 1) currentPage--;
-            renderFaultyTable();
-        }
-        window.onload = function() {
-            populateFilters();
-            applyFilters();
-            // Filtre eventleri
-            document.getElementById('filterUrgency').onchange = applyFilters;
-            document.getElementById('filterSearch').oninput = applyFilters;
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            populateUrgencySelect();
+            applyFiltersAndPaginate();
+        });
     </script>
+    <!-- Arıza Giderildi Modalı -->
+    <div class="modal fade" id="faultFixedModal" tabindex="-1" aria-labelledby="faultFixedModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success bg-opacity-25">
+                    <h5 class="modal-title" id="faultFixedModalLabel"><i class="fas fa-check-circle text-success me-2"></i>Arıza Giderildi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="faultFixedForm">
+                        <div class="mb-3">
+                            <label for="fixedDate" class="form-label">Giderilme Tarihi</label>
+                            <input type="date" class="form-control" id="fixedDate" name="fixedDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fixedPhoto" class="form-label">Ekipman Fotoğrafı</label>
+                            <input type="file" class="form-control" id="fixedPhoto" name="fixedPhoto" accept="image/*" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" form="faultFixedForm" class="btn btn-success">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

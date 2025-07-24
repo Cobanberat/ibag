@@ -85,7 +85,6 @@
         <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 01.05.2025</div>
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
-        <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="1"><i class="fas fa-tools"></i> Servis Talebi</button>
         <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="1"><i class="fas fa-eye"></i> Detay</button>
         <button class="favorite-btn btn btn-sm ms-auto" data-eid="1"><i class="far fa-star"></i></button>
       </div>
@@ -111,7 +110,6 @@
         <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 10.05.2025</div>
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
-        <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="2"><i class="fas fa-tools"></i> Servis Talebi</button>
         <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="2"><i class="fas fa-eye"></i> Detay</button>
         <button class="favorite-btn btn btn-sm ms-auto" data-eid="2"><i class="far fa-star"></i></button>
       </div>
@@ -137,9 +135,9 @@
         <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 05.06.2025</div>
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
-        <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="3"><i class="fas fa-tools"></i> Servis Talebi</button>
         <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="3"><i class="fas fa-eye"></i> Detay</button>
         <button class="favorite-btn btn btn-sm ms-auto" data-eid="3"><i class="far fa-star"></i></button>
+        <button class="btn btn-success btn-sm ms-2 ariza-giderildi-btn" data-eid="3"><i class="fas fa-check"></i> Arıza Giderildi</button>
       </div>
     </div>
   </div>
@@ -171,7 +169,6 @@
                 </div>
               </div>
               <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="1"><i class="fas fa-tools"></i> Servis Talebi</button>
                 <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="1"><i class="fas fa-eye"></i> Detay</button>
               </div>
             </div>
@@ -188,7 +185,6 @@
                 </div>
               </div>
               <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-success btn-sm servis-talep-btn" data-eid="3"><i class="fas fa-tools"></i> Servis Talebi</button>
                 <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="3"><i class="fas fa-eye"></i> Detay</button>
               </div>
             </div>
@@ -335,32 +331,30 @@
 </div>
 
 <!-- Servis Talep Modalı (örnek) -->
-<div class="modal fade" id="servisTalepModal" tabindex="-1" aria-labelledby="servisTalepModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+
+<!-- Arıza Giderildi Modalı -->
+<div class="modal fade" id="arizaGiderildiModal" tabindex="-1" aria-labelledby="arizaGiderildiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="servisTalepModalLabel">Servis Talebi Oluştur</h5>
+      <div class="modal-header bg-success bg-opacity-25">
+        <h5 class="modal-title" id="arizaGiderildiModalLabel"><i class="fas fa-check-circle text-success me-2"></i>Arıza Giderildi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
       <div class="modal-body">
-        <form>
-          <div class="mb-2">
-            <label class="form-label">Açıklama</label>
-            <textarea class="form-control" rows="2"></textarea>
+        <form id="arizaGiderildiForm">
+          <div class="mb-3">
+            <label for="giderilmeTarihi" class="form-label">Giderilme Tarihi</label>
+            <input type="date" class="form-control" id="giderilmeTarihi" name="giderilmeTarihi" required>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Öncelik</label>
-            <select class="form-select">
-              <option>Normal</option>
-              <option>Yüksek</option>
-              <option>Acil</option>
-            </select>
+          <div class="mb-3">
+            <label for="ekipmanFoto" class="form-label">Ekipman Fotoğrafı</label>
+            <input type="file" class="form-control" id="ekipmanFoto" name="ekipmanFoto" accept="image/*" required>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-        <button type="button" class="btn btn-success">Talep Gönder</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="submit" form="arizaGiderildiForm" class="btn btn-success">Kaydet</button>
       </div>
     </div>
   </div>

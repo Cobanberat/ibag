@@ -28,9 +28,9 @@ function renderTable() {
             <td class="table-success">${c.date}</td>
             <td class="table-success"><span class="category-color" style="background:${c.color}"></span></td>
             <td class="category-actions table-success">
-                <button type="button" class="btn btn-sm btn-info detailBtn" data-id="${c.id}"><i class="fas fa-info-circle"></i></button>
-                <button type="button" class="btn btn-sm btn-warning editBtn" data-id="${c.id}"><i class="fas fa-edit"></i></button>
-                <button type="button" class="btn btn-sm btn-danger deleteBtn" data-id="${c.id}"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-sm btn-info detailBtn   pt-2 pb-2" data-id="${c.id}"><i class="fas fa-info-circle"></i></button>
+                <button type="button" class="btn btn-sm btn-warning editBtn  pt-2 pb-2" data-id="${c.id}"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-danger deleteBtn pt-2 pb-2" data-id="${c.id}"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     });

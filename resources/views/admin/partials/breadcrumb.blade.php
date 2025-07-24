@@ -20,8 +20,8 @@
                 </div>
             </div>
         </div>
-        <div class="dropdown position-relative">
-            <button class="btn btn-light shadow-sm position-relative py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="btn-group">
+            <button class="btn btn-light shadow-sm py-2 " type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fa fa-bell"></i><span
                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
             </button>

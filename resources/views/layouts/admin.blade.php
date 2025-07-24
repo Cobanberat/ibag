@@ -30,6 +30,8 @@
 
 
     <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap JS (bundle, Popper ile birlikte) -->
+    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"></script> --}}
 
     <title>IBAG</title>
     @vite(['resources/css/admin.css'])
@@ -38,6 +40,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
+<body>
 <div class="wrapper">
 
     <nav id="sidebar" class="sidebar js-sidebar">
@@ -461,8 +464,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 @stack('scripts')
 </body>
-<!-- Bootstrap JS (bundle, Popper ile birlikte) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -477,35 +478,6 @@ document.addEventListener("DOMContentLoaded", function() {
 <!-- xlsx (Excel için) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-
-
-<script>
-    // Bootstrap dropdownları initialize et
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.bootstrap) {
-            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(el) {
-                new bootstrap.Dropdown(el);
-            });
-        }
-     
-        // getContext güvenli örnek
-        var canvasEls = document.querySelectorAll('canvas');
-        canvasEls.forEach(function(el) {
-            if (el && typeof Chart !== 'undefined') {
-                // var ctx = el.getContext('2d');
-                // ...
-            }
-        });
-        // classList ve length güvenli örnek
-        var someEl = document.getElementById('someId');
-        if (someEl) {
-            // someEl.classList.add('foo');
-            // var len = someEl.length;
-        }
-        // Avatar görselleri yerine baş harfli avatar kullanın:
-        // <span class="user-avatar">AK</span>
-    });
-</script>
 
 </html>
 <style>

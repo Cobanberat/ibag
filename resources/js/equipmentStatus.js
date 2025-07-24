@@ -44,6 +44,15 @@
     });
   }
 
+// 'Arıza Giderildi' butonuna tıklanınca modalı aç
+var arizaBtns = document.querySelectorAll('.ariza-giderildi-btn');
+arizaBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var modal = new bootstrap.Modal(document.getElementById('arizaGiderildiModal'));
+    modal.show();
+  });
+});
+
 // --- Pagination Başlangıç ---
 document.addEventListener('DOMContentLoaded', function() {
   const cards = Array.from(document.querySelectorAll('.equipment-card'));
