@@ -53,6 +53,24 @@ arizaBtns.forEach(function(btn) {
   });
 });
 
+// Talep Oluştur butonu eventleri
+var talepBtns = document.querySelectorAll('.talep-olustur-btn');
+talepBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var ekipmanAdi = btn.getAttribute('data-equipment');
+    document.getElementById('talepEkipmanAdi').value = ekipmanAdi;
+    var modal = new bootstrap.Modal(document.getElementById('talepOlusturModal'));
+    modal.show();
+  });
+});
+// Talep Oluştur formu submit (şimdilik sadece modalı kapat)
+document.getElementById('talepOlusturForm').onsubmit = function(e) {
+  e.preventDefault();
+  var modal = bootstrap.Modal.getInstance(document.getElementById('talepOlusturModal'));
+  if(modal) modal.hide();
+  // Burada backend'e gönderme işlemi eklenebilir
+};
+
 // --- Pagination Başlangıç ---
 document.addEventListener('DOMContentLoaded', function() {
   const cards = Array.from(document.querySelectorAll('.equipment-card'));

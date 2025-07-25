@@ -134,6 +134,12 @@
                         <span class="align-middle">Arıza Durumu</span>
                     </a>
                 </li>
+                <li class="sidebar-item{{ request()->routeIs('requests.index') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('requests.index') }}">
+                        <i class="align-middle" data-feather="clipboard"></i>
+                        <span class="align-middle">Talepler</span>
+                    </a>
+                </li>
 
 
 

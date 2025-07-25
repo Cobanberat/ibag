@@ -86,7 +86,7 @@
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
         <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="1"><i class="fas fa-eye"></i> Detay</button>
-        <button class="favorite-btn btn btn-sm ms-auto" data-eid="1"><i class="far fa-star"></i></button>
+        <button class="btn btn-warning btn-sm ms-2 talep-olustur-btn" data-equipment="Jeneratör 5kVA"><i class="fas fa-plus"></i> Talep Oluştur</button>
       </div>
     </div>
   </div>
@@ -111,7 +111,7 @@
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
         <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="2"><i class="fas fa-eye"></i> Detay</button>
-        <button class="favorite-btn btn btn-sm ms-auto" data-eid="2"><i class="far fa-star"></i></button>
+        <button class="btn btn-warning btn-sm ms-2 talep-olustur-btn" data-equipment="Oksijen Konsantratörü"><i class="fas fa-plus"></i> Talep Oluştur</button>
       </div>
     </div>
   </div>
@@ -136,8 +136,8 @@
       </div>
       <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
         <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="3"><i class="fas fa-eye"></i> Detay</button>
-        <button class="favorite-btn btn btn-sm ms-auto" data-eid="3"><i class="far fa-star"></i></button>
         <button class="btn btn-success btn-sm ms-2 ariza-giderildi-btn" data-eid="3"><i class="fas fa-check"></i> Arıza Giderildi</button>
+        <button class="btn btn-warning btn-sm ms-2 talep-olustur-btn" data-equipment="Hilti Kırıcı"><i class="fas fa-plus"></i> Talep Oluştur</button>
       </div>
     </div>
   </div>
@@ -355,6 +355,42 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
         <button type="submit" form="arizaGiderildiForm" class="btn btn-success">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Talep Oluştur Modalı -->
+<div class="modal fade" id="talepOlusturModal" tabindex="-1" aria-labelledby="talepOlusturModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning bg-opacity-25">
+        <h5 class="modal-title" id="talepOlusturModalLabel"><i class="fas fa-plus-circle text-warning me-2"></i>Talep Oluştur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <form id="talepOlusturForm">
+          <div class="mb-3">
+            <label class="form-label">Ekipman</label>
+            <input type="text" class="form-control" id="talepEkipmanAdi" name="talepEkipmanAdi" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Talep Tipi</label>
+            <select class="form-select" id="talepTipi" name="talepTipi" required>
+              <option value="">Seçiniz</option>
+              <option value="Bakım">Bakım Talebi</option>
+              <option value="Arıza">Arıza Talebi</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Açıklama</label>
+            <textarea class="form-control" id="talepAciklama" name="talepAciklama" rows="3" required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="submit" form="talepOlusturForm" class="btn btn-warning">Gönder</button>
       </div>
     </div>
   </div>

@@ -57,6 +57,10 @@ Route::get('/admin/ArizaBildirimi', function () {
     return view('admin.fault.index');
 })->name('admin.fault');
 
+Route::get('/admin/Talepler', function () {
+    return view('admin.requests.index');
+})->name('requests.index');
+
 Route::get('/admin/ArizaDurumu', function () {
     return view('admin.fault.Status');
 })->name('fault.status');
