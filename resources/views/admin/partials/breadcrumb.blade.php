@@ -24,7 +24,7 @@
             <button class="btn btn-light shadow-sm py-2 " type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fa fa-bell"></i><span
                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
-            </button>
+            </button>   
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#"><i class="fa fa-exclamation-circle text-warning me-2"></i>
                         Kritik stok azaldı!</a></li>

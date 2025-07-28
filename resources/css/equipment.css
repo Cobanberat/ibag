@@ -175,3 +175,192 @@
 .bulk-actions-panel .btn {
     min-width: 120px;
 }
+
+/* Düzenlenebilir hücre stilleri */
+.editable-cell {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.editable-cell:hover {
+    background-color: #f8f9fa !important;
+    box-shadow: inset 0 0 0 1px #dee2e6;
+}
+
+.editable-cell input,
+.editable-cell select {
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    font-size: inherit !important;
+    background-color: #fff !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+    min-width: 80px !important;
+}
+
+.editable-cell input:focus,
+.editable-cell select:focus {
+    border-color: #6c757d !important;
+    box-shadow: 0 0 0 1px rgba(108, 117, 125, 0.25) !important;
+}
+
+/* Select dropdown özel stilleri */
+.editable-cell select {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%236c757d" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M8 11L3 6h10l-5 5z"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 6px center !important;
+    background-size: 12px !important;
+    padding-right: 25px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+.editable-cell select option {
+    padding: 4px 8px;
+    background-color: #fff;
+    color: #333;
+}
+
+.editable-cell select option:hover {
+    background-color: #f8f9fa;
+}
+
+/* Number input özel stilleri */
+.editable-cell input[type="number"] {
+    text-align: center;
+    font-weight: 500;
+}
+
+.editable-cell input[type="number"]::-webkit-inner-spin-button,
+.editable-cell input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 20px;
+}
+
+/* Date input özel stilleri */
+.editable-cell input[type="date"] {
+    text-align: center;
+    font-family: inherit;
+}
+
+.editable-cell input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+/* Düzenleme durumu göstergesi - kaldırıldı */
+.editable-cell.editing {
+    background-color: #f8f9fa !important;
+}
+
+/* Başarılı düzenleme animasyonu */
+.editable-cell.saved {
+    animation: saveSuccess 2s ease;
+}
+
+@keyframes saveSuccess {
+    0% { background-color: #d4edda; }
+    50% { background-color: #c3e6cb; }
+    100% { background-color: transparent; }
+}
+
+/* Tablo hücrelerinin genel stilleri */
+#equipmentTable td {
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#equipmentTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* İşlemler sütunu için özel stil */
+.E-actions {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.E-actions .btn {
+    margin: 0 2px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Responsive tasarım için */
+@media (max-width: 768px) {
+    .editable-cell input,
+    .editable-cell select {
+        font-size: 14px !important;
+        padding: 4px 8px !important;
+    }
+    
+    .editable-cell select {
+        background-size: 10px !important;
+        padding-right: 20px !important;
+    }
+}
+
+/* Tab ile gezinme için focus göstergesi */
+.editable-cell input:focus,
+.editable-cell select:focus {
+    outline: none !important;
+    border-color: #6c757d !important;
+    box-shadow: 0 0 0 1px rgba(108, 117, 125, 0.25) !important;
+}
+
+/* Alert paneli stilleri */
+.alert-info {
+    background: linear-gradient(135deg, #e7f1ff 0%, #d1ecf1 100%);
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    color: #0c5460;
+}
+
+.alert-info .badge {
+    font-size: 0.75em;
+    padding: 0.25em 0.5em;
+    border-radius: 4px;
+}
+
+.alert-info .btn-close {
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(175deg);
+}
+
+/* Badge stilleri */
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+}
+
+.badge.bg-info {
+    background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
+}
+
+@media screen and (max-width: 1350px) {
+
+    .E-actions {
+        display: flex;
+    }
+    
+}

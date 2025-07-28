@@ -25,6 +25,25 @@
             </button>
         </div>
     </div>
+    
+    <!-- Düzenleme Yardım Paneli -->
+    <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle me-2"></i>
+            <div>
+                <strong>Düzenleme Özelliği:</strong> Tablo hücrelerine çift tıklayarak düzenleyebilirsiniz.
+                <div class="mt-1">
+                    <small>
+                        <strong>Klavye Kısayolları:</strong>
+                        <span class="badge bg-primary ms-1">Enter</span> Kaydet,
+                        <span class="badge bg-secondary ms-1">Escape</span> İptal,
+                        <span class="badge bg-info ms-1">Tab</span> Sonraki Hücre
+                    </small>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <div class="row mb-4 g-2">
         <div class="col-md-3">
             <input type="text" class="form-control w-auto" placeholder="Ara..." id="searchInput" style="max-width:200px;">

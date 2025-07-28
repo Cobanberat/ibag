@@ -1,0 +1,241 @@
+/* Arka plan efekt */
+.profile-bg-effect {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 70% 20%, #0d6efd22 0%, #fff 80%), linear-gradient(120deg, #e7f1ff 0%, #fff 100%);
+    filter: blur(0.5px);
+    pointer-events: none;
+}
+
+.profile-container {
+    min-height: 70vh;
+    position: relative;
+    z-index: 1;
+}
+
+.profile-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px rgba(13,110,253,0.08), 0 1.5px 8px rgba(0,0,0,0.04);
+    padding: 2.5rem;
+    width: 100%;
+    position: relative;
+    transition: box-shadow 0.2s, transform 0.2s;
+    animation: fadeInUp 0.7s cubic-bezier(.39,.575,.56,1.000);
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Profil fotoğrafı */
+.profile-photo-wrap {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d6efd22 60%, #fff 100%);
+    box-shadow: 0 4px 24px rgba(13,110,253,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: box-shadow 0.2s;
+    margin: 0 auto;
+}
+.profile-photo {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 8px rgba(13,110,253,0.10);
+    object-fit: cover;
+    transition: box-shadow 0.2s, filter 0.2s;
+}
+.profile-photo-wrap:hover .profile-photo {
+    box-shadow: 0 4px 24px #0d6efd33;
+    filter: brightness(0.97) saturate(1.1);
+}
+.btn-photo-edit {
+    position: absolute;
+    bottom: 10px; right: 10px;
+    background: linear-gradient(135deg, #0d6efd 60%, #0dcaf0 100%);
+    color: #fff;
+    border-radius: 50%;
+    border: none;
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px #0d6efd22;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+}
+.profile-photo-wrap:hover .btn-photo-edit {
+    opacity: 1;
+}
+.btn-photo-edit:hover {
+    background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+}
+
+/* Profil bilgileri */
+.profile-info {
+    margin-top: 1rem;
+}
+.profile-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: 0.5px;
+}
+.profile-role .badge {
+    font-size: 1em;
+    background: linear-gradient(90deg, #0d6efd 60%, #0dcaf0 100%);
+    color: #fff;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    padding: 0.45em 1.1em;
+    box-shadow: 0 1px 4px #0d6efd11;
+}
+.profile-meta {
+    color: #666;
+    font-size: 0.95em;
+}
+.profile-meta div {
+    margin-bottom: 0.3rem;
+}
+
+/* İstatistik kutuları */
+.profile-stats {
+    margin-top: 1.5rem;
+}
+.stat-box {
+    background: #f8fafc;
+    border-radius: 1rem;
+    box-shadow: 0 1px 6px #0d6efd0a;
+    padding: 1.1rem 0.7rem 0.7rem 0.7rem;
+    text-align: center;
+    transition: box-shadow 0.2s, background 0.2s;
+    margin-bottom: 1rem;
+}
+.stat-box:hover {
+    background: #e7f1ff;
+    box-shadow: 0 2px 12px #0d6efd22;
+}
+.stat-icon {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.3rem auto;
+    font-size: 1.2rem;
+    color: #fff;
+}
+.bg-gradient-blue { background: linear-gradient(135deg, #0d6efd 60%, #0dcaf0 100%); }
+.bg-gradient-green { background: linear-gradient(135deg, #198754 60%, #51e2c2 100%); }
+.bg-gradient-orange { background: linear-gradient(135deg, #fd7e14 60%, #ffc107 100%); }
+.stat-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 0.1rem;
+}
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #222;
+}
+
+/* Form bölümü */
+.profile-form-section {
+    padding-left: 1rem;
+}
+.section-title {
+    color: #333;
+    font-weight: 600;
+    border-bottom: 2px solid #e7f1ff;
+    padding-bottom: 0.5rem;
+}
+.profile-input {
+    border: 1.5px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fafbfc;
+}
+.profile-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 2px rgba(13,110,253,0.1);
+    background: #fff;
+}
+.form-label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 0.4rem;
+}
+
+/* Butonlar */
+.btn-gradient-primary {
+    background: linear-gradient(90deg, #0d6efd 60%, #0dcaf0 100%);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px #0d6efd22;
+    transition: background 0.2s, color 0.2s;
+    padding: 0.6rem 1.2rem;
+}
+.btn-gradient-primary:hover {
+    background: linear-gradient(90deg, #0dcaf0 0%, #0d6efd 100%);
+    color: #fff;
+}
+.btn-gradient-warning {
+    background: linear-gradient(90deg, #fd7e14 60%, #ffc107 100%);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px #fd7e1422;
+    transition: background 0.2s, color 0.2s;
+    padding: 0.6rem 1.2rem;
+}
+.btn-gradient-warning:hover {
+    background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+    color: #fff;
+}
+
+/* Form aksiyonları */
+.form-actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+/* Şifre bölümü */
+.password-section {
+    margin-top: 1rem;
+}
+.password-section .section-title {
+    color: #fd7e14;
+    border-bottom-color: #ffe5d0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-card {
+        padding: 1.5rem;
+    }
+    .profile-photo-wrap {
+        width: 120px; height: 120px;
+    }
+    .profile-photo {
+        width: 100px; height: 100px;
+    }
+    .profile-form-section {
+        padding-left: 0;
+        margin-top: 2rem;
+    }
+    .form-actions {
+        flex-direction: column;
+    }
+    .form-actions .btn {
+        width: 100%;
+    }
+}

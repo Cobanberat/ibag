@@ -93,3 +93,7 @@ Route::get('/admin/ekipmanlar', function () {
     return view('admin.equipment.index');
 })->name('admin.equipments');
 
+Route::get('/admin/profilim', function () {
+    return view('admin.profile.index');
+})->name('admin.profile');
+

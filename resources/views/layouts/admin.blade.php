@@ -211,7 +211,7 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2" href="pages-profile.html"><i
+                            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{route('admin.profile')}}"><i
                                         class="fas fa-user-circle fa-fw"></i> Profilim</a></li>
                             <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i
                                         class="fas fa-cog fa-fw"></i> Ayarlar</a></li>
