@@ -47,7 +47,7 @@ export default defineConfig({
         host: '0.0.0.0', // Tüm IP'lerden erişime izin verir
         port: 5173, // Vite varsayılan portu
         hmr: {
-            host: '192.168.1.200', // Kendi bilgisayarının ağ IP'si
+            host: '192.168.1.239', // Kendi bilgisayarının ağ IP'si
         },
     },
 });

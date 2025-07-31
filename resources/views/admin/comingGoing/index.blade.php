@@ -25,6 +25,10 @@
   <form class="filter-bar mb-2" id="gidenFilterForm" onsubmit="return false;">
     <label>Arama:</label>
     <input type="text" class="form-control" id="gidenSearch" placeholder="Lokasyon, yetkili...">
+    <label>Ekipman:</label>
+    <select class="form-select" id="gidenEkipman">
+      <option value="">Tümü</option>
+    </select>
     <label>Lokasyon:</label>
     <select class="form-select" id="gidenLokasyon">
       <option value="">Tümü</option>
@@ -58,6 +62,10 @@
       <form class="filter-bar mb-2" id="gelenFilterForm" onsubmit="return false;">
         <label>Arama:</label>
         <input type="text" class="form-control" id="gelenSearch" placeholder="Lokasyon, yetkili...">
+        <label>Ekipman:</label>
+        <select class="form-select" id="gelenEkipman">
+          <option value="">Tümü</option>
+        </select>
         <label>Lokasyon:</label>
         <select class="form-select" id="gelenLokasyon">
           <option value="">Tümü</option>
@@ -200,21 +208,41 @@ const comingGoingData = [
 function getUnique(arr, key) {
   return [...new Set(arr.map(x => x[key]))].filter(Boolean);
 }
+
+// Ekipman listesini al
+function getUniqueEkipmanlar(data) {
+  const ekipmanlar = [];
+  data.forEach(item => {
+    if (item.ekipmanlar) {
+      item.ekipmanlar.forEach(eq => {
+        if (!ekipmanlar.includes(eq.isim)) {
+          ekipmanlar.push(eq.isim);
+        }
+      });
+    }
+  });
+  return ekipmanlar.sort();
+}
+
 function renderTables() {
   // Gidenler
   let gidenData = comingGoingData.filter(x => x.type === 'Gidiş');
   // Filtreler
   const gidenSearch = document.getElementById('gidenSearch').value.toLowerCase();
+  const gidenEkipman = document.getElementById('gidenEkipman').value;
   const gidenLokasyon = document.getElementById('gidenLokasyon').value;
   const gidenYetkili = document.getElementById('gidenYetkili').value;
   if (gidenSearch) gidenData = gidenData.filter(x => x.location.toLowerCase().includes(gidenSearch) || x.person.toLowerCase().includes(gidenSearch));
+  if (gidenEkipman) gidenData = gidenData.filter(x => x.ekipmanlar.some(eq => eq.isim === gidenEkipman));
   if (gidenLokasyon) gidenData = gidenData.filter(x => x.location === gidenLokasyon);
   if (gidenYetkili) gidenData = gidenData.filter(x => x.person === gidenYetkili);
   // Filtre selectlerini doldur
   const lokasyonlar = getUnique(comingGoingData.filter(x=>x.type==='Gidiş'), 'location');
   const yetkililer = getUnique(comingGoingData.filter(x=>x.type==='Gidiş'), 'person');
+  const ekipmanlar = getUniqueEkipmanlar(comingGoingData.filter(x=>x.type==='Gidiş'));
   document.getElementById('gidenLokasyon').innerHTML = '<option value="">Tümü</option>' + lokasyonlar.map(l=>`<option value="${l}">${l}</option>`).join('');
   document.getElementById('gidenYetkili').innerHTML = '<option value="">Tümü</option>' + yetkililer.map(y=>`<option value="${y}">${y}</option>`).join('');
+  document.getElementById('gidenEkipman').innerHTML = '<option value="">Tümü</option>' + ekipmanlar.map(e=>`<option value="${e}">${e}</option>`).join('');
   const gidenTotal = gidenData.length;
   const gidenPageCount = Math.ceil(gidenTotal/perPage);
   const gidenStart = (gidenPage-1)*perPage;
@@ -239,18 +267,22 @@ function renderTables() {
   let gelenData = comingGoingData.filter(x => x.type === 'Dönüş');
   // Filtreler
   const gelenSearch = document.getElementById('gelenSearch').value.toLowerCase();
+  const gelenEkipman = document.getElementById('gelenEkipman').value;
   const gelenLokasyon = document.getElementById('gelenLokasyon').value;
   const gelenYetkili = document.getElementById('gelenYetkili').value;
   const gelenDurum = document.getElementById('gelenDurum').value;
   if (gelenSearch) gelenData = gelenData.filter(x => x.location.toLowerCase().includes(gelenSearch) || x.person.toLowerCase().includes(gelenSearch));
+  if (gelenEkipman) gelenData = gelenData.filter(x => x.ekipmanlar.some(eq => eq.isim === gelenEkipman));
   if (gelenLokasyon) gelenData = gelenData.filter(x => x.location === gelenLokasyon);
   if (gelenYetkili) gelenData = gelenData.filter(x => x.person === gelenYetkili);
   if (gelenDurum) gelenData = gelenData.filter(x => x.status === gelenDurum);
   // Filtre selectlerini doldur
   const gelenLokasyonlar = getUnique(comingGoingData.filter(x=>x.type==='Dönüş'), 'location');
   const gelenYetkililer = getUnique(comingGoingData.filter(x=>x.type==='Dönüş'), 'person');
+  const gelenEkipmanlar = getUniqueEkipmanlar(comingGoingData.filter(x=>x.type==='Dönüş'));
   document.getElementById('gelenLokasyon').innerHTML = '<option value="">Tümü</option>' + gelenLokasyonlar.map(l=>`<option value="${l}">${l}</option>`).join('');
   document.getElementById('gelenYetkili').innerHTML = '<option value="">Tümü</option>' + gelenYetkililer.map(y=>`<option value="${y}">${y}</option>`).join('');
+  document.getElementById('gelenEkipman').innerHTML = '<option value="">Tümü</option>' + gelenEkipmanlar.map(e=>`<option value="${e}">${e}</option>`).join('');
   const gelenTotal = gelenData.length;
   const gelenPageCount = Math.ceil(gelenTotal/perPage);
   const gelenStart = (gelenPage-1)*perPage;
@@ -395,21 +427,25 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   // Filtre eventleri
   document.getElementById('gidenSearch').oninput = renderTables;
+  document.getElementById('gidenEkipman').onchange = renderTables;
   document.getElementById('gidenLokasyon').onchange = renderTables;
   document.getElementById('gidenYetkili').onchange = renderTables;
   document.getElementById('gelenSearch').oninput = renderTables;
+  document.getElementById('gelenEkipman').onchange = renderTables;
   document.getElementById('gelenLokasyon').onchange = renderTables;
   document.getElementById('gelenYetkili').onchange = renderTables;
   document.getElementById('gelenDurum').onchange = renderTables;
 });
 function clearGidenFilters() {
   document.getElementById('gidenSearch').value = '';
+  document.getElementById('gidenEkipman').value = '';
   document.getElementById('gidenLokasyon').value = '';
   document.getElementById('gidenYetkili').value = '';
   renderTables();
 }
 function clearGelenFilters() {
   document.getElementById('gelenSearch').value = '';
+  document.getElementById('gelenEkipman').value = '';
   document.getElementById('gelenLokasyon').value = '';
   document.getElementById('gelenYetkili').value = '';
   document.getElementById('gelenDurum').value = '';

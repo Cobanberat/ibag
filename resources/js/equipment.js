@@ -3,7 +3,7 @@ let equipmentData = [
     {SNO: 2, URUN_CINSI: "3.5 KW Benzinli Jeneratör", MARKA: "FULL", MODEL: "FGL 3500-LE", BEDEN: "Orta", OZELLIK: "3.5 KW Benzinli", ADET: 1, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: ""},
     {SNO: 3, URUN_CINSI: "4.4 KW Benzinli Jeneratör", MARKA: "POWER FULL", MODEL: "HH3305-C", BEDEN: "Orta", OZELLIK: "4.4 KW Benzinli", ADET: 1, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: ""},
     {SNO: 4, URUN_CINSI: "7.5 KW Dizel Jeneratör", MARKA: "KAMA", MODEL: "KDK10000", BEDEN: "Büyük", OZELLIK: "7.5 KW Dizel", ADET: 1, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: ""},
-];
+  ];
   let currentPage = 1;
   const pageSize = 5;
 
@@ -318,9 +318,9 @@ let equipmentData = [
       });
   }
   function renderPagination(pageCount) {
-    let pag = document.getElementById('pagination');
-    pag.innerHTML = '';
-    if(pageCount<=1) return;
+      let pag = document.getElementById('pagination');
+      pag.innerHTML = '';
+      if(pageCount<=1) return;
 
     // Geri butonu
     let prevLi = document.createElement('li');
@@ -339,16 +339,16 @@ let equipmentData = [
     if (currentPage <= 3) endPage = Math.min(5, pageCount);
     if (currentPage >= pageCount-2) startPage = Math.max(1, pageCount-4);
     for(let i=startPage;i<=endPage;i++) {
-        let li = document.createElement('li');
-        li.className = 'page-item'+(i===currentPage?' active':'');
-        let a = document.createElement('a');
-        a.className = 'page-link';
-        a.href = '#';
-        a.innerText = i;
-        a.onclick = function(e) { e.preventDefault(); currentPage=i; renderTable(); };
-        li.appendChild(a);
-        pag.appendChild(li);
-    }
+          let li = document.createElement('li');
+          li.className = 'page-item'+(i===currentPage?' active':'');
+          let a = document.createElement('a');
+          a.className = 'page-link';
+          a.href = '#';
+          a.innerText = i;
+          a.onclick = function(e) { e.preventDefault(); currentPage=i; renderTable(); };
+          li.appendChild(a);
+          pag.appendChild(li);
+      }
 
     // İleri butonu
     let nextLi = document.createElement('li');
@@ -360,7 +360,7 @@ let equipmentData = [
     nextA.onclick = function(e) { e.preventDefault(); if(currentPage<pageCount){ currentPage++; renderTable(); } };
     nextLi.appendChild(nextA);
     pag.appendChild(nextLi);
-}
+  }
   ['searchInput','typeFilter','brandFilter','statusFilter'].forEach(id => {
       document.getElementById(id).addEventListener('input', function(){ currentPage=1; renderTable(); });
       document.getElementById(id).addEventListener('change', function(){ currentPage=1; renderTable(); });
