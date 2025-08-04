@@ -25,7 +25,7 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
 Route::get('/admin', function () {
     return view('admin.home.index');
 })->name('admin.dashboard');
-
+   
 Route::get('/admin/stock', function () {
     return view('admin.stock.index');
 })->name('admin.stock');
@@ -51,7 +51,7 @@ Route::get('/admin/ekipmanDurumu', function () {
 
 Route::get('/admin/durumKontrol', function () {
     return view('admin.statusCheck.index');
-})->name('admin.statusCheck');
+})->name('admin.statusCheck'); 
 
 Route::get('/admin/ArizaBildirimi', function () {
     return view('admin.fault.index');

@@ -44,10 +44,14 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: '0.0.0.0', // Tüm IP'lerden erişime izin verir
-        port: 5173, // Vite varsayılan portu
+        host: '0.0.0.0',
+        port: 5173,
+        cors: {
+            origin: 'http://192.168.1.227:8000',
+            credentials: true,
+        },
         hmr: {
-            host: '192.168.1.239', // Kendi bilgisayarının ağ IP'si
+            host: '192.168.1.227',
         },
     },
 });

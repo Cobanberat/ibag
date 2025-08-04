@@ -12,7 +12,7 @@
     <div class="card shadow-lg border-0 mb-4 modern-card">
         <div class="card-header text-white d-flex align-items-center modern-gradient rounded-top">
             <i class="fas fa-plus-circle fa-lg me-2"></i>
-            <h4 class="mb-0">Yeni İş Ekle</h4>
+            <h4 class="mb-0" style="color: #fff;">Yeni İş Ekle</h4>
         </div>
         <div class="card-body p-4 bg-light rounded-bottom">
             <form autocomplete="off">
@@ -56,7 +56,7 @@
                     <div class="small text-muted mb-2">Ekipman seçin, adet girin. Her ekipman için adet kadar fotoğraf yükleyin.</div>
                     <div id="equipment-list">
                         <div class="row g-2 align-items-end equipment-row mb-3 py-3 px-2 rounded modern-row bg-white shadow-sm position-relative">
-                            <div class="col-md-6 d-flex align-items-center">
+                            <div class="col-md-4 d-flex align-items-center">
                                 <span class="badge bg-secondary me-2"><i class="fas fa-cube"></i></span>
                                 <select class="form-select equipment-select modern-input" required>
                                     <option value="">Ekipman Seç</option>
@@ -67,14 +67,15 @@
                                     <option>Akü</option>
                                 </select>
                             </div>
-                            <div class="col-md-4 d-flex align-items-center">
+                            <div class="col-md-3 d-flex align-items-center">
                                 <span class="badge bg-success me-2"><i class="fas fa-hashtag"></i></span>
                                 <input type="number" class="form-control equipment-qty modern-input" min="1" max="50" value="1" placeholder="Örn: 2" required>
                             </div>
+                           
                             <div class="col-md-2 text-end">
                                 <button type="button" class="btn btn-outline-danger remove-equipment w-100" title="Ekipmanı kaldır"><i class="fas fa-trash"></i></button>
                             </div>
-                            <div class="col-12 mt-2 equipment-photos" style="display:none;"></div>
+                            <div class="col-12 mt-3 equipment-photos" style="display:none;"></div>
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-equipment"><i class="fas fa-plus"></i> Ekipman Ekle</button>

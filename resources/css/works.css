@@ -48,17 +48,29 @@
     box-shadow: 0 0 0 2px #0d6efd22 !important;
     outline: none !important;
 }
-.photo-upload-box {
+.equipment-item-box {
     border: 1.5px solid #e3eafc;
     border-radius: 0.8rem;
     background: #f8fafc;
-    min-height: 80px;
+    min-height: 120px;
     margin-bottom: 0.5rem;
     transition: box-shadow 0.2s, border 0.2s;
 }
-.photo-upload-box:hover {
+.equipment-item-box:hover {
     box-shadow: 0 2px 12px #0d6efd22;
     border-color: #36b3f6;
+}
+
+.equipment-code-input {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.equipment-code-input:focus {
+    background: #fff !important;
+    border-color: #17a2b8 !important;
+    box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.25) !important;
 }
 .badge.bg-gradient {
     background: linear-gradient(90deg, #36b3f6 0%, #0d6efd 100%) !important;
