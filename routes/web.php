@@ -26,16 +26,28 @@ Route::get('/admin', function () {
     return view('admin.home.index');
 })->name('admin.dashboard');
    
-Route::get('/admin/stock', function () {
-    return view('admin.stock.index');
-})->name('admin.stock');
+Route::get('/admin/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
+Route::get('/admin/stock/data', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStockData'])->name('admin.stock.data');
+Route::get('/admin/stock/statistics', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStatistics'])->name('admin.stock.statistics');
+Route::post('/admin/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
+Route::post('/admin/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'store'])->name('admin.stock.store');
+Route::post('/admin/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
+Route::get('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
+Route::put('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
+Route::delete('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
+
 Route::get('/admin/Ekle', function () {
     return view('admin.stock.create');
 })->name('stock.create');
 
-Route::get('/admin/kategori', function () {
-    return view('admin.category.index');
-})->name('admin.kategori');
+Route::get('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');
+Route::get('/admin/kategori/data', [App\Http\Controllers\Admin\CategoryController::class, 'getCategoryData'])->name('admin.kategori.data');
+Route::post('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.kategori.store');
+Route::get('/admin/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'show'])->name('admin.kategori.show');
+Route::put('/admin/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('admin.kategori.update');
+Route::delete('/admin/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('admin.kategori.destroy');
+Route::post('/admin/kategori/bulk-delete', [App\Http\Controllers\Admin\CategoryController::class, 'bulkDestroy'])->name('admin.kategori.bulk-destroy');
+Route::get('/admin/kategori/export/csv', [App\Http\Controllers\Admin\CategoryController::class, 'exportCsv'])->name('admin.kategori.export.csv');
 
 // Route::get('/admin/ekipmanÖzelikleri', function () {
 //     return view('admin.equipment.Features');
@@ -89,9 +101,12 @@ Route::get('/admin/isEkle', function () {
     return view('admin.works.index');
 })->name('admin.isEkle');
 
-Route::get('/admin/ekipmanlar', function () {
-    return view('admin.equipment.index');
-})->name('admin.equipments');
+Route::get('/admin/ekipmanlar', [App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipments');
+Route::get('/admin/ekipmanlar/data', [App\Http\Controllers\Admin\EquipmentController::class, 'getEquipmentData'])->name('admin.equipments.data');
+Route::get('/admin/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'show'])->name('admin.equipments.show');
+Route::put('/admin/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'update'])->name('admin.equipments.update');
+Route::delete('/admin/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'destroy'])->name('admin.equipments.destroy');
+Route::get('/admin/ekipmanlar/export/csv', [App\Http\Controllers\Admin\EquipmentController::class, 'exportCsv'])->name('admin.equipments.export.csv');
 
 Route::get('/admin/profilim', function () {
     return view('admin.profile.index');

@@ -14,7 +14,7 @@ class CreateEquipmentCategoriesTable extends Migration
     $table->text('description')->nullable();
     $table->timestamps();
 
-    $table->foreign('parent_id')->references('id')->on('equipment_categories')->nullOnDelete();
+    $table->foreign('parent_id')->references('id')->on('equipment_categories')->onDelete('no action');
 });
 
     }

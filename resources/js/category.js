@@ -1,117 +1,524 @@
-// Demo kategori verisi
-let categories = [
-    { id: 1, name: 'Elektronik', desc: 'Elektronik cihazlar', color: '#0d6efd', icon: 'fa-laptop', productCount: 12, date: '2024-03-20', products: ['Laptop', 'Monitör', 'Klavye', 'Mouse'] },
-    { id: 2, name: 'Donanım', desc: 'Donanım ekipmanları', color: '#ffc107', icon: 'fa-tools', productCount: 7, date: '2024-03-18', products: ['Kasa', 'Güç Kaynağı', 'Fan'] },
-    { id: 3, name: 'Aksesuar', desc: 'Çeşitli aksesuarlar', color: '#36b3f6', icon: 'fa-star', productCount: 5, date: '2024-03-15', products: ['Kılıf', 'Çanta'] }
-];
-let perPage = 5;
-let currentPage = 1;
-function renderTable() {
-    let search = document.getElementById('categorySearch').value.toLowerCase();
-    let sort = document.getElementById('sortSelect').value;
-    let filtered = categories.filter(c => !search || c.name.toLowerCase().includes(search));
-    if (sort === 'most') filtered.sort((a, b) => b.productCount - a.productCount);
-    if (sort === 'least') filtered.sort((a, b) => a.productCount - b.productCount);
-    if (sort === 'newest') filtered.sort((a, b) => b.date.localeCompare(a.date));
-    if (sort === 'oldest') filtered.sort((a, b) => a.date.localeCompare(b.date));
-    let total = filtered.length;
-    let start = (currentPage - 1) * perPage;
-    let end = start + perPage;
-    let pageData = filtered.slice(start, end);
-    let tbody = '';
-    pageData.forEach(c => {
-        tbody += `<tr>
-            <td class="table-success"><input type="checkbox" class="rowCheck" data-id="${c.id}"></td>
-            <td class="table-success"><span class="category-color" style="background:${c.color}"></span> <i class="fas ${c.icon} me-1 text-primary"></i> <span class="fw-bold">${c.name}</span></td>
-            <td class="table-success">${c.desc || ''}</td>
-            <td class="table-success">${c.productCount}</td>
-            <td class="table-success">${c.date}</td>
-            <td class="table-success"><span class="category-color" style="background:${c.color}"></span></td>
-            <td class="category-actions table-success">
-                <button type="button" class="btn btn-sm btn-info detailBtn   pt-2 pb-2" data-id="${c.id}"><i class="fas fa-info-circle"></i></button>
-                <button type="button" class="btn btn-sm btn-warning editBtn  pt-2 pb-2" data-id="${c.id}"><i class="fas fa-edit"></i></button>
-                <button type="button" class="btn btn-sm btn-danger deleteBtn pt-2 pb-2" data-id="${c.id}"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>`;
+// CSRF token alma fonksiyonu
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+// Kategori verilerini yükleme
+function loadCategoryData(page = 1) {
+    const searchValue = document.getElementById('categorySearch').value;
+    const sortValue = document.getElementById('sortSelect').value;
+
+    fetch(`/admin/kategori/data?search=${encodeURIComponent(searchValue)}&sort=${encodeURIComponent(sortValue)}&page=${page}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            renderCategoryTable(data.data);
+            if (data.pagination) {
+                updatePagination(data.pagination);
+            }
+        } else {
+            showToast('Kategori verileri yüklenirken hata oluştu', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Kategori verileri yükleme hatası:', error);
+        showToast('Kategori verileri yüklenirken hata oluştu', 'error');
     });
-    document.getElementById('categoryTableBody').innerHTML = tbody;
-    renderPagination(total);
 }
-function renderPagination(total) {
-    let pageCount = Math.ceil(total / perPage);
-    let pag = '';
-    for (let i = 1; i <= pageCount; i++) {
-        pag += `<li class="page-item${i === currentPage ? ' active' : ''}"><a class="page-link py-2 p-3" href="#" onclick="gotoPage(${i});return false;">${i}</a></li>`;
+
+// Kategori tablosunu render etme
+function renderCategoryTable(categories) {
+    const tbody = document.getElementById('categoryTableBody');
+    
+    if (categories.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="fas fa-folder-open fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">Kategori bulunamadı</p>
+                </td>
+            </tr>
+        `;
+        return;
     }
-    document.getElementById('pagination').innerHTML = pag;
+
+    tbody.innerHTML = categories.map(category => `
+        <tr data-id="${category.id}" style="background-color: ${category.color || '#0d6efd'}20;">
+            <td><input type="checkbox" class="category-checkbox" value="${category.id}"></td>
+            <td>
+                <b>${category.name}</b>
+                ${category.icon ? `<i class="fas ${category.icon} ms-2"></i>` : ''}
+            </td>
+            <td>${category.description || '-'}</td>
+            <td>${category.equipments_count || 0}</td>
+            <td>${category.created_at ? new Date(category.created_at).toLocaleDateString('tr-TR') : '-'}</td>
+            <td>
+                <span style="background:${category.color || '#0d6efd'};width:18px;height:18px;display:inline-block;border-radius:4px;"></span>
+            </td>
+            <td class="category-actions">
+                <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="editCategory(${category.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="deleteCategory(${category.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
 }
-window.gotoPage = function (page) { currentPage = page; renderTable(); }
-document.getElementById('filterBtn').onclick = function (e) { e.preventDefault(); currentPage = 1; renderTable(); };
-document.getElementById('sortSelect').onchange = function () { currentPage = 1; renderTable(); };
-document.getElementById('categorySearch').oninput = function () { currentPage = 1; renderTable(); };
-document.getElementById('selectAll').onchange = function () {
-    document.querySelectorAll('.rowCheck').forEach(cb => cb.checked = this.checked);
-};
-document.getElementById('deleteSelected').onclick = function (e) {
-    e.preventDefault();
-    let checked = Array.from(document.querySelectorAll('.rowCheck:checked')).map(cb => parseInt(cb.getAttribute('data-id')));
-    categories = categories.filter(c => !checked.includes(c.id));
-    renderTable();
-};
-document.getElementById('categoryTableBody').onclick = function (e) {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    let id = parseInt(btn.getAttribute('data-id'));
-    if (btn.classList.contains('editBtn')) {
-        let cat = categories.find(c => c.id === id);
-        document.getElementById('editCategoryId').value = cat.id;
-        document.getElementById('editCategoryName').value = cat.name;
-        document.getElementById('editCategoryDesc').value = cat.desc;
-        document.getElementById('editCategoryColor').value = cat.color;
-        document.getElementById('editCategoryIcon').value = cat.icon;
-        new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
+
+// Pagination güncelleme
+function updatePagination(pagination) {
+    const paginationContainer = document.getElementById('pagination');
+    
+    if (!paginationContainer) return;
+
+    let paginationHTML = '';
+    
+    // Önceki sayfa
+    if (pagination.current_page > 1) {
+        paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="loadCategoryData(${pagination.current_page - 1}); return false;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
     }
-    if (btn.classList.contains('deleteBtn')) {
-        categories = categories.filter(c => c.id !== id);
-        renderTable();
+
+    // Sayfa numaraları
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(pagination.last_page, pagination.current_page + 2);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === pagination.current_page;
+        paginationHTML += `
+            <li class="page-item ${isActive ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="loadCategoryData(${i}); return false;">
+                    ${i}
+                </a>
+            </li>
+        `;
     }
-    if (btn.classList.contains('detailBtn')) {
-        let cat = categories.find(c => c.id === id);
-        let html = `<div class='mb-2'><span class='category-color' style='background:${cat.color}'></span> <i class='fas ${cat.icon} me-1 text-primary'></i> <span class='fw-bold'>${cat.name}</span></div>`;
-        html += `<div class='mb-2'><strong>Açıklama:</strong> ${cat.desc || '-'}</div>`;
-        html += `<div class='mb-2'><strong>Ürün Sayısı:</strong> ${cat.productCount}</div>`;
-        html += `<div class='mb-2'><strong>Eklenme Tarihi:</strong> ${cat.date}</div>`;
-        html += `<div class='mb-2'><strong>Ürünler:</strong> ${(cat.products || []).join(', ') || '-'}</div>`;
-        document.getElementById('categoryDetailContent').innerHTML = html;
-        new bootstrap.Modal(document.getElementById('categoryDetailModal')).show();
+
+    // Sonraki sayfa
+    if (pagination.current_page < pagination.last_page) {
+        paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="loadCategoryData(${pagination.current_page + 1}); return false;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
     }
-};
-document.getElementById('saveCategoryBtn').onclick = function () {
-    let name = document.getElementById('categoryName').value.trim();
-    let desc = document.getElementById('categoryDesc').value.trim();
-    let color = document.getElementById('categoryColor').value;
-    let icon = document.getElementById('categoryIcon').value;
-    if (!name) return alert('Kategori adı zorunlu!');
-    let newId = categories.length ? Math.max(...categories.map(c => c.id)) + 1 : 1;
-    categories.push({ id: newId, name, desc, color, icon, productCount: 0, date: new Date().toISOString().slice(0, 10), products: [] });
-    document.getElementById('addCategoryForm').reset();
-    bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
-    renderTable();
-};
-document.getElementById('updateCategoryBtn').onclick = function () {
-    let id = parseInt(document.getElementById('editCategoryId').value);
-    let name = document.getElementById('editCategoryName').value.trim();
-    let desc = document.getElementById('editCategoryDesc').value.trim();
-    let color = document.getElementById('editCategoryColor').value;
-    let icon = document.getElementById('editCategoryIcon').value;
-    let cat = categories.find(c => c.id === id);
-    if (cat) {
-        cat.name = name;
-        cat.desc = desc;
-        cat.color = color;
-        cat.icon = icon;
+
+    paginationContainer.innerHTML = paginationHTML;
+    
+    // Sayfa bilgisi güncelleme
+    const infoText = document.querySelector('.text-muted.small');
+    if (infoText) {
+        const startItem = (pagination.current_page - 1) * pagination.per_page + 1;
+        const endItem = Math.min(pagination.current_page * pagination.per_page, pagination.total);
+        infoText.textContent = `Toplam ${pagination.total} kategoriden ${startItem}-${endItem} arası gösteriliyor`;
     }
-    bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
-    renderTable();
-};
-renderTable();
+}
+
+// Kategori ekleme
+function addCategory() {
+    const formData = new FormData();
+    formData.append('name', document.getElementById('categoryName').value);
+    formData.append('description', document.getElementById('categoryDesc').value);
+    formData.append('color', document.getElementById('categoryColor').value);
+    formData.append('icon', document.getElementById('categoryIcon').value);
+    formData.append('_token', getCsrfToken());
+
+    fetch('/admin/kategori', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Kategori başarıyla oluşturuldu', 'success');
+            document.getElementById('addCategoryForm').reset();
+            bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+            loadCategoryData(1); // İlk sayfaya dön
+        } else {
+            showToast(data.message || 'Kategori oluşturulurken hata oluştu', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Kategori ekleme hatası:', error);
+        showToast('Kategori oluşturulurken hata oluştu', 'error');
+    });
+}
+
+// Kategori düzenleme
+function editCategory(id) {
+    fetch(`/admin/kategori/${id}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const category = data.data;
+            document.getElementById('editCategoryId').value = category.id;
+            document.getElementById('editCategoryName').value = category.name;
+            document.getElementById('editCategoryDesc').value = category.description || '';
+            document.getElementById('editCategoryColor').value = category.color || '#0d6efd';
+            document.getElementById('editCategoryIcon').value = category.icon || '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+            modal.show();
+        } else {
+            showToast('Kategori bilgileri alınırken hata oluştu', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Kategori bilgileri alma hatası:', error);
+        showToast('Kategori bilgileri alınırken hata oluştu', 'error');
+    });
+}
+
+// Kategori güncelleme
+function updateCategory() {
+    const id = document.getElementById('editCategoryId').value;
+    const formData = new FormData();
+    formData.append('name', document.getElementById('editCategoryName').value);
+    formData.append('description', document.getElementById('editCategoryDesc').value);
+    formData.append('color', document.getElementById('editCategoryColor').value);
+    formData.append('icon', document.getElementById('editCategoryIcon').value);
+    formData.append('_token', getCsrfToken());
+    formData.append('_method', 'PUT');
+
+    fetch(`/admin/kategori/${id}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Kategori başarıyla güncellendi', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
+            loadCategoryData(1); // İlk sayfaya dön
+        } else {
+            showToast(data.message || 'Kategori güncellenirken hata oluştu', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Kategori güncelleme hatası:', error);
+        showToast('Kategori güncellenirken hata oluştu', 'error');
+    });
+}
+
+// Kategori silme
+function deleteCategory(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu kategori kalıcı olarak silinecek!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Siliniyor...',
+                text: 'Lütfen bekleyin',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/admin/kategori/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Silindi!',
+                        'Kategori başarıyla silindi.',
+                        'success'
+                    );
+                    loadCategoryData(1); // İlk sayfaya dön
+                } else {
+                    Swal.fire(
+                        'Hata!',
+                        data.message || 'Kategori silinirken hata oluştu',
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Kategori silme hatası:', error);
+                Swal.fire(
+                    'Hata!',
+                    'Kategori silinirken hata oluştu',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+// Toplu kategori silme
+function deleteSelectedCategories() {
+    const selectedCheckboxes = document.querySelectorAll('.category-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+        showToast('Silinecek kategori seçilmedi', 'warning');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: `${selectedIds.length} kategori kalıcı olarak silinecek!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Siliniyor...',
+                text: 'Lütfen bekleyin',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const formData = new FormData();
+            formData.append('ids', JSON.stringify(selectedIds));
+            formData.append('_token', getCsrfToken());
+
+            fetch('/admin/kategori/bulk-delete', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Silindi!',
+                        data.message,
+                        'success'
+                    );
+                    loadCategoryData(1); // İlk sayfaya dön
+                } else {
+                    Swal.fire(
+                        'Hata!',
+                        data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Toplu silme hatası:', error);
+                Swal.fire(
+                    'Hata!',
+                    'Kategoriler silinirken hata oluştu',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+// CSV export
+function exportCategories() {
+    window.location.href = '/admin/kategori/export/csv';
+}
+
+// Toast bildirimi gösterme fonksiyonu
+function showToast(message, type = 'info') {
+    // Toast container oluştur (eğer yoksa)
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
+        document.body.appendChild(toastContainer);
+    }
+
+    // Toast elementi oluştur
+    const toast = document.createElement('div');
+    const iconMap = {
+        'success': '✓',
+        'error': '✕',
+        'warning': '⚠',
+        'info': 'ℹ'
+    };
+    
+    const colorMap = {
+        'success': '#28a745',
+        'error': '#dc3545',
+        'warning': '#ffc107',
+        'info': '#17a2b8'
+    };
+
+    toast.style.cssText = `
+        background: white;
+        border-left: 4px solid ${colorMap[type] || colorMap.info};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 4px;
+        padding: 12px 16px;
+        min-width: 300px;
+        max-width: 400px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        color: #333;
+        animation: slideIn 0.3s ease forwards;
+    `;
+
+    toast.innerHTML = `
+        <div style="
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: ${colorMap[type] || colorMap.info};
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        ">${iconMap[type] || iconMap.info}</div>
+        <div style="flex: 1;">${message}</div>
+        <button onclick="this.parentElement.remove()" style="
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">&times;</button>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // 3 saniye sonra otomatik kaldır
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 3000);
+}
+
+// Global fonksiyonları window objesine ekle
+window.editCategory = editCategory;
+window.deleteCategory = deleteCategory;
+window.showToast = showToast;
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtreleme ve arama
+    const searchInput = document.getElementById('categorySearch');
+    const sortSelect = document.getElementById('sortSelect');
+    const filterBtn = document.getElementById('filterBtn');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', loadCategoryData);
+    }
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', loadCategoryData);
+    }
+
+    if (filterBtn) {
+        filterBtn.addEventListener('click', loadCategoryData);
+    }
+
+    // Kategori ekleme
+    const saveCategoryBtn = document.getElementById('saveCategoryBtn');
+    if (saveCategoryBtn) {
+        saveCategoryBtn.addEventListener('click', addCategory);
+    }
+
+    // Kategori güncelleme
+    const updateCategoryBtn = document.getElementById('updateCategoryBtn');
+    if (updateCategoryBtn) {
+        updateCategoryBtn.addEventListener('click', updateCategory);
+    }
+
+    // Toplu silme
+    const deleteSelectedBtn = document.getElementById('deleteSelected');
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', deleteSelectedCategories);
+    }
+
+    // Tümünü seç
+    const selectAllCheckbox = document.getElementById('selectAll');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.category-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    // Excel export
+    const excelBtn = document.querySelector('button[onclick*="Excel"]');
+    if (excelBtn) {
+        excelBtn.addEventListener('click', exportCategories);
+    }
+
+    // PDF export (şimdilik CSV olarak)
+    const pdfBtn = document.querySelector('button[onclick*="PDF"]');
+    if (pdfBtn) {
+        pdfBtn.addEventListener('click', exportCategories);
+    }
+});

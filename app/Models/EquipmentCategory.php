@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EquipmentCategory extends Model
 {
-    protected $fillable = ['name', 'parent_id', 'description'];
+    protected $table = 'equipment_categories';
+    protected $fillable = ['name', 'parent_id', 'description', 'color', 'icon'];
 
     public function parent()
     {

@@ -1,11 +1,105 @@
-let equipmentData = [
-    {SNO: 1, URUN_CINSI: "2.5 KW Benzinli Jeneratör", MARKA: "TOPTICER", MODEL: "TG 3700S", BEDEN: "Küçük", OZELLIK: "2.5 KW Benzinli", ADET: 4, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: "İlk listeden 1 eksik"},
-    {SNO: 2, URUN_CINSI: "3.5 KW Benzinli Jeneratör", MARKA: "FULL", MODEL: "FGL 3500-LE", BEDEN: "Orta", OZELLIK: "3.5 KW Benzinli", ADET: 1, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: ""},
-    {SNO: 3, URUN_CINSI: "4.4 KW Benzinli Jeneratör", MARKA: "POWER FULL", MODEL: "HH3305-C", BEDEN: "Orta", OZELLIK: "4.4 KW Benzinli", ADET: 1, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: ""},
-    {SNO: 4, URUN_CINSI: "7.5 KW Dizel Jeneratör", MARKA: "KAMA", MODEL: "KDK10000", BEDEN: "Büyük", OZELLIK: "7.5 KW Dizel", ADET: 1, DURUM: "Sıfır", TARIH: "2025-02-09", NOT: ""},
-  ];
+let equipmentData = [];
   let currentPage = 1;
-  const pageSize = 5;
+const pageSize = 15;
+
+// Global fonksiyonları tanımla
+window.showDetail = function(id) {
+    // AJAX ile ekipman detayını çek
+    fetch(`/admin/ekipmanlar/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const stock = data.data;
+                document.getElementById('detailSno').innerText = stock.id;
+                document.getElementById('detailCode').innerText = stock.code || '-';
+                document.getElementById('detailType').innerText = stock.equipment?.name || '-';
+                document.getElementById('detailBrand').innerText = stock.brand || '-';
+                document.getElementById('detailModel').innerText = stock.model || '-';
+                document.getElementById('detailSize').innerText = stock.size || '-';
+                document.getElementById('detailFeature').innerText = stock.feature || '-';
+                document.getElementById('detailCount').innerText = stock.quantity || 0;
+                document.getElementById('detailStatus').innerText = stock.status || '-';
+                document.getElementById('detailLocation').innerText = stock.location || '-';
+                document.getElementById('detailDate').innerText = stock.created_at ? new Date(stock.created_at).toLocaleDateString('tr-TR') : '-';
+                document.getElementById('detailNote').innerText = stock.note || '-';
+                new bootstrap.Modal(document.getElementById('detailModal')).show();
+            } else {
+                showAlert('Ekipman detayı yüklenirken hata oluştu', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Detay yükleme hatası:', error);
+            showAlert('Ekipman detayı yüklenirken hata oluştu', 'danger');
+        });
+};
+
+window.deleteEquipment = function(id) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu ekipmanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, sil!',
+        cancelButtonText: 'İptal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Loading göster
+            Swal.fire({
+                title: 'Siliniyor...',
+                text: 'Ekipman siliniyor, lütfen bekleyin.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/admin/ekipmanlar/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: 'Ekipman başarıyla silindi.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Sayfayı yenile
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: 'Ekipman silinirken hata oluştu.',
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Silme hatası:', error);
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'Ekipman silinirken hata oluştu.',
+                    icon: 'error'
+                });
+            });
+        }
+    });
+};
+
+// CSRF token'ı al
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
 
   // Dropdown seçenekleri
   const dropdownOptions = {
@@ -24,9 +118,9 @@ let equipmentData = [
           const activeInput = activeEditingCell.querySelector('input, select');
           if (activeInput) {
               const activeField = activeEditingCell.getAttribute('data-field');
-              const activeRowIndex = parseInt(activeEditingCell.getAttribute('data-row'));
+              const activeId = activeEditingCell.getAttribute('data-id');
               const originalText = activeEditingCell.getAttribute('data-original-text') || activeInput.value;
-              saveEdit(activeEditingCell, activeInput.value, activeField, activeRowIndex, originalText);
+              saveEdit(activeEditingCell, activeInput.value, activeField, activeId, originalText);
           }
       }
 
@@ -41,7 +135,7 @@ let equipmentData = [
       activeEditingCell = cell;
       
       // Alan türüne göre input oluştur
-      if (field === 'ADET') {
+      if (field === 'quantity') {
           // Number input
           input = document.createElement('input');
           input.type = 'number';
@@ -50,29 +144,14 @@ let equipmentData = [
           input.className = 'form-control form-control-sm';
           input.value = originalText;
           input.title = 'Adet giriniz (0-999)';
-      } else if (field === 'TARIH') {
-          // Date input
-          input = document.createElement('input');
-          input.type = 'date';
-          input.className = 'form-control form-control-sm';
-          input.value = originalText;
-          input.title = 'Tarih seçiniz';
-      } else if (dropdownOptions[field]) {
-          // Select dropdown
+      } else if (field === 'status') {
+          // Select dropdown for status
           input = document.createElement('select');
           input.className = 'form-select form-select-sm';
-          input.title = `${field} seçiniz`;
+          input.title = 'Durum seçiniz';
           
-          // Mevcut değer yoksa boş seçenek ekle
-          if (!dropdownOptions[field].includes(originalText)) {
-              const emptyOption = document.createElement('option');
-              emptyOption.value = '';
-              emptyOption.textContent = 'Seçiniz...';
-              input.appendChild(emptyOption);
-          }
-          
-          // Seçenekleri ekle
-          dropdownOptions[field].forEach(option => {
+          const statusOptions = ['Sıfır', 'Açık'];
+          statusOptions.forEach(option => {
               const optionElement = document.createElement('option');
               optionElement.value = option;
               optionElement.textContent = option;
@@ -82,7 +161,7 @@ let equipmentData = [
               input.appendChild(optionElement);
           });
       } else {
-          // Text input (URUN_CINSI dahil)
+          // Text input
           input = document.createElement('input');
           input.type = 'text';
           input.className = 'form-control form-control-sm';
@@ -107,7 +186,8 @@ let equipmentData = [
       input.addEventListener('keydown', function(e) {
           if (e.key === 'Enter') {
               e.preventDefault();
-              saveEdit(cell, input.value, field, rowIndex, originalText);
+              const id = cell.getAttribute('data-id');
+              saveEdit(cell, input.value, field, id, originalText);
           } else if (e.key === 'Escape') {
               e.preventDefault();
               cancelEdit(cell, originalText);
@@ -117,13 +197,15 @@ let equipmentData = [
               const nextCell = getNextEditableCell(cell);
               if (nextCell) {
                   const nextField = nextCell.getAttribute('data-field');
-                  const nextRowIndex = parseInt(nextCell.getAttribute('data-row'));
-                  saveEdit(cell, input.value, field, rowIndex, originalText);
+                  const nextId = nextCell.getAttribute('data-id');
+                  const id = cell.getAttribute('data-id');
+                  saveEdit(cell, input.value, field, id, originalText);
                   setTimeout(() => {
-                      makeEditable(nextCell, nextField, nextRowIndex);
+                      makeEditable(nextCell, nextField, nextId);
                   }, 100);
               } else {
-                  saveEdit(cell, input.value, field, rowIndex, originalText);
+                  const id = cell.getAttribute('data-id');
+                  saveEdit(cell, input.value, field, id, originalText);
               }
           }
       });
@@ -131,7 +213,8 @@ let equipmentData = [
       // Select için change event
       if (input.tagName === 'SELECT') {
           input.addEventListener('change', function() {
-              saveEdit(cell, input.value, field, rowIndex, originalText);
+              const id = cell.getAttribute('data-id');
+              saveEdit(cell, input.value, field, id, originalText);
           });
       }
       
@@ -140,7 +223,8 @@ let equipmentData = [
           input.addEventListener('blur', function() {
               setTimeout(() => {
                   if (cell.contains(input)) {
-                      saveEdit(cell, input.value, field, rowIndex, originalText);
+                      const id = cell.getAttribute('data-id');
+                      saveEdit(cell, input.value, field, id, originalText);
                   }
               }, 100);
           });
@@ -154,41 +238,41 @@ let equipmentData = [
       return allCells[currentIndex + 1] || null;
   }
   
-  function saveEdit(cell, newValue, field, rowIndex, originalText) {
+  function saveEdit(cell, newValue, field, id, originalText) {
       // Düzenleme durumunu kaldır
       cell.classList.remove('editing');
       cell.removeAttribute('data-original-text');
       activeEditingCell = null;
       
       // Validasyon
-      if (field === 'ADET') {
+      if (field === 'quantity') {
           const numValue = parseInt(newValue);
           if (isNaN(numValue) || numValue < 0 || numValue > 999) {
               cancelEdit(cell, originalText);
               return;
           }
           newValue = numValue.toString();
-      } else if (field === 'TARIH') {
-          if (!isValidDate(newValue)) {
-              cancelEdit(cell, originalText);
-              return;
-          }
       }
       
       if (newValue.trim() === '') {
           newValue = originalText;
       }
       
-      // Veriyi güncelle
-      const filtered = getFilteredData();
-      const start = (currentPage-1)*pageSize;
-      const actualRowIndex = start + rowIndex;
-      const originalDataIndex = equipmentData.findIndex(item => item.SNO === filtered[actualRowIndex].SNO);
+      // AJAX ile veritabanına kaydet
+      const data = {};
+      data[field] = newValue;
       
-      if (originalDataIndex !== -1) {
-          equipmentData[originalDataIndex][field] = newValue;
-      }
-      
+      fetch(`/admin/ekipmanlar/${id}`, {
+          method: 'PUT',
+          headers: {
+              'X-CSRF-TOKEN': getCsrfToken(),
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+             .then(result => {
+           if (result.success) {
       // Hücreyi güncelle
       cell.textContent = newValue;
       cell.classList.add('saved');
@@ -197,6 +281,19 @@ let equipmentData = [
       setTimeout(() => {
           cell.classList.remove('saved');
       }, 2000);
+               
+               // Toast bildirimi göster
+               showToast('Ekipman başarıyla güncellendi', 'success');
+           } else {
+               cancelEdit(cell, originalText);
+               showToast('Güncelleme başarısız', 'error');
+           }
+       })
+       .catch(error => {
+           console.error('Güncelleme hatası:', error);
+           cancelEdit(cell, originalText);
+           showToast('Güncelleme sırasında hata oluştu', 'error');
+       });
   }
   
   function cancelEdit(cell, originalText) {
@@ -361,8 +458,293 @@ let equipmentData = [
     nextLi.appendChild(nextA);
     pag.appendChild(nextLi);
   }
+  // Event listener'lar DOMContentLoaded içinde eklendi
+
+// Veri yükleme fonksiyonu
+function loadEquipmentData() {
+    const search = document.getElementById('searchInput').value;
+    const type = document.getElementById('typeFilter').value;
+    const brand = document.getElementById('brandFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    const params = new URLSearchParams({
+        page: currentPage,
+        search: search,
+        type: type,
+        brand: brand,
+        status: status
+    });
+
+    fetch(`/admin/ekipmanlar/data?${params}`)
+        .then(response => response.json())
+        .then(data => {
+            equipmentData = data.data.map(item => ({
+                id: item.id,
+                SNO: item.id,
+                URUN_CINSI: item.equipment?.name || '-',
+                MARKA: item.brand || '-',
+                MODEL: item.model || '-',
+                BEDEN: item.size || '-',
+                OZELLIK: item.feature || '-',
+                ADET: item.quantity || 0,
+                DURUM: item.status || '-',
+                TARIH: item.created_at ? new Date(item.created_at).toLocaleDateString('tr-TR') : '-',
+                NOT: item.note || '-'
+            }));
+            
+            renderTable();
+            updatePagination(data.pagination);
+        })
+        .catch(error => {
+            console.error('Veri yükleme hatası:', error);
+        });
+}
+
+// Pagination güncelleme
+function updatePagination(pagination) {
+    const paginationContainer = document.querySelector('#pagination');
+    if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+        
+        if (pagination.last_page <= 1) return;
+
+        // Önceki sayfa
+        if (pagination.current_page > 1) {
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item';
+            const prevA = document.createElement('a');
+            prevA.className = 'page-link';
+            prevA.href = '#';
+            prevA.innerHTML = '‹';
+            prevA.onclick = function(e) { 
+                e.preventDefault(); 
+                currentPage = pagination.current_page - 1; 
+                loadEquipmentData(); 
+            };
+            prevLi.appendChild(prevA);
+            paginationContainer.appendChild(prevLi);
+        } else {
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item disabled';
+            const prevSpan = document.createElement('span');
+            prevSpan.className = 'page-link';
+            prevSpan.innerHTML = '‹';
+            prevLi.appendChild(prevSpan);
+            paginationContainer.appendChild(prevLi);
+        }
+
+        // Sayfa numaraları (maksimum 5 göster)
+        const startPage = Math.max(1, pagination.current_page - 2);
+        const endPage = Math.min(pagination.last_page, pagination.current_page + 2);
+        
+        if (pagination.current_page <= 3) {
+            endPage = Math.min(5, pagination.last_page);
+        }
+        if (pagination.current_page >= pagination.last_page - 2) {
+            startPage = Math.max(1, pagination.last_page - 4);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (i === pagination.current_page ? ' active' : '');
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.innerText = i;
+            a.onclick = function(e) { 
+                e.preventDefault(); 
+                currentPage = i; 
+                loadEquipmentData(); 
+            };
+            li.appendChild(a);
+            paginationContainer.appendChild(li);
+        }
+
+        // Sonraki sayfa
+        if (pagination.current_page < pagination.last_page) {
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item';
+            const nextA = document.createElement('a');
+            nextA.className = 'page-link';
+            nextA.href = '#';
+            nextA.innerHTML = '›';
+            nextA.onclick = function(e) { 
+                e.preventDefault(); 
+                currentPage = pagination.current_page + 1; 
+                loadEquipmentData(); 
+            };
+            nextLi.appendChild(nextA);
+            paginationContainer.appendChild(nextLi);
+        } else {
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item disabled';
+            const nextSpan = document.createElement('span');
+            nextSpan.className = 'page-link';
+            nextSpan.innerHTML = '›';
+            nextLi.appendChild(nextSpan);
+            paginationContainer.appendChild(nextLi);
+        }
+    }
+}
+
+
+
+// Toast bildirimi gösterme fonksiyonu
+window.showToast = function(message, type = 'info') {
+    // Toast container oluştur (eğer yoksa)
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
+        document.body.appendChild(toastContainer);
+    }
+
+    // Toast elementi oluştur
+    const toast = document.createElement('div');
+    const iconMap = {
+        'success': '✓',
+        'error': '✕',
+        'warning': '⚠',
+        'info': 'ℹ'
+    };
+    
+    const colorMap = {
+        'success': '#28a745',
+        'error': '#dc3545',
+        'warning': '#ffc107',
+        'info': '#17a2b8'
+    };
+
+    toast.style.cssText = `
+        background: white;
+        border-left: 4px solid ${colorMap[type] || colorMap.info};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 4px;
+        padding: 12px 16px;
+        min-width: 300px;
+        max-width: 400px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        color: #333;
+        animation: slideIn 0.3s ease forwards;
+    `;
+
+    toast.innerHTML = `
+        <div style="
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: ${colorMap[type] || colorMap.info};
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        ">${iconMap[type] || iconMap.info}</div>
+        <div style="flex: 1;">${message}</div>
+        <button onclick="this.parentElement.remove()" style="
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">&times;</button>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // 3 saniye sonra otomatik kaldır
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 3000);
+};
+
+// Alert gösterme fonksiyonu (SweetAlert2 ile)
+window.showAlert = function(message, type = 'info') {
+    const iconMap = {
+        'success': 'success',
+        'error': 'error',
+        'warning': 'warning',
+        'info': 'info'
+    };
+    
+    Swal.fire({
+        title: type === 'success' ? 'Başarılı!' : type === 'error' ? 'Hata!' : 'Bilgi',
+        text: message,
+        icon: iconMap[type] || 'info',
+        timer: type === 'success' ? 2000 : null,
+        showConfirmButton: type !== 'success'
+    });
+};
+
+// CSV export fonksiyonu
+document.getElementById('exportCsvBtn').addEventListener('click', function() {
+    window.location.href = '/admin/ekipmanlar/export/csv';
+});
+
+// Sayfa yüklendiğinde event listener'ları ekle
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtreleme için event listener'ları ekle
   ['searchInput','typeFilter','brandFilter','statusFilter'].forEach(id => {
-      document.getElementById(id).addEventListener('input', function(){ currentPage=1; renderTable(); });
-      document.getElementById(id).addEventListener('change', function(){ currentPage=1; renderTable(); });
-  });
-  renderTable();
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', function(){ 
+                currentPage = 1; 
+                loadEquipmentData(); 
+            });
+            element.addEventListener('change', function(){ 
+                currentPage = 1; 
+                loadEquipmentData(); 
+            });
+        }
+    });
+
+    // Düzenlenebilir hücrelere çift tıklama event listener'ı ekle
+    document.querySelectorAll('.editable-cell').forEach(cell => {
+        cell.addEventListener('dblclick', function() {
+            const field = this.getAttribute('data-field');
+            const id = this.getAttribute('data-id');
+            makeEditable(this, field, id);
+        });
+        
+        // Hover efekti
+        cell.addEventListener('mouseenter', function() {
+            if (!this.querySelector('input') && !this.querySelector('select')) {
+                this.style.backgroundColor = '#f8f9fa';
+                this.style.cursor = 'pointer';
+            }
+        });
+        
+        cell.addEventListener('mouseleave', function() {
+            if (!this.querySelector('input') && !this.querySelector('select')) {
+                this.style.backgroundColor = '';
+            }
+        });
+    });
+});

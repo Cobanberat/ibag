@@ -75,6 +75,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>Sıra</th>
+                            <th>Kod</th>
                             <th>Ürün Cinsi</th>
                             <th>Marka</th>
                             <th>Model</th>
@@ -82,20 +83,60 @@
                             <th>Özellik</th>
                             <th>Adet</th>
                             <th>Durum</th>
+                            <th>Lokasyon</th>
                             <th>Tarih</th>
                             <th>Not</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Satırlar JS ile doldurulacak -->
+                        @forelse($equipmentStocks as $index => $stock)
+                            <tr data-id="{{ $stock->id }}">
+                                <td>{{ ($equipmentStocks->currentPage() - 1) * $equipmentStocks->perPage() + $index + 1 }}</td>
+                                <td class="editable-cell" data-field="code" data-id="{{ $stock->id }}">{{ $stock->code ?? '-' }}</td>
+                                <td class="editable-cell" data-field="equipment_name" data-id="{{ $stock->id }}">{{ $stock->equipment->name ?? '-' }}</td>
+                                <td class="editable-cell" data-field="brand" data-id="{{ $stock->id }}">{{ $stock->brand ?? '-' }}</td>
+                                <td class="editable-cell" data-field="model" data-id="{{ $stock->id }}">{{ $stock->model ?? '-' }}</td>
+                                <td class="editable-cell" data-field="size" data-id="{{ $stock->id }}">{{ $stock->size ?? '-' }}</td>
+                                <td class="editable-cell" data-field="feature" data-id="{{ $stock->id }}">{{ $stock->feature ?? '-' }}</td>
+                                <td class="editable-cell" data-field="quantity" data-id="{{ $stock->id }}">{{ $stock->quantity ?? 0 }}</td>
+                                <td class="editable-cell" data-field="status" data-id="{{ $stock->id }}">{{ $stock->status ?? '-' }}</td>
+                                <td class="editable-cell" data-field="location" data-id="{{ $stock->id }}">{{ $stock->location ?? '-' }}</td>
+                                <td>{{ $stock->created_at ? $stock->created_at->format('d.m.Y') : '-' }}</td>
+                                <td class="editable-cell" data-field="note" data-id="{{ $stock->id }}">{{ $stock->note ?? '-' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showDetail({{ $stock->id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteEquipment({{ $stock->id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="13" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">Henüz ekipman bulunmuyor</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
             <nav class="mt-3 sticky-pagination p-2">
-                <ul class="pagination justify-content-end mb-0" id="pagination">
-                    <!-- Pagination JS ile doldurulacak -->
-                </ul>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        Toplam {{ $equipmentStocks->total() }} kayıttan {{ $equipmentStocks->firstItem() ?? 0 }}-{{ $equipmentStocks->lastItem() ?? 0 }} arası gösteriliyor
+                    </div>
+                    <ul class="pagination justify-content-end mb-0" id="pagination">
+                        @if($equipmentStocks->hasPages())
+                            {{ $equipmentStocks->links() }}
+                        @endif
+                    </ul>
+                </div>
             </nav>
         </div>
     </div>
@@ -109,6 +150,7 @@
                 </div>
                 <div class="modal-body">
                     <p><strong>Sıra:</strong> <span id="detailSno">-</span></p>
+                    <p><strong>Kod:</strong> <span id="detailCode">-</span></p>
                     <p><strong>Ürün Cinsi:</strong> <span id="detailType">-</span></p>
                     <p><strong>Marka:</strong> <span id="detailBrand">-</span></p>
                     <p><strong>Model:</strong> <span id="detailModel">-</span></p>
@@ -116,6 +158,7 @@
                     <p><strong>Özellik:</strong> <span id="detailFeature">-</span></p>
                     <p><strong>Adet:</strong> <span id="detailCount">-</span></p>
                     <p><strong>Durum:</strong> <span id="detailStatus">-</span></p>
+                    <p><strong>Lokasyon:</strong> <span id="detailLocation">-</span></p>
                     <p><strong>Tarih:</strong> <span id="detailDate">-</span></p>
                     <p><strong>Not:</strong> <span id="detailNote">-</span></p>
                 </div>

@@ -28,7 +28,7 @@
         <i class="fas fa-plus"></i> Yeni Kategori
     </button>
 </div>
-<table class="table table-hover table-striped mb-0" id="categoryTable" style="font-size:0.95em;">
+<table class="table table-hover mb-0" id="categoryTable" style="font-size:0.95em;">
     <thead>
         <tr> 
             <th><input type="checkbox" id="selectAll"></th>
@@ -41,100 +41,54 @@
         </tr>
     </thead>
     <tbody id="categoryTableBody">
-      <!-- Düz HTML, recursive örnek -->
-      <tr>
-        <td><input type="checkbox"></td>
-        <td><b>Donanım</b></td>
-        <td>Donanım ürünleri</td>
-        <td>12</td>
-        <td>2024-03-20</td>
-        <td><span style="background:#0d6efd;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-      <tr>
-        <td><input type="checkbox"></td>
-        <td style="padding-left:2.2em;">↳ Bilgisayar</td>
-        <td>Masaüstü ve dizüstü bilgisayarlar</td>
-        <td>5</td>
-        <td>2024-03-18</td>
-        <td><span style="background:#198754;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-      <tr>
-        <td><input type="checkbox"></td>
-        <td style="padding-left:4em;">↳ Dizüstü</td>
-        <td>Laptoplar</td>
-        <td>2</td>
-        <td>2024-03-15</td>
-        <td><span style="background:#ffc107;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-      <tr>
-        <td><input type="checkbox"></td>
-        <td style="padding-left:6em;">↳ Oyun Laptopu</td>
-        <td>Yüksek performanslı laptoplar</td>
-        <td>1</td>
-        <td>2024-03-14</td>
-        <td><span style="background:#fd7e14;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-      <tr>
-        <td><input type="checkbox"></td>
-        <td><b>Ağ</b></td>
-        <td>Ağ ekipmanları</td>
-        <td>8</td>
-        <td>2024-03-12</td>
-        <td><span style="background:#dc3545;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-      <tr>
-        <td><input type="checkbox"></td>
-        <td style="padding-left:2.2em;">↳ Router</td>
-        <td>Yönlendiriciler</td>
-        <td>3</td>
-        <td>2024-03-11</td>
-        <td><span style="background:#20c997;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-      <tr>
-        <td><input type="checkbox"></td>
-        <td style="padding-left:4em;">↳ Kablosuz Router</td>
-        <td>Wi-Fi yönlendiriciler</td>
-        <td>2</td>
-        <td>2024-03-10</td>
-        <td><span style="background:#6610f2;width:18px;height:18px;display:inline-block;border-radius:4px;"></span></td>
-        <td class="category-actions">
-          <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
+        @forelse($categories as $category)
+            <tr data-id="{{ $category->id }}" style="background-color: {{ $category->color ?? '#0d6efd' }}20;">
+                <td><input type="checkbox" class="category-checkbox" value="{{ $category->id }}"></td>
+                <td>
+                    <b>{{ $category->name }}</b>
+                    @if($category->icon)
+                        <i class="fas {{ $category->icon }} ms-2"></i>
+                    @endif
+                </td>
+                <td>{{ $category->description ?? '-' }}</td>
+                <td>{{ $category->equipments_count ?? 0 }}</td>
+                <td>{{ $category->created_at ? $category->created_at->format('d.m.Y') : '-' }}</td>
+                <td>
+                    <span style="background:{{ $category->color ?? '#0d6efd' }};width:18px;height:18px;display:inline-block;border-radius:4px;"></span>
+                </td>
+                <td class="category-actions">
+                    <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="editCategory({{ $category->id }})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="deleteCategory({{ $category->id }})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="fas fa-folder-open fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">Henüz kategori bulunmuyor</p>
+                </td>
+            </tr>
+        @endforelse
     </tbody>
 </table>
 <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 p-2">
     <button class="btn btn-danger btn-sm p-2" id="deleteSelected"><i class="fas fa-trash-alt me-1"></i> Seçili Kategorileri Sil</button>
-    <nav aria-label="Sayfalama">
-        <ul class="pagination mb-0" id="pagination">
-            <!-- JS ile doldurulacak -->
-        </ul>
-    </nav>
+    <div class="d-flex align-items-center gap-3">
+        <div class="text-muted small">
+            Toplam {{ $categories->total() }} kategoriden {{ $categories->firstItem() ?? 0 }}-{{ $categories->lastItem() ?? 0 }} arası gösteriliyor
+        </div>
+        <nav aria-label="Sayfalama">
+            <ul class="pagination mb-0" id="pagination">
+                @if($categories->hasPages())
+                    {{ $categories->links() }}
+                @endif
+            </ul>
+        </nav>
+    </div>
 </div>
 <!-- Kategori Ekle Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
