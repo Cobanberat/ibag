@@ -1,6 +1,151 @@
+// Debug: JavaScript yüklendi
+console.log('Stock.js yüklendi!');
+
 // CSRF token alma fonksiyonu
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+// Rastgele kod oluşturma fonksiyonu
+function generateRandomCode() {
+    const prefix = 'EQ';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${prefix}-${timestamp}-${random}`;
+}
+
+// Modal mod değiştirme fonksiyonu
+function toggleModalMode() {
+    console.log('toggleModalMode çağrıldı');
+    
+    const quantityOnlyMode = document.getElementById('quantityOnlyMode');
+    const quantityOnlySection = document.getElementById('quantityOnlySection');
+    const manualEquipmentSection = document.getElementById('manualEquipmentSection');
+    
+    console.log('Checkbox durumu:', quantityOnlyMode.checked);
+    console.log('Quantity section:', quantityOnlySection);
+    console.log('Manual section:', manualEquipmentSection);
+    
+    if (quantityOnlyMode.checked) {
+        // Sadece miktar modu
+        console.log('Sadece miktar modu aktif');
+        quantityOnlySection.style.display = 'block';
+        manualEquipmentSection.style.display = 'none';
+        
+        // Manuel alanları temizle
+        document.querySelectorAll('#manualEquipmentSection input, #manualEquipmentSection select, #manualEquipmentSection textarea').forEach(field => {
+            field.required = false;
+            field.value = '';
+        });
+        
+        // Miktar modu alanlarını zorunlu yap
+        const equipmentSelect = document.querySelector('select[name="equipment_id"]');
+        const quantityInput = document.querySelector('input[name="quantity"]');
+        
+        if (equipmentSelect) equipmentSelect.required = true;
+        if (quantityInput) quantityInput.required = true;
+        
+    } else {
+        // Manuel ekipman modu
+        console.log('Manuel ekipman modu aktif');
+        quantityOnlySection.style.display = 'none';
+        manualEquipmentSection.style.display = 'block';
+        
+        // Miktar modu alanlarını temizle
+        const equipmentSelect = document.querySelector('select[name="equipment_id"]');
+        const quantityInput = document.querySelector('input[name="quantity"]');
+        
+        if (equipmentSelect) {
+            equipmentSelect.required = false;
+            equipmentSelect.value = '';
+        }
+        if (quantityInput) {
+            quantityInput.required = false;
+            quantityInput.value = '';
+        }
+        
+        // Manuel alanları zorunlu yap
+        document.querySelectorAll('#manualEquipmentSection input, #manualEquipmentSection select, #manualEquipmentSection textarea').forEach(field => {
+            if (field.name === 'name' || field.name === 'category_id' || field.name === 'manual_quantity') {
+                field.required = true;
+            }
+        });
+    }
+}
+
+// Resim seçeneklerini kontrol etme fonksiyonu
+function toggleImageOptions() {
+    const useSingleImage = document.getElementById('useSingleImage');
+    const imageSection = document.getElementById('imageSection');
+    
+    if (useSingleImage && imageSection) {
+        if (useSingleImage.checked) {
+            imageSection.style.display = 'block';
+        } else {
+            imageSection.style.display = 'none';
+        }
+    }
+}
+
+// Stok işlemi resim seçeneklerini kontrol etme fonksiyonu
+function toggleOperationImageOptions() {
+    const useSingleImage = document.getElementById('operationUseSingleImage');
+    const imageSection = document.getElementById('operationImageSection');
+    
+    if (useSingleImage && imageSection) {
+        if (useSingleImage.checked) {
+            imageSection.style.display = 'block';
+        } else {
+            imageSection.style.display = 'none';
+        }
+    }
+}
+
+// Manuel özellik seçeneklerini kontrol etme fonksiyonu
+function toggleManualProperties() {
+    const useSameProperties = document.getElementById('useSameProperties');
+    const manualPropertiesSection = document.getElementById('manualPropertiesSection');
+    const referenceCodeSection = document.getElementById('referenceCodeSection');
+    
+    if (useSameProperties && manualPropertiesSection) {
+        if (useSameProperties.checked) {
+            manualPropertiesSection.style.display = 'none';
+            if (referenceCodeSection) {
+                referenceCodeSection.style.display = 'block';
+            }
+        } else {
+            manualPropertiesSection.style.display = 'block';
+            if (referenceCodeSection) {
+                referenceCodeSection.style.display = 'none';
+            }
+        }
+    }
+}
+
+// Miktar değiştiğinde resim seçeneklerini güncelleme
+function updateImageOptions() {
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
+    const useSingleImage = document.getElementById('useSingleImage');
+    const imageSection = document.getElementById('imageSection');
+    
+    let quantity = 1;
+    if (quantityInput && quantityInput.value) {
+        quantity = parseInt(quantityInput.value);
+    } else if (manualQuantityInput && manualQuantityInput.value) {
+        quantity = parseInt(manualQuantityInput.value);
+    }
+    
+    if (useSingleImage && imageSection) {
+        if (quantity > 1) {
+            imageSection.style.display = 'block';
+            useSingleImage.disabled = false;
+        } else {
+            imageSection.style.display = 'block';
+            useSingleImage.checked = true;
+            useSingleImage.disabled = true;
+        }
+    }
 }
 
 // Stok verilerini yükleme
@@ -16,7 +161,12 @@ function loadStockData(page = 1) {
             'Accept': 'application/json',
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             renderStockTable(data.data);
@@ -24,12 +174,12 @@ function loadStockData(page = 1) {
                 updatePagination(data.pagination);
             }
         } else {
-            showToast('Stok verileri yüklenirken hata oluştu', 'error');
+            showToast(data.message || 'Stok verileri yüklenirken hata oluştu', 'error');
         }
     })
     .catch(error => {
         console.error('Stok verileri yükleme hatası:', error);
-        showToast('Stok verileri yüklenirken hata oluştu', 'error');
+        showToast('Stok verileri yüklenirken hata oluştu: ' + error.message, 'error');
     });
 }
 
@@ -42,25 +192,157 @@ function stockIn(stockId) {
     document.getElementById('operationTitle').textContent = 'Stok Girişi';
     document.getElementById('operationAmount').value = '';
     document.getElementById('operationNote').value = '';
+    
+    // Stok girişi için alanları göster
+    document.getElementById('samePropertiesOption').style.display = 'block';
+    document.getElementById('operationImageOptions').style.display = 'block';
+    document.getElementById('manualPropertiesSection').style.display = 'none';
+    document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
+    
+    // Miktar alanını göster (stok girişinde gerekli)
+    document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+    
+    // Manuel özellik seçeneklerini ayarla
+    toggleManualProperties();
+    
     modal.show();
 }
 
 // Stok çıkışı modalını açma
 function stockOut(stockId) {
-    // Mevcut stok miktarını al
-    const row = document.querySelector(`tr[data-id="${stockId}"]`);
-    const currentQuantity = parseInt(row.querySelector('td:nth-child(4)').textContent);
-    
     // Modal açma işlemi
     const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
     document.getElementById('operationType').value = 'out';
     document.getElementById('stockId').value = stockId;
     document.getElementById('operationTitle').textContent = 'Stok Çıkışı';
-    document.getElementById('operationAmount').value = '';
-    document.getElementById('operationAmount').max = currentQuantity;
-    document.getElementById('operationAmount').placeholder = `Maksimum: ${currentQuantity}`;
+    document.getElementById('operationAmount').value = '1'; // Varsayılan değer
     document.getElementById('operationNote').value = '';
+    document.getElementById('operationCode').value = '';
+    
+    // Stok çıkışı için alanları göster/gizle
+    document.getElementById('samePropertiesOption').style.display = 'none';
+    document.getElementById('manualPropertiesSection').style.display = 'none';
+    document.getElementById('operationImageOptions').style.display = 'none';
+    
+    // Individual tracking kontrolü - ekipman bilgisini al
+    fetch(`/admin/stock/${stockId}/info`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data.individual_tracking) {
+                // Individual tracking: Sadece kod girişi
+                document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
+                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
+            } else {
+                // Toplu tracking: Miktar girişi
+                document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
+                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            // Hata durumunda varsayılan olarak kod girişi göster
+            document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
+            document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
+        });
+    
+    // Kod validasyon mesajını temizle
+    document.getElementById('codeValidationMessage').textContent = '';
+    document.getElementById('codeValidationMessage').className = 'form-text';
+    
     modal.show();
+}
+
+// Stok kodu kontrolü
+function validateStockCode(code) {
+    const stockId = document.getElementById('stockId').value;
+    return new Promise((resolve) => {
+        fetch(`/admin/stock/validate-code?code=${encodeURIComponent(code)}&equipment_id=${stockId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            resolve(data.valid);
+        })
+        .catch(() => {
+            resolve(false);
+        });
+    });
+}
+
+// Kod input değişikliğini dinle
+function handleCodeInput() {
+    const codeInput = document.getElementById('operationCode');
+    const validationMessage = document.getElementById('codeValidationMessage');
+    
+    if (codeInput.value.trim() === '') {
+        codeInput.classList.remove('is-valid', 'is-invalid');
+        validationMessage.textContent = '';
+        validationMessage.className = 'form-text';
+        return;
+    }
+    
+    validateStockCode(codeInput.value).then(isValid => {
+        if (isValid) {
+            codeInput.classList.remove('is-invalid');
+            codeInput.classList.add('is-valid');
+            validationMessage.textContent = '✓ Geçerli stok kodu';
+            validationMessage.className = 'form-text text-success';
+        } else {
+            codeInput.classList.remove('is-valid');
+            codeInput.classList.add('is-invalid');
+            validationMessage.textContent = '✗ Geçersiz stok kodu';
+            validationMessage.className = 'form-text text-danger';
+        }
+    });
+}
+
+// Referans stok kodu kontrolü
+function validateReferenceCode(code) {
+    const stockId = document.getElementById('stockId').value;
+    return new Promise((resolve) => {
+        fetch(`/admin/stock/validate-reference-code?code=${encodeURIComponent(code)}&equipment_id=${stockId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            resolve(data);
+        })
+        .catch(() => {
+            resolve({ valid: false, data: null });
+        });
+    });
+}
+
+// Referans kod input değişikliğini dinle
+function handleReferenceCodeInput() {
+    const codeInput = document.getElementById('referenceCode');
+    const validationMessage = document.getElementById('referenceCodeValidationMessage');
+    
+    if (codeInput.value.trim() === '') {
+        codeInput.classList.remove('is-valid', 'is-invalid');
+        validationMessage.textContent = '';
+        validationMessage.className = 'form-text';
+        return;
+    }
+    
+    validateReferenceCode(codeInput.value).then(result => {
+        if (result.valid) {
+            codeInput.classList.remove('is-invalid');
+            codeInput.classList.add('is-valid');
+            validationMessage.textContent = `✓ Geçerli stok kodu - ${result.data.brand} ${result.data.model}`;
+            validationMessage.className = 'form-text text-success';
+        } else {
+            codeInput.classList.remove('is-valid');
+            codeInput.classList.add('is-invalid');
+            validationMessage.textContent = '✗ Geçersiz stok kodu';
+            validationMessage.className = 'form-text text-danger';
+        }
+    });
 }
 
 // Stok işlemi gönderme
@@ -69,39 +351,96 @@ function submitStockOperation() {
     const type = document.getElementById('operationType').value;
     const amount = document.getElementById('operationAmount').value;
     const note = document.getElementById('operationNote').value;
+    const code = document.getElementById('operationCode').value;
+    const useSameProperties = document.getElementById('useSameProperties')?.checked || false;
+    const useSingleImage = document.getElementById('operationUseSingleImage')?.checked || false;
+    const photoFiles = document.getElementById('operationPhoto')?.files;
+    const individualTracking = document.getElementById('individualTracking')?.checked || false;
+    const referenceCode = document.getElementById('referenceCode')?.value || '';
+    
+    // Manuel özellikler
+    const brand = document.getElementById('operationBrand')?.value || '';
+    const model = document.getElementById('operationModel')?.value || '';
+    const size = document.getElementById('operationSize')?.value || '';
+    const feature = document.getElementById('operationFeature')?.value || '';
 
     if (!amount || amount <= 0) {
         showToast('Lütfen geçerli bir miktar girin', 'error');
         return;
     }
 
-    // Stok çıkışında maksimum miktar kontrolü
+    // Stok çıkışında kod kontrolü
     if (type === 'out') {
-        const maxAmount = parseInt(document.getElementById('operationAmount').max);
-        if (parseInt(amount) > maxAmount) {
-            showToast(`Maksimum çıkarılabilecek miktar: ${maxAmount}`, 'error');
+        if (!code || code.trim() === '') {
+            showToast('Stok çıkışı için kod girmelisiniz', 'error');
+            return;
+        }
+        
+        // Kod geçerliliğini kontrol et
+        const codeInput = document.getElementById('operationCode');
+        if (codeInput.classList.contains('is-invalid')) {
+            showToast('Geçersiz stok kodu', 'error');
             return;
         }
     }
 
-    console.log('Stok işlemi gönderiliyor:', { stockId, type, amount, note });
+    console.log('Stok işlemi gönderiliyor:', { stockId, type, amount, note, code, useSameProperties, useSingleImage });
+
+    const formData = new FormData();
+    formData.append('type', type);
+    formData.append('amount', parseInt(amount));
+    formData.append('note', note);
+    
+    if (type === 'in') {
+        // Stok girişi için özellikler ve resimler
+        formData.append('use_same_properties', useSameProperties ? '1' : '0');
+        formData.append('use_single_image', useSingleImage ? '1' : '0');
+        
+        // Manuel özellikler
+        if (!useSameProperties) {
+            formData.append('brand', brand);
+            formData.append('model', model);
+            formData.append('size', size);
+            formData.append('feature', feature);
+        } else {
+            // Referans kodu ekle
+            formData.append('reference_code', referenceCode);
+        }
+        
+        if (photoFiles && photoFiles.length > 0) {
+            // Miktar kadar resim ekle
+            const maxFiles = Math.min(photoFiles.length, parseInt(amount));
+            for (let i = 0; i < maxFiles; i++) {
+                formData.append(`photos[]`, photoFiles[i]);
+            }
+        }
+    } else {
+        // Stok çıkışı için kod
+        formData.append('code', code);
+    }
 
     fetch(`/admin/stock/${stockId}/operation`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify({
-            type: type,
-            amount: parseInt(amount),
-            note: note
-        })
+        body: formData
     })
     .then(response => {
         console.log('Response status:', response.status);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text().then(text => {
+                console.log('Response text:', text);
+                try {
+                    const data = JSON.parse(text);
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                } catch (e) {
+                    if (e instanceof SyntaxError) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    throw e;
+                }
+            });
         }
         return response.json();
     })
@@ -115,7 +454,7 @@ function submitStockOperation() {
             // Tabloyu yenile
             loadStockData();
         } else {
-            showToast(data.message, 'error');
+            showToast(data.message || 'İşlem başarısız', 'error');
         }
     })
     .catch(error => {
@@ -308,6 +647,7 @@ function renderStockTable(stocks) {
                 <td>
                     <span class="fw-bold">${stock.name || '-'}</span>
                     <br><small class="text-muted">${stock.code || '-'}</small>
+                    ${stock.individual_tracking ? '<br><small class="text-info"><i class="fas fa-barcode"></i> Ayrı takip</small>' : '<br><small class="text-secondary"><i class="fas fa-layer-group"></i> Toplu takip</small>'}
                 </td>
                 <td>${stock.category?.name || '-'}</td>
                 <td>${totalQuantity}</td>
@@ -395,9 +735,77 @@ function updatePagination(pagination) {
 
 // Stok ekleme
 function addStock() {
+    const quantityOnlyMode = document.getElementById('quantityOnlyMode').checked;
+    const useSingleImage = document.getElementById('useSingleImage').checked;
+    const individualTracking = document.getElementById('individualTracking').checked;
     const formData = new FormData(document.getElementById('addProductForm'));
+    
+    // Otomatik kod oluştur
+    const randomCode = generateRandomCode();
+    formData.append('code', randomCode);
+    formData.append('individual_tracking', individualTracking ? '1' : '0');
     formData.append('_token', getCsrfToken());
 
+    if (quantityOnlyMode) {
+        // Sadece miktar modu - mevcut ekipmana stok ekle
+        const equipmentId = formData.get('equipment_id');
+        const quantity = formData.get('quantity');
+        
+        if (!equipmentId || !quantity) {
+            showToast('Lütfen ekipman seçin ve miktar girin', 'error');
+            return;
+        }
+        
+        // Resim işlemi
+        const photoFile = formData.get('photo');
+        if (photoFile && photoFile.size > 0) {
+            formData.append('photo', photoFile);
+        }
+        
+        // Stok girişi işlemi
+        fetch(`/admin/stock/${equipmentId}/operation`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Ekipman stoku başarıyla eklendi', 'success');
+                document.getElementById('addProductForm').reset();
+                document.getElementById('quantityOnlyMode').checked = true;
+                toggleModalMode();
+                bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+                loadStockData(1);
+            } else {
+                showToast(data.message || 'Stok eklenirken hata oluştu', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Stok ekleme hatası:', error);
+            showToast('Stok eklenirken hata oluştu', 'error');
+        });
+        
+    } else {
+        // Manuel ekipman modu - yeni ekipman ve stok oluştur
+        const name = formData.get('name');
+        const categoryId = formData.get('category_id');
+        const quantity = formData.get('manual_quantity');
+        
+        if (!name || !categoryId || !quantity) {
+            showToast('Lütfen tüm zorunlu alanları doldurun', 'error');
+            return;
+        }
+        
+        // Resim işlemi
+        const photoFile = formData.get('photo');
+        if (photoFile && photoFile.size > 0) {
+            formData.append('photo', photoFile);
+        }
+        
+        // Yeni ekipman ve stok oluştur
     fetch('/admin/stock', {
         method: 'POST',
         body: formData,
@@ -408,18 +816,21 @@ function addStock() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('Stok başarıyla oluşturuldu', 'success');
+                showToast('Yeni ekipman ve stok başarıyla oluşturuldu', 'success');
             document.getElementById('addProductForm').reset();
+                document.getElementById('quantityOnlyMode').checked = true;
+                toggleModalMode();
             bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
             loadStockData(1);
         } else {
-            showToast(data.message || 'Stok oluşturulurken hata oluştu', 'error');
+                showToast(data.message || 'Ekipman oluşturulurken hata oluştu', 'error');
         }
     })
     .catch(error => {
-        console.error('Stok ekleme hatası:', error);
-        showToast('Stok oluşturulurken hata oluştu', 'error');
+            console.error('Ekipman ekleme hatası:', error);
+            showToast('Ekipman oluşturulurken hata oluştu', 'error');
     });
+    }
 }
 
 
@@ -624,6 +1035,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (filterBtn) {
         filterBtn.addEventListener('click', () => loadStockData(1));
+    }
+
+    // Modal mod değiştirme
+    const quantityOnlyMode = document.getElementById('quantityOnlyMode');
+    if (quantityOnlyMode) {
+        console.log('Checkbox bulundu, event listener ekleniyor');
+        quantityOnlyMode.addEventListener('change', toggleModalMode);
+        // Sayfa yüklendiğinde varsayılan modu ayarla
+        setTimeout(() => {
+            toggleModalMode();
+        }, 100);
+    } else {
+        console.log('Checkbox bulunamadı!');
+    }
+
+    // Resim seçenekleri
+    const useSingleImage = document.getElementById('useSingleImage');
+    if (useSingleImage) {
+        useSingleImage.addEventListener('change', toggleImageOptions);
+        toggleImageOptions();
+    }
+
+    // Miktar değişikliklerini dinle
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
+    
+    if (quantityInput) {
+        quantityInput.addEventListener('input', updateImageOptions);
+    }
+    if (manualQuantityInput) {
+        manualQuantityInput.addEventListener('input', updateImageOptions);
+    }
+
+    // Stok işlemi resim seçenekleri
+    const operationUseSingleImage = document.getElementById('operationUseSingleImage');
+    if (operationUseSingleImage) {
+        operationUseSingleImage.addEventListener('change', toggleOperationImageOptions);
+        toggleOperationImageOptions();
+    }
+
+    // Kod input değişikliğini dinle
+    const operationCode = document.getElementById('operationCode');
+    if (operationCode) {
+        operationCode.addEventListener('input', handleCodeInput);
+    }
+
+    // Referans kod input değişikliğini dinle
+    const referenceCode = document.getElementById('referenceCode');
+    if (referenceCode) {
+        referenceCode.addEventListener('input', handleReferenceCodeInput);
+    }
+
+    // Manuel özellik seçeneklerini dinle
+    const useSameProperties = document.getElementById('useSameProperties');
+    if (useSameProperties) {
+        useSameProperties.addEventListener('change', toggleManualProperties);
     }
 
     // Stok ekleme

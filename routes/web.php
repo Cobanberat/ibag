@@ -29,6 +29,9 @@ Route::get('/admin', function () {
 Route::get('/admin/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
 Route::get('/admin/stock/data', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStockData'])->name('admin.stock.data');
 Route::get('/admin/stock/statistics', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStatistics'])->name('admin.stock.statistics');
+Route::get('/admin/stock/validate-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateCode'])->name('admin.stock.validate-code');
+Route::get('/admin/stock/validate-reference-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateReferenceCode'])->name('admin.stock.validate-reference-code');
+Route::get('/admin/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
 Route::post('/admin/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
 Route::post('/admin/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'store'])->name('admin.stock.store');
 Route::post('/admin/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');

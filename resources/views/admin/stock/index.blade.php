@@ -35,46 +35,174 @@
     </div>
     <!-- Ürün Ekle Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-slide-down">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addProductModalLabel"><i class="fas fa-plus me-2"></i>Yeni Ürün Ekle</h5>
+                    <h5 class="modal-title" id="addProductModalLabel"><i class="fas fa-plus me-2"></i>Yeni Ekipman Ekle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="addProductForm">
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Ürün Adı</label>
-                            <input type="text" class="form-control" name="name" required>
+                        <!-- Mod Seçimi -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="quantityOnlyMode" checked>
+                                <label class="form-check-label fw-bold" for="quantityOnlyMode">
+                                    <i class="fas fa-layer-group me-2"></i>Sadece miktar gir (hızlı ekleme)
+                                </label>
+                            </div>
+                            <small class="text-muted">Aktifse sadece miktar girilir, ekipman özellikleri otomatik oluşturulur</small>
                         </div>
+
+                        <!-- Sadece Miktar Modu -->
+                        <div id="quantityOnlySection">
+                            <div class="row">
+                                <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Kategori</label>
-                            <select class="form-select border-0" name="category" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
-                                <option value="">Seçiniz</option>
-                                <option>Donanım</option>
-                                <option>Ağ</option>
+                                        <label class="form-label fw-bold">Ekipman Seç</label>
+                                        <select class="form-select border-0" name="equipment_id" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                            <option value="">Ekipman Seçiniz</option>
+                                            @foreach($categories as $category)
+                                                <optgroup label="{{ $category->name }}">
+                                                    @foreach($category->equipments ?? [] as $equipment)
+                                                        <option value="{{ $equipment->id }}">{{ $equipment->name }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
                             </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Miktar</label>
+                                        <input type="number" class="form-control" name="quantity" min="1" value="1" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Miktar</label>
-                            <input type="number" class="form-control" name="quantity" min="0" required>
+
+                        <!-- Manuel Ekipman Modu -->
+                        <div id="manualEquipmentSection" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Ekipman Adı</label>
+                                        <input type="text" class="form-control" name="name" placeholder="Örn: Jeneratör">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Kategori</label>
+                                        <select class="form-select border-0" name="category_id" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                            <option value="">Kategori Seçiniz</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Marka</label>
+                                        <input type="text" class="form-control" name="brand" placeholder="Örn: Honda">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Model</label>
+                                        <input type="text" class="form-control" name="model" placeholder="Örn: EU3000i">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Miktar</label>
+                                        <input type="number" class="form-control" name="manual_quantity" min="1" value="1">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Beden/Özellik</label>
+                                        <input type="text" class="form-control" name="size" placeholder="Örn: 3KW, XL, 1000W">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Kritik Seviye</label>
+                                        <input type="number" class="form-control" name="critical_level" min="1" value="3">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Özellik</label>
+                                        <textarea class="form-control" name="feature" rows="2" placeholder="Ekipman özellikleri..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Açıklama</label>
+                                        <textarea class="form-control" name="note" rows="2" placeholder="Ekipman hakkında ek bilgiler..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="individual_tracking" id="individualTracking">
+                                            <label class="form-check-label fw-bold" for="individualTracking">
+                                                <i class="fas fa-barcode me-2"></i>Her ürünü ayrı ayrı takip et
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">
+                                            <strong>Aktifse:</strong> Her ürün ayrı kod, ayrı resim (Jeneratör, bilgisayar gibi)<br>
+                                            <strong>Kapalıysa:</strong> Tek kod, tek resim, miktar bazlı (Kablo, vida gibi)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Ortak Alanlar -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Konum</label>
+                                    <input type="text" class="form-control" name="location" placeholder="Örn: Depo A, Raf 1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">İhtiyaç Adet</label>
-                            <input type="number" class="form-control" name="critical" min="0" required>
+                                    <label class="form-label fw-bold">Durum</label>
+                                    <select class="form-select border-0" name="status" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                        <option value="aktif">Aktif</option>
+                                        <option value="pasif">Pasif</option>
+                                        <option value="bakımda">Bakımda</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Resim Seçenekleri -->
                         <div class="mb-3">
-                            <label class="form-label">Açıklama</label>
-                            <textarea class="form-control" name="desc" rows="2"></textarea>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="useSingleImage" checked>
+                                <label class="form-check-label fw-bold" for="useSingleImage">
+                                    <i class="fas fa-image me-2"></i>Tek resim kullan
+                                </label>
+                            </div>
+                            <small class="text-muted">Aktifse tüm ekipmanlar için aynı resim kullanılır</small>
                         </div>
+                        
+                        <div id="imageSection">
                         <div class="mb-3">
-                            <label class="form-label">Ürün Fotoğrafı</label>
+                                <label class="form-label fw-bold">Ekipman Fotoğrafı</label>
                             <input type="file" class="form-control" name="photo" accept="image/*">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Kaydet
+                        </button>
                     </div>
                 </form>
             </div>
@@ -263,13 +391,11 @@
                 </button>
                 <div class="d-flex align-items-center gap-3">
                     <div class="text-muted small">
-                        Toplam {{ $stocks->total() }} stoktan {{ $stocks->firstItem() ?? 0 }}-{{ $stocks->lastItem() ?? 0 }} arası gösteriliyor
+                        Toplam {{ $pagination['total'] }} stoktan {{ ($pagination['total'] > 0 ? 1 : 0) }}-{{ min($pagination['per_page'], $pagination['total']) }} arası gösteriliyor
                     </div>
                     <nav aria-label="Sayfalama">
                         <ul class="pagination mb-0" id="pagination">
-                            @if($stocks->hasPages())
-                                {{ $stocks->links() }}
-                            @endif
+                            <!-- Sayfalama JavaScript ile yönetilecek -->
                         </ul>
                     </nav>
                 </div>
@@ -279,7 +405,7 @@
 
 <!-- Stok İşlemi Modal -->
 <div class="modal fade" id="stockOperationModal" tabindex="-1" aria-labelledby="stockOperationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="stockOperationModalLabel">Stok İşlemi</h5>
@@ -290,18 +416,103 @@
                 <input type="hidden" id="operationType">
                 
                 <div class="mb-3">
-                    <label for="operationTitle" class="form-label">İşlem Türü</label>
+                    <label for="operationTitle" class="form-label fw-bold">İşlem Türü</label>
                     <h6 id="operationTitle" class="text-primary"></h6>
                 </div>
                 
+                <!-- Aynı Özellik Seçeneği (Sadece Stok Girişi) -->
+                <div id="samePropertiesOption" style="display: none;">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="useSameProperties" checked>
+                            <label class="form-check-label fw-bold" for="useSameProperties">
+                                <i class="fas fa-copy me-2"></i>Aynı özellikleri kullan
+                            </label>
+                        </div>
+                        <small class="text-muted">Aktifse belirtilen stok kodunun özellikleri kullanılır</small>
+                    </div>
+                    
+                    <!-- Referans Stok Kodu Girişi -->
+                    <div id="referenceCodeSection" style="display: none;">
+                        <div class="mb-3">
+                            <label for="referenceCode" class="form-label fw-bold">Referans Stok Kodu</label>
+                            <input type="text" class="form-control" id="referenceCode" placeholder="Özelliklerini kopyalamak istediğiniz stok kodunu girin">
+                            <div id="referenceCodeValidationMessage" class="form-text"></div>
+                            <small class="text-muted">Bu stok kodunun özellikleri (marka, model, boyut, özellik) kopyalanacak</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Manuel Özellik Girişi (Sadece Stok Girişi) -->
+                <div id="manualPropertiesSection" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Marka</label>
+                                <input type="text" class="form-control" id="operationBrand" placeholder="Örn: Honda">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Model</label>
+                                <input type="text" class="form-control" id="operationModel" placeholder="Örn: EU3000i">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Beden/Özellik</label>
+                                <input type="text" class="form-control" id="operationSize" placeholder="Örn: 3KW, XL, 1000W">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Özellik</label>
+                                <textarea class="form-control" id="operationFeature" rows="2" placeholder="Ekipman özellikleri..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
                 <div class="mb-3">
-                    <label for="operationAmount" class="form-label">Miktar</label>
+                            <label for="operationAmount" class="form-label fw-bold">Miktar</label>
                     <input type="number" class="form-control" id="operationAmount" min="1" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="operationCode" class="form-label fw-bold">Stok Kodu</label>
+                            <input type="text" class="form-control" id="operationCode" placeholder="Stok kodunu girin">
+                            <div id="codeValidationMessage" class="form-text"></div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="mb-3">
-                    <label for="operationNote" class="form-label">Not (Opsiyonel)</label>
+                    <label for="operationNote" class="form-label fw-bold">Not (Opsiyonel)</label>
                     <textarea class="form-control" id="operationNote" rows="3" placeholder="İşlem hakkında not..."></textarea>
+                </div>
+
+                <!-- Resim Seçenekleri (Sadece Stok Girişi) -->
+                <div id="operationImageOptions" style="display: none;">
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="operationUseSingleImage" checked>
+                            <label class="form-check-label fw-bold" for="operationUseSingleImage">
+                                <i class="fas fa-image me-2"></i>Tek resim kullan
+                            </label>
+                        </div>
+                        <small class="text-muted">Aktifse tüm ekipmanlar için aynı resim kullanılır</small>
+                    </div>
+                    
+                    <div id="operationImageSection">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ekipman Fotoğrafı</label>
+                            <input type="file" class="form-control" id="operationPhoto" accept="image/*" multiple>
+                            <small class="text-muted">Miktar kadar resim seçebilirsiniz (örn: 3 adet için 3 resim)</small>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
