@@ -128,12 +128,51 @@ function updateImageOptions() {
     const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
     const useSingleImage = document.getElementById('useSingleImage');
     const imageSection = document.getElementById('imageSection');
+    const individualTracking = document.getElementById('individualTracking');
     
     let quantity = 1;
     if (quantityInput && quantityInput.value) {
         quantity = parseInt(quantityInput.value);
     } else if (manualQuantityInput && manualQuantityInput.value) {
         quantity = parseInt(manualQuantityInput.value);
+    }
+    
+    // Individual tracking kontrolü
+    if (individualTracking && individualTracking.checked) {
+        // Ayrı takip aktifse miktar her zaman 1 olmalı
+        if (quantityInput) quantityInput.value = 1;
+        if (manualQuantityInput) manualQuantityInput.value = 1;
+        quantity = 1;
+        
+        // Miktar alanlarını devre dışı bırak
+        if (quantityInput) quantityInput.disabled = true;
+        if (manualQuantityInput) manualQuantityInput.disabled = true;
+        
+        // Miktar etiketlerini güncelle
+        const quantityLabel = document.getElementById('quantityLabel');
+        const manualQuantityLabel = document.getElementById('manualQuantityLabel');
+        
+        if (quantityLabel) {
+            quantityLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
+        }
+        if (manualQuantityLabel) {
+            manualQuantityLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
+        }
+    } else {
+        // Ayrı takip kapalıysa miktar alanlarını aktif et
+        if (quantityInput) quantityInput.disabled = false;
+        if (manualQuantityInput) manualQuantityInput.disabled = false;
+        
+        // Miktar etiketlerini geri al
+        const quantityLabel = document.getElementById('quantityLabel');
+        const manualQuantityLabel = document.getElementById('manualQuantityLabel');
+        
+        if (quantityLabel) {
+            quantityLabel.textContent = 'Miktar';
+        }
+        if (manualQuantityLabel) {
+            manualQuantityLabel.textContent = 'Miktar';
+        }
     }
     
     if (useSingleImage && imageSection) {
@@ -153,6 +192,24 @@ function loadStockData(page = 1) {
     const searchValue = document.getElementById('filterSearch').value;
     const categoryValue = document.getElementById('filterCategory').value;
     const statusValue = document.getElementById('filterStatus').value;
+
+    // Eğer hiç filtre yoksa ve ilk sayfa ise, PHP ile render edilmiş veriyi kullan
+    if (page === 1 && !searchValue && !categoryValue && !statusValue) {
+        return; // PHP ile render edilmiş veriyi kullan
+    }
+
+    // Loading indicator göster
+    const tbody = document.getElementById('stockTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="8" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+                <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+            </td>
+        </tr>
+    `;
 
     fetch(`/admin/stock/data?search=${encodeURIComponent(searchValue)}&category=${encodeURIComponent(categoryValue)}&status=${encodeURIComponent(statusValue)}&page=${page}`, {
         method: 'GET',
@@ -199,8 +256,44 @@ function stockIn(stockId) {
     document.getElementById('manualPropertiesSection').style.display = 'none';
     document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
     
-    // Miktar alanını göster (stok girişinde gerekli)
-    document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+    // Individual tracking kontrolü - ekipman bilgisini al
+    fetch(`/admin/stock/${stockId}/info`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data.individual_tracking) {
+                // Individual tracking: Miktar her zaman 1
+                document.getElementById('operationAmount').value = '1';
+                document.getElementById('operationAmount').disabled = true;
+                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+                
+                // Etiketi güncelle
+                const operationAmountLabel = document.getElementById('operationAmountLabel');
+                if (operationAmountLabel) {
+                    operationAmountLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
+                }
+            } else {
+                // Toplu tracking: Miktar girişi (kaç adet ekipman eklenecek)
+                document.getElementById('operationAmount').disabled = false;
+                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+                
+                // Etiketi güncelle
+                const operationAmountLabel = document.getElementById('operationAmountLabel');
+                if (operationAmountLabel) {
+                    operationAmountLabel.textContent = 'Adet (Her biri ayrı kod ile)';
+                }
+            }
+        })
+        .catch(() => {
+            // Hata durumunda varsayılan olarak miktar girişi göster
+            document.getElementById('operationAmount').disabled = false;
+            document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+            
+            // Etiketi geri al
+            const operationAmountLabel = document.getElementById('operationAmountLabel');
+            if (operationAmountLabel) {
+                operationAmountLabel.textContent = 'Miktar';
+            }
+        });
     
     // Manuel özellik seçeneklerini ayarla
     toggleManualProperties();
@@ -232,16 +325,34 @@ function stockOut(stockId) {
                 // Individual tracking: Sadece kod girişi
                 document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
                 document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
+                
+                // Etiketi güncelle
+                const operationAmountLabel = document.getElementById('operationAmountLabel');
+                if (operationAmountLabel) {
+                    operationAmountLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
+                }
             } else {
-                // Toplu tracking: Miktar girişi
-                document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
-                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+                // Toplu tracking: Kod girişi (her ekipman ayrı kod ile)
+                document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
+                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
+                
+                // Etiketi güncelle
+                const operationAmountLabel = document.getElementById('operationAmountLabel');
+                if (operationAmountLabel) {
+                    operationAmountLabel.textContent = 'Adet (Her ürün ayrı kod)';
+                }
             }
         })
         .catch(() => {
             // Hata durumunda varsayılan olarak kod girişi göster
             document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
             document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
+            
+            // Etiketi güncelle
+            const operationAmountLabel = document.getElementById('operationAmountLabel');
+            if (operationAmountLabel) {
+                operationAmountLabel.textContent = 'Adet (Her ürün ayrı kod)';
+            }
         });
     
     // Kod validasyon mesajını temizle
@@ -363,6 +474,12 @@ function submitStockOperation() {
     const model = document.getElementById('operationModel')?.value || '';
     const size = document.getElementById('operationSize')?.value || '';
     const feature = document.getElementById('operationFeature')?.value || '';
+
+    // Individual tracking kontrolü
+    if (individualTracking && amount != 1) {
+        showToast('Ayrı takip özelliği olan ekipmanlarda miktar her zaman 1 olmalıdır', 'error');
+        return;
+    }
 
     if (!amount || amount <= 0) {
         showToast('Lütfen geçerli bir miktar girin', 'error');
@@ -622,20 +739,18 @@ function renderStockTable(stocks) {
     }
 
     tbody.innerHTML = stocks.map(stock => {
+        // PHP'den gelen hesaplanmış değerleri kullan
         const totalQuantity = stock.total_quantity || 0;
         const criticalLevel = stock.critical_level || 3;
-        const isLowStock = totalQuantity <= criticalLevel && totalQuantity > 0;
-        const isEmpty = totalQuantity == 0;
-        const isSufficient = totalQuantity > criticalLevel;
+        const rowClass = stock.row_class || 'table-success';
+        const barClass = stock.bar_class || 'bg-success';
+        const percentage = stock.percentage || 0;
         
-        const rowClass = isEmpty ? 'table-danger' : (isLowStock ? 'table-warning' : 'table-success');
-        const percentage = totalQuantity > 0 ? Math.min(100, (totalQuantity / Math.max(1, criticalLevel)) * 100) : 0;
-        const barClass = isEmpty ? 'bg-danger' : (isLowStock ? 'bg-warning' : 'bg-success');
-        
+        // Status badge HTML'i
         let statusBadge = '';
-        if (isEmpty) {
+        if (stock.status_badge === 'empty') {
             statusBadge = '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>';
-        } else if (isLowStock) {
+        } else if (stock.status_badge === 'low') {
             statusBadge = '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>';
         } else {
             statusBadge = '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>';
@@ -647,7 +762,6 @@ function renderStockTable(stocks) {
                 <td>
                     <span class="fw-bold">${stock.name || '-'}</span>
                     <br><small class="text-muted">${stock.code || '-'}</small>
-                    ${stock.individual_tracking ? '<br><small class="text-info"><i class="fas fa-barcode"></i> Ayrı takip</small>' : '<br><small class="text-secondary"><i class="fas fa-layer-group"></i> Toplu takip</small>'}
                 </td>
                 <td>${stock.category?.name || '-'}</td>
                 <td>${totalQuantity}</td>
@@ -739,6 +853,13 @@ function addStock() {
     const useSingleImage = document.getElementById('useSingleImage').checked;
     const individualTracking = document.getElementById('individualTracking').checked;
     const formData = new FormData(document.getElementById('addProductForm'));
+    
+    // Individual tracking kontrolü
+    if (individualTracking) {
+        // Ayrı takip aktifse miktar her zaman 1 olmalı
+        formData.set('quantity', '1');
+        formData.set('manual_quantity', '1');
+    }
     
     // Otomatik kod oluştur
     const randomCode = generateRandomCode();
@@ -1021,21 +1142,74 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusSelect = document.getElementById('filterStatus');
     const filterBtn = document.getElementById('filterBtn');
 
+    // Debounce fonksiyonu
+    let searchTimeout;
+    function debouncedSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            // Sadece arama yapıldığında AJAX çağrısı yap
+            if (searchInput.value.trim() !== '') {
+                loadStockData(1);
+            }
+        }, 500); // 500ms bekle
+    }
+
     if (searchInput) {
-        searchInput.addEventListener('input', () => loadStockData(1));
+        searchInput.addEventListener('input', debouncedSearch);
     }
 
     if (categorySelect) {
-        categorySelect.addEventListener('change', () => loadStockData(1));
+        categorySelect.addEventListener('change', () => {
+            // Sadece kategori seçildiğinde AJAX çağrısı yap
+            if (categorySelect.value !== '') {
+                loadStockData(1);
+            }
+        });
     }
 
     if (statusSelect) {
-        statusSelect.addEventListener('change', () => loadStockData(1));
+        statusSelect.addEventListener('change', () => {
+            // Sadece durum seçildiğinde AJAX çağrısı yap
+            if (statusSelect.value !== '') {
+                loadStockData(1);
+            }
+        });
     }
 
     if (filterBtn) {
-        filterBtn.addEventListener('click', () => loadStockData(1));
+        filterBtn.addEventListener('click', () => {
+            // Filtre butonuna basıldığında her zaman AJAX çağrısı yap
+            loadStockData(1);
+        });
     }
+
+    // Filtreleri temizle butonu
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            // Tüm filtreleri temizle
+            if (searchInput) searchInput.value = '';
+            if (categorySelect) categorySelect.value = '';
+            if (statusSelect) statusSelect.value = '';
+            
+            // Sayfayı yenile (PHP ile render edilmiş haline dön)
+            window.location.reload();
+        });
+    }
+
+    // Pagination linklerini JavaScript ile yönet
+    const paginationLinks = document.querySelectorAll('#pagination .page-link');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('href');
+            const pageMatch = href.match(/page=(\d+)/);
+            if (pageMatch) {
+                const page = parseInt(pageMatch[1]);
+                loadStockData(page);
+            }
+        });
+    });
 
     // Modal mod değiştirme
     const quantityOnlyMode = document.getElementById('quantityOnlyMode');
@@ -1066,6 +1240,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (manualQuantityInput) {
         manualQuantityInput.addEventListener('input', updateImageOptions);
+    }
+
+    // Individual tracking değişikliğini dinle
+    const individualTracking = document.getElementById('individualTracking');
+    if (individualTracking) {
+        individualTracking.addEventListener('change', updateImageOptions);
+        // Sayfa yüklendiğinde kontrol et
+        updateImageOptions();
     }
 
     // Stok işlemi resim seçenekleri

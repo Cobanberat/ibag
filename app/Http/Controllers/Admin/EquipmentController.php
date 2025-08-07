@@ -17,6 +17,7 @@ class EquipmentController extends Controller
         $pageTitle = 'Ekipmanlar';
         
         // Ekipman stoklarını, ilgili ekipman bilgisiyle birlikte sayfalayarak çekiyoruz
+        // Individual tracking kontrolü: Ayrı takip özelliği olan ekipmanlar için her kayıt ayrı gösterilir
         $equipmentStocks = EquipmentStock::with(['equipment.category'])
             ->orderBy('id', 'asc')
             ->paginate(15);
@@ -58,6 +59,13 @@ class EquipmentController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Individual tracking filter
+        if ($request->has('individual_tracking') && $request->individual_tracking !== '') {
+            $query->whereHas('equipment', function($q) use ($request) {
+                $q->where('individual_tracking', $request->individual_tracking);
+            });
+        }
+
         $equipmentStocks = $query->orderBy('id', 'asc')->paginate(15);
 
         return response()->json([
@@ -76,7 +84,7 @@ class EquipmentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $equipmentStock = EquipmentStock::findOrFail($id);
+        $equipmentStock = EquipmentStock::with('equipment')->findOrFail($id);
         
         $validated = $request->validate([
             'code' => 'nullable|string|max:255',
@@ -89,6 +97,12 @@ class EquipmentController extends Controller
             'location' => 'nullable|string|max:255',
             'note' => 'nullable|string'
         ]);
+
+        // Individual tracking kontrolü
+        if ($equipmentStock->equipment && $equipmentStock->equipment->individual_tracking) {
+            // Ayrı takip özelliği olan ekipmanlarda quantity her zaman 1 olmalı
+            $validated['quantity'] = 1;
+        }
 
         $equipmentStock->update($validated);
 

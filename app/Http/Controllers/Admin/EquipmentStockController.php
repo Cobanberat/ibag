@@ -40,10 +40,45 @@ class EquipmentStockController extends Controller
         // Equipment tablosundan gruplandırılmış veri çekiyoruz
         $equipments = Equipment::with(['category'])->get();
         
-        // Her ekipman için stok miktarını hesaplayalım
+        // Her ekipman için stok miktarını ve durumunu hesaplayalım
         $equipmentsWithStock = $equipments->map(function($equipment) {
             $totalQuantity = $equipment->stocks()->sum('quantity') ?? 0;
+            $criticalLevel = $equipment->critical_level ?? 3;
+            
+            // Stok durumu hesaplama
+            $isLowStock = $totalQuantity <= $criticalLevel && $totalQuantity > 0;
+            $isEmpty = $totalQuantity == 0;
+            $isSufficient = $totalQuantity > $criticalLevel;
+            
+            // Progress bar yüzdesi
+            $percentage = $totalQuantity > 0 ? min(100, ($totalQuantity / max(1, $criticalLevel)) * 100) : 0;
+            
+            // Durum badge'i
+            if ($isEmpty) {
+                $statusBadge = 'empty';
+                $statusText = 'Tükendi';
+                $rowClass = 'table-danger';
+                $barClass = 'bg-danger';
+            } elseif ($isLowStock) {
+                $statusBadge = 'low';
+                $statusText = 'Az Stok';
+                $rowClass = 'table-warning';
+                $barClass = 'bg-warning';
+            } else {
+                $statusBadge = 'sufficient';
+                $statusText = 'Yeterli';
+                $rowClass = 'table-success';
+                $barClass = 'bg-success';
+            }
+            
             $equipment->total_quantity = $totalQuantity;
+            $equipment->critical_level = $criticalLevel;
+            $equipment->status_badge = $statusBadge;
+            $equipment->status_text = $statusText;
+            $equipment->row_class = $rowClass;
+            $equipment->bar_class = $barClass;
+            $equipment->percentage = $percentage;
+            
             return $equipment;
         });
 
@@ -78,10 +113,45 @@ class EquipmentStockController extends Controller
             // Önce tüm ekipmanları ve stok miktarlarını çekelim
             $equipments = Equipment::with(['category'])->get();
             
-            // Her ekipman için stok miktarını hesaplayalım
+            // Her ekipman için stok miktarını ve durumunu hesaplayalım
             $equipmentsWithStock = $equipments->map(function($equipment) {
                 $totalQuantity = $equipment->stocks()->sum('quantity') ?? 0;
+                $criticalLevel = $equipment->critical_level ?? 3;
+                
+                // Stok durumu hesaplama
+                $isLowStock = $totalQuantity <= $criticalLevel && $totalQuantity > 0;
+                $isEmpty = $totalQuantity == 0;
+                $isSufficient = $totalQuantity > $criticalLevel;
+                
+                // Progress bar yüzdesi
+                $percentage = $totalQuantity > 0 ? min(100, ($totalQuantity / max(1, $criticalLevel)) * 100) : 0;
+                
+                // Durum badge'i
+                if ($isEmpty) {
+                    $statusBadge = 'empty';
+                    $statusText = 'Tükendi';
+                    $rowClass = 'table-danger';
+                    $barClass = 'bg-danger';
+                } elseif ($isLowStock) {
+                    $statusBadge = 'low';
+                    $statusText = 'Az Stok';
+                    $rowClass = 'table-warning';
+                    $barClass = 'bg-warning';
+                } else {
+                    $statusBadge = 'sufficient';
+                    $statusText = 'Yeterli';
+                    $rowClass = 'table-success';
+                    $barClass = 'bg-success';
+                }
+                
                 $equipment->total_quantity = $totalQuantity;
+                $equipment->critical_level = $criticalLevel;
+                $equipment->status_badge = $statusBadge;
+                $equipment->status_text = $statusText;
+                $equipment->row_class = $rowClass;
+                $equipment->bar_class = $barClass;
+                $equipment->percentage = $percentage;
+                
                 return $equipment;
             });
 
@@ -109,17 +179,17 @@ class EquipmentStockController extends Controller
                 switch ($request->status) {
                     case 'sufficient':
                         $filteredEquipments = $filteredEquipments->filter(function($equipment) {
-                            return $equipment->total_quantity > 10;
+                            return $equipment->status_badge === 'sufficient';
                         });
                         break;
                     case 'low':
                         $filteredEquipments = $filteredEquipments->filter(function($equipment) {
-                            return $equipment->total_quantity <= 10 && $equipment->total_quantity > 0;
+                            return $equipment->status_badge === 'low';
                         });
                         break;
                     case 'empty':
                         $filteredEquipments = $filteredEquipments->filter(function($equipment) {
-                            return $equipment->total_quantity == 0;
+                            return $equipment->status_badge === 'empty';
                         });
                         break;
                 }
@@ -155,7 +225,8 @@ class EquipmentStockController extends Controller
      */
     public function create()
     {
-        //
+        $categories = EquipmentCategory::orderBy('name')->get();
+        return view('admin.stock.create', compact('categories'));
     }
 
     /**
@@ -168,29 +239,34 @@ class EquipmentStockController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'category_id' => 'required|exists:equipment_categories,id',
-                'code' => 'required|string|max:255|unique:stock_depo,code',
+                'code' => 'nullable|string|max:255',
                 'brand' => 'nullable|string|max:255',
                 'model' => 'nullable|string|max:255',
-                'manual_quantity' => 'required|integer|min:1',
+                'quantity' => 'required|integer|min:1',
                 'size' => 'nullable|string|max:255',
                 'critical_level' => 'nullable|integer|min:1',
                 'note' => 'nullable|string',
                 'status' => 'nullable|string|max:255',
                 'location' => 'nullable|string|max:255',
-                'individual_tracking' => 'nullable|string|in:0,1'
+                'individual_tracking' => 'nullable|boolean'
             ]);
+
+            // Individual tracking kontrolü - validation sonrası
+            $individualTracking = filter_var($validated['individual_tracking'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if ($individualTracking && $validated['quantity'] != 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ayrı takip özelliği olan ekipmanlarda miktar her zaman 1 olmalıdır'
+                ], 400);
+            }
 
             // Önce yeni ekipman oluştur
             $equipment = Equipment::create([
                 'name' => $validated['name'],
                 'category_id' => $validated['category_id'],
                 'critical_level' => $validated['critical_level'] ?? 3,
-                'individual_tracking' => filter_var($validated['individual_tracking'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                'individual_tracking' => $individualTracking
             ]);
-
-            // Individual tracking kontrolü
-            $individualTracking = filter_var($validated['individual_tracking'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            $quantity = $validated['manual_quantity'];
 
             if ($individualTracking) {
                 // Her ürün için ayrı kayıt oluştur
@@ -207,7 +283,7 @@ class EquipmentStockController extends Controller
 
                     $stocks[] = EquipmentStock::create([
                         'equipment_id' => $equipment->id,
-                        'code' => $this->generateRandomCode(),
+                        'code' => $validated['code'] ?: $this->generateRandomCode(),
                         'brand' => $validated['brand'],
                         'model' => $validated['model'],
                         'quantity' => 1, // Her kayıt 1 adet
@@ -220,28 +296,32 @@ class EquipmentStockController extends Controller
                     ]);
                 }
             } else {
-                // Tek kayıt oluştur
-                $photoPath = null;
-                if ($request->hasFile('photo')) {
-                    $photo = $request->file('photo');
-                    $photoName = time() . '_' . $photo->getClientOriginalName();
-                    $photo->move(public_path('uploads/equipment'), $photoName);
-                    $photoPath = 'uploads/equipment/' . $photoName;
-                }
+                    // Her ekipman için ayrı kod ile kayıt oluştur
+                $stocks = [];
+                for ($i = 0; $i < $quantity; $i++) {
+                    // Resim işlemi
+                    $photoPath = null;
+                    if ($request->hasFile('photo')) {
+                        $photo = $request->file('photo');
+                        $photoName = time() . '_' . $i . '_' . $photo->getClientOriginalName();
+                        $photo->move(public_path('uploads/equipment'), $photoName);
+                        $photoPath = 'uploads/equipment/' . $photoName;
+                    }
 
-                $stocks = [EquipmentStock::create([
-                    'equipment_id' => $equipment->id,
-                    'code' => $validated['code'],
-                    'brand' => $validated['brand'],
-                    'model' => $validated['model'],
-                    'quantity' => $quantity,
-                    'size' => $validated['size'],
-                    'feature' => $validated['feature'] ?? null,
-                    'note' => $validated['note'],
-                    'status' => $validated['status'] ?? 'aktif',
-                    'location' => $validated['location'] ?? 'Depo',
-                    'photo' => $photoPath
-                ])];
+                    $stocks[] = EquipmentStock::create([
+                        'equipment_id' => $equipment->id,
+                        'code' => $validated['code'] ?: $this->generateRandomCode(), // Her biri için farklı kod
+                        'brand' => $validated['brand'],
+                        'model' => $validated['model'],
+                        'quantity' => 1, // Her kayıt 1 adet
+                        'size' => $validated['size'],
+                        'feature' => $validated['feature'] ?? null,
+                        'note' => $validated['note'],
+                        'status' => $validated['status'] ?? 'aktif',
+                        'location' => $validated['location'] ?? 'Depo',
+                        'photo' => $photoPath
+                    ]);
+                }
             }
 
             return response()->json([
@@ -257,7 +337,6 @@ class EquipmentStockController extends Controller
         // Mevcut ekipmana stok ekleme modu
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipments,id',
-            'code' => 'required|string|max:255|unique:stock_depo,code',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:0',
@@ -268,12 +347,27 @@ class EquipmentStockController extends Controller
             'note' => 'nullable|string'
         ]);
 
-        $stock = EquipmentStock::create($validated);
+        // Her ekipman için ayrı kod ile kayıt oluştur
+        $stocks = [];
+        for ($i = 0; $i < $validated['quantity']; $i++) {
+            $stocks[] = EquipmentStock::create([
+                'equipment_id' => $validated['equipment_id'],
+                'code' => $this->generateRandomCode(), // Her biri için farklı kod
+                'brand' => $validated['brand'],
+                'model' => $validated['model'],
+                'quantity' => 1, // Her kayıt 1 adet
+                'status' => $validated['status'],
+                'location' => $validated['location'],
+                'feature' => $validated['feature'],
+                'size' => $validated['size'],
+                'note' => $validated['note']
+            ]);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Stok başarıyla oluşturuldu',
-            'data' => $stock
+            'data' => $stocks
         ]);
     }
 
@@ -415,6 +509,14 @@ class EquipmentStockController extends Controller
                 'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
 
+        // Individual tracking kontrolü
+        if ($equipment->individual_tracking && $validated['amount'] != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ayrı takip özelliği olan ekipmanlarda miktar her zaman 1 olmalıdır'
+            ], 400);
+        }
+
         // Mevcut toplam stok miktarını hesapla
         $currentTotal = $equipment->stocks()->sum('quantity');
 
@@ -450,6 +552,9 @@ class EquipmentStockController extends Controller
         if ($validated['type'] === 'in') {
             // Stok girişi - individual tracking'e göre işlem yap
             $amount = $validated['amount'];
+            
+
+            
             $useSameProperties = filter_var($validated['use_same_properties'] ?? true, FILTER_VALIDATE_BOOLEAN);
             $useSingleImage = filter_var($validated['use_single_image'] ?? true, FILTER_VALIDATE_BOOLEAN);
             
@@ -528,30 +633,22 @@ class EquipmentStockController extends Controller
                     $equipment->stocks()->create($stockData);
                 }
             } else {
-                // Toplu tracking: Aynı özellikleri kontrol et
-                $brand = $baseData['brand'] ?? null;
-                $model = $baseData['model'] ?? null;
-                $size = $baseData['size'] ?? null;
-                $feature = $baseData['feature'] ?? null;
-                
-                // Aynı özellikleri arayan stok kaydı var mı?
-                $matchingStock = $this->findMatchingStock($equipment, $brand, $model, $size, $feature);
-                
-                if ($matchingStock) {
-                    // Aynı özelliklerde stok var, miktarını artır
-                    $matchingStock->quantity += $amount;
-                    $matchingStock->save();
-                } else {
-                    // Aynı özelliklerde stok yok, yeni kayıt oluştur
+                // Toplu tracking: Her ekipman için ayrı kod ile yeni kayıt oluştur
+                for ($i = 0; $i < $amount; $i++) {
                     $stockData = array_merge($baseData, [
-                        'quantity' => $amount,
-                        'code' => $this->generateRandomCode()
+                        'quantity' => 1, // Her kayıt 1 adet
+                        'code' => $this->generateRandomCode() // Her biri için farklı kod
                     ]);
                     
                     // Resim işlemi
-                    if (isset($photos[0])) {
+                    if (!$useSingleImage && isset($photos[$i])) {
+                        $photo = $photos[$i];
+                        $photoName = time() . '_' . $i . '_' . $photo->getClientOriginalName();
+                        $photo->move(public_path('uploads/equipment'), $photoName);
+                        $stockData['photo'] = 'uploads/equipment/' . $photoName;
+                    } elseif ($useSingleImage && isset($photos[0])) {
                         $photo = $photos[0];
-                        $photoName = time() . '_' . $photo->getClientOriginalName();
+                        $photoName = time() . '_' . $i . '_' . $photo->getClientOriginalName();
                         $photo->move(public_path('uploads/equipment'), $photoName);
                         $stockData['photo'] = 'uploads/equipment/' . $photoName;
                     }
@@ -577,24 +674,28 @@ class EquipmentStockController extends Controller
                 // Stok kaydını sil
                 $stockToDelete->delete();
             } else {
-                // Toplu tracking: Miktar düşür
-                $existingStock = $equipment->stocks()->first();
-                if (!$existingStock) {
+                // Toplu tracking: Kod ile çıkış yap
+                if (!isset($validated['code']) || empty($validated['code'])) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Bu ekipman için stok kaydı bulunamadı'
+                        'message' => 'Stok çıkışı için kod girmelisiniz'
                     ], 400);
                 }
                 
-                if ($existingStock->quantity < $validated['amount']) {
+                // O ekipmana ait stok kodunu kontrol et ve sil
+                $stockToDelete = EquipmentStock::where('code', $validated['code'])
+                    ->where('equipment_id', $equipment->id)
+                    ->first();
+                
+                if (!$stockToDelete) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Yetersiz stok! Mevcut stok: ' . $existingStock->quantity
+                        'message' => 'Bu ekipmana ait geçersiz stok kodu'
                     ], 400);
                 }
                 
-                $existingStock->quantity -= $validated['amount'];
-                $existingStock->save();
+                // Stok kaydını sil
+                $stockToDelete->delete();
             }
         }
 

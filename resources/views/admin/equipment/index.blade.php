@@ -44,6 +44,23 @@
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    
+    <!-- Individual Tracking Bilgi Paneli -->
+    <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <div>
+                <strong>Takip Sistemi:</strong>
+                <div class="mt-1">
+                    <small>
+                        <span class="badge bg-info me-1">Ayrı Takip</span> Her ekipman tek adet, ayrı kod (Jeneratör, bilgisayar gibi)<br>
+                        <span class="badge bg-secondary me-1">Toplu Takip</span> Miktar bazlı, tek kod (Kablo, vida gibi)
+                    </small>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <div class="row mb-4 g-2">
         <div class="col-md-3">
             <input type="text" class="form-control w-auto" placeholder="Ara..." id="searchInput" style="max-width:200px;">
@@ -67,6 +84,18 @@
                 <option>Açık</option>
             </select>
         </div>
+        <div class="col-md-3">
+            <select class="form-select w-auto" id="trackingFilter" style="max-width:180px">
+                <option value="">Tüm Takip Türleri</option>
+                <option value="1">Ayrı Takip</option>
+                <option value="0">Toplu Takip</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-outline-secondary" id="clearFilters" style="max-width:180px;">
+                <i class="fas fa-times"></i> Filtreleri Temizle
+            </button>
+        </div>
     </div>
     <div class="card shadow-lg border-0">
         <div class="card-body p-0">
@@ -81,7 +110,7 @@
                             <th>Model</th>
                             <th>Beden</th>
                             <th>Özellik</th>
-                            <th>Adet</th>
+                            <th>Adet/Takip</th>
                             <th>Durum</th>
                             <th>Lokasyon</th>
                             <th>Tarih</th>
@@ -99,7 +128,14 @@
                                 <td class="editable-cell" data-field="model" data-id="{{ $stock->id }}">{{ $stock->model ?? '-' }}</td>
                                 <td class="editable-cell" data-field="size" data-id="{{ $stock->id }}">{{ $stock->size ?? '-' }}</td>
                                 <td class="editable-cell" data-field="feature" data-id="{{ $stock->id }}">{{ $stock->feature ?? '-' }}</td>
-                                <td class="editable-cell" data-field="quantity" data-id="{{ $stock->id }}">{{ $stock->quantity ?? 0 }}</td>
+                                <td class="editable-cell" data-field="quantity" data-id="{{ $stock->id }}">
+                                    @if($stock->equipment && $stock->equipment->individual_tracking)
+                                        <span class="badge bg-info">Ayrı Takip</span>
+                                        <br><small class="text-muted">Kod: {{ $stock->code ?? '-' }}</small>
+                                    @else
+                                        {{ $stock->quantity ?? 0 }}
+                                    @endif
+                                </td>
                                 <td class="editable-cell" data-field="status" data-id="{{ $stock->id }}">{{ $stock->status ?? '-' }}</td>
                                 <td class="editable-cell" data-field="location" data-id="{{ $stock->id }}">{{ $stock->location ?? '-' }}</td>
                                 <td>{{ $stock->created_at ? $stock->created_at->format('d.m.Y') : '-' }}</td>
@@ -156,7 +192,8 @@
                     <p><strong>Model:</strong> <span id="detailModel">-</span></p>
                     <p><strong>Beden:</strong> <span id="detailSize">-</span></p>
                     <p><strong>Özellik:</strong> <span id="detailFeature">-</span></p>
-                    <p><strong>Adet:</strong> <span id="detailCount">-</span></p>
+                    <p><strong>Adet/Takip:</strong> <span id="detailCount">-</span></p>
+                    <p><strong>Takip Türü:</strong> <span id="detailTrackingType">-</span></p>
                     <p><strong>Durum:</strong> <span id="detailStatus">-</span></p>
                     <p><strong>Lokasyon:</strong> <span id="detailLocation">-</span></p>
                     <p><strong>Tarih:</strong> <span id="detailDate">-</span></p>

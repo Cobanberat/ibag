@@ -17,7 +17,16 @@ window.showDetail = function(id) {
                 document.getElementById('detailModel').innerText = stock.model || '-';
                 document.getElementById('detailSize').innerText = stock.size || '-';
                 document.getElementById('detailFeature').innerText = stock.feature || '-';
-                document.getElementById('detailCount').innerText = stock.quantity || 0;
+                
+                // Individual tracking kontrolü
+                if (stock.equipment && stock.equipment.individual_tracking) {
+                    document.getElementById('detailCount').innerText = stock.quantity || 0;
+                    document.getElementById('detailTrackingType').innerText = 'Ayrı Takip (Her ürün tek adet)';
+                } else {
+                    document.getElementById('detailCount').innerText = stock.quantity || 0;
+                    document.getElementById('detailTrackingType').innerText = 'Toplu Takip (Miktar bazlı)';
+                }
+                
                 document.getElementById('detailStatus').innerText = stock.status || '-';
                 document.getElementById('detailLocation').innerText = stock.location || '-';
                 document.getElementById('detailDate').innerText = stock.created_at ? new Date(stock.created_at).toLocaleDateString('tr-TR') : '-';
@@ -136,6 +145,17 @@ function getCsrfToken() {
       
       // Alan türüne göre input oluştur
       if (field === 'quantity') {
+          // Individual tracking kontrolü - quantity alanı düzenlenebilir mi?
+          const row = cell.closest('tr');
+          const equipmentId = row.getAttribute('data-id');
+          
+          // Eğer individual tracking ise quantity düzenlenemez
+          if (cell.querySelector('.badge.bg-info')) {
+              // Individual tracking - quantity düzenlenemez
+              showToast('Ayrı takip özelliği olan ekipmanlarda adet düzenlenemez', 'warning');
+              return;
+          }
+          
           // Number input
           input = document.createElement('input');
           input.type = 'number';
@@ -331,29 +351,50 @@ function getCsrfToken() {
   }
 
   function renderTable() {
-      let filtered = getFilteredData();
-      let total = filtered.length;
-      let start = (currentPage-1)*pageSize;
-      let end = start+pageSize;
-      let pageRows = filtered.slice(start,end);
       let tbody = document.querySelector('#equipmentTable tbody');
       tbody.innerHTML = '';
+      
+      if (equipmentData.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="13" class="text-center py-4"><i class="fas fa-inbox fa-2x text-muted mb-2"></i><p class="text-muted">Henüz ekipman bulunmuyor</p></td></tr>';
+          return;
+      }
+      
+      // Sayfalama
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageRows = equipmentData.slice(start, end);
+      
+      if (pageRows.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="13" class="text-center py-4"><i class="fas fa-inbox fa-2x text-muted mb-2"></i><p class="text-muted">Bu sayfada ekipman bulunmuyor</p></td></tr>';
+          return;
+      }
+      
       pageRows.forEach((row, index) => {
+          const actualIndex = start + index;
           let tr = document.createElement('tr');
+          tr.setAttribute('data-id', row.id);
           tr.innerHTML = `
-              <td class="editable-cell" data-field="SNO" data-row="${index}">${row.SNO}</td>
-              <td class="editable-cell" data-field="URUN_CINSI" data-row="${index}">${row.URUN_CINSI}</td>
-              <td class="editable-cell" data-field="MARKA" data-row="${index}">${row.MARKA}</td>
-              <td class="editable-cell" data-field="MODEL" data-row="${index}">${row.MODEL}</td>
-              <td class="editable-cell" data-field="BEDEN" data-row="${index}">${row.BEDEN}</td>
-              <td class="editable-cell" data-field="OZELLIK" data-row="${index}">${row.OZELLIK}</td>
-              <td class="editable-cell" data-field="ADET" data-row="${index}">${row.ADET}</td>
-              <td class="editable-cell" data-field="DURUM" data-row="${index}">${row.DURUM}</td>
-              <td class="editable-cell" data-field="TARIH" data-row="${index}">${row.TARIH}</td>
-              <td class="editable-cell" data-field="NOT" data-row="${index}">${row.NOT}</td>
-              <td class="E-actions">
-                  <button class="btn btn-sm btn-info me-1 detail-btn" data-sno="${row.SNO}" title="Detay"><i class="fas fa-info-circle"></i></button>
-                  <button class="btn btn-sm btn-danger delete-btn" data-sno="${row.SNO}" title="Sil"><i class="fas fa-trash-alt"></i></button>
+              <td>${actualIndex + 1}</td>
+              <td class="editable-cell" data-field="code" data-id="${row.id}">${row.CODE}</td>
+              <td class="editable-cell" data-field="equipment_name" data-id="${row.id}">${row.URUN_CINSI}</td>
+              <td class="editable-cell" data-field="brand" data-id="${row.id}">${row.MARKA}</td>
+              <td class="editable-cell" data-field="model" data-id="${row.id}">${row.MODEL}</td>
+              <td class="editable-cell" data-field="size" data-id="${row.id}">${row.BEDEN}</td>
+              <td class="editable-cell" data-field="feature" data-id="${row.id}">${row.OZELLIK}</td>
+              <td class="editable-cell" data-field="quantity" data-id="${row.id}">${row.ADET}</td>
+              <td class="editable-cell" data-field="status" data-id="${row.id}">${row.DURUM}</td>
+              <td class="editable-cell" data-field="location" data-id="${row.id}">-</td>
+              <td>${row.TARIH}</td>
+              <td class="editable-cell" data-field="note" data-id="${row.id}">${row.NOT}</td>
+              <td>
+                  <div class="btn-group" role="group">
+                      <button type="button" class="btn btn-sm btn-outline-primary" onclick="showDetail(${row.id})">
+                          <i class="fas fa-eye"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteEquipment(${row.id})">
+                          <i class="fas fa-trash"></i>
+                      </button>
+                  </div>
               </td>
           `;
           tbody.appendChild(tr);
@@ -363,8 +404,8 @@ function getCsrfToken() {
       document.querySelectorAll('.editable-cell').forEach(cell => {
           cell.addEventListener('dblclick', function() {
               const field = this.getAttribute('data-field');
-              const rowIndex = parseInt(this.getAttribute('data-row'));
-              makeEditable(this, field, rowIndex);
+              const id = this.getAttribute('data-id');
+              makeEditable(this, field, id);
           });
           
           // Hover efekti
@@ -382,37 +423,9 @@ function getCsrfToken() {
           });
       });
       
-      let minRows = pageSize;
-      for(let i=pageRows.length; i<minRows; i++) {
-          let tr = document.createElement('tr');
-          tr.innerHTML = '<td colspan="11" style="height:48px; background:#fcfcfc; border:none;"></td>';
-          tbody.appendChild(tr);
-      }
-      renderPagination(Math.ceil(total/pageSize));
-      document.querySelectorAll('.detail-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-              let sno = parseInt(this.getAttribute('data-sno'));
-              let eq = equipmentData.find(r=>r.SNO===sno);
-              document.getElementById('detailSno').innerText = eq.SNO;
-              document.getElementById('detailType').innerText = eq.URUN_CINSI;
-              document.getElementById('detailBrand').innerText = eq.MARKA;
-              document.getElementById('detailModel').innerText = eq.MODEL;
-              document.getElementById('detailSize').innerText = eq.BEDEN;
-              document.getElementById('detailFeature').innerText = eq.OZELLIK;
-              document.getElementById('detailCount').innerText = eq.ADET;
-              document.getElementById('detailStatus').innerText = eq.DURUM;
-              document.getElementById('detailDate').innerText = eq.TARIH;
-              document.getElementById('detailNote').innerText = eq.NOT;
-              new bootstrap.Modal(document.getElementById('detailModal')).show();
-          });
-      });
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-              let sno = parseInt(this.getAttribute('data-sno'));
-              equipmentData = equipmentData.filter(r=>r.SNO!==sno);
-              renderTable();
-          });
-      });
+      // Pagination güncelle
+      const totalPages = Math.ceil(equipmentData.length / pageSize);
+      renderPagination(totalPages);
   }
   function renderPagination(pageCount) {
       let pag = document.getElementById('pagination');
@@ -457,6 +470,14 @@ function getCsrfToken() {
     nextA.onclick = function(e) { e.preventDefault(); if(currentPage<pageCount){ currentPage++; renderTable(); } };
     nextLi.appendChild(nextA);
     pag.appendChild(nextLi);
+    
+    // Sayfa bilgisi güncelleme
+    const infoText = document.querySelector('.text-muted');
+    if (infoText) {
+        const startItem = (currentPage - 1) * pageSize + 1;
+        const endItem = Math.min(currentPage * pageSize, equipmentData.length);
+        infoText.textContent = `Toplam ${equipmentData.length} kayıttan ${startItem}-${endItem} arası gösteriliyor`;
+    }
   }
   // Event listener'lar DOMContentLoaded içinde eklendi
 
@@ -466,13 +487,21 @@ function loadEquipmentData() {
     const type = document.getElementById('typeFilter').value;
     const brand = document.getElementById('brandFilter').value;
     const status = document.getElementById('statusFilter').value;
+    const tracking = document.getElementById('trackingFilter').value;
+
+    // Loading göster
+    const tbody = document.querySelector('#equipmentTable tbody');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="13" class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-muted mb-2"></i><p class="text-muted">Filtrelenmiş veriler yükleniyor...</p></td></tr>';
+    }
 
     const params = new URLSearchParams({
         page: currentPage,
         search: search,
         type: type,
         brand: brand,
-        status: status
+        status: status,
+        individual_tracking: tracking
     });
 
     fetch(`/admin/ekipmanlar/data?${params}`)
@@ -489,7 +518,9 @@ function loadEquipmentData() {
                 ADET: item.quantity || 0,
                 DURUM: item.status || '-',
                 TARIH: item.created_at ? new Date(item.created_at).toLocaleDateString('tr-TR') : '-',
-                NOT: item.note || '-'
+                NOT: item.note || '-',
+                INDIVIDUAL_TRACKING: item.equipment?.individual_tracking || false,
+                CODE: item.code || '-'
             }));
             
             renderTable();
@@ -497,6 +528,11 @@ function loadEquipmentData() {
         })
         .catch(error => {
             console.error('Veri yükleme hatası:', error);
+            const tbody = document.querySelector('#equipmentTable tbody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="13" class="text-center py-4"><i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i><p class="text-danger">Veriler yüklenirken hata oluştu</p></td></tr>';
+            }
+            showToast('Veriler yüklenirken hata oluştu', 'error');
         });
 }
 
@@ -584,6 +620,14 @@ function updatePagination(pagination) {
             nextLi.appendChild(nextSpan);
             paginationContainer.appendChild(nextLi);
         }
+    }
+    
+    // Sayfa bilgisi güncelleme
+    const infoText = document.querySelector('.text-muted');
+    if (infoText) {
+        const startItem = (pagination.current_page - 1) * pagination.per_page + 1;
+        const endItem = Math.min(pagination.current_page * pagination.per_page, pagination.total);
+        infoText.textContent = `Toplam ${pagination.total} kayıttan ${startItem}-${endItem} arası gösteriliyor`;
     }
 }
 
@@ -711,16 +755,34 @@ document.getElementById('exportCsvBtn').addEventListener('click', function() {
 // Sayfa yüklendiğinde event listener'ları ekle
 document.addEventListener('DOMContentLoaded', function() {
     // Filtreleme için event listener'ları ekle
-  ['searchInput','typeFilter','brandFilter','statusFilter'].forEach(id => {
+    ['searchInput','typeFilter','brandFilter','statusFilter','trackingFilter'].forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('input', function(){ 
-                currentPage = 1; 
-                loadEquipmentData(); 
+                // Sadece filtre değeri varsa JavaScript ile yükle
+                const hasFilters = document.getElementById('searchInput').value || 
+                                 document.getElementById('typeFilter').value || 
+                                 document.getElementById('brandFilter').value || 
+                                 document.getElementById('statusFilter').value || 
+                                 document.getElementById('trackingFilter').value;
+                
+                if (hasFilters) {
+                    currentPage = 1; 
+                    loadEquipmentData(); 
+                }
             });
             element.addEventListener('change', function(){ 
-                currentPage = 1; 
-                loadEquipmentData(); 
+                // Sadece filtre değeri varsa JavaScript ile yükle
+                const hasFilters = document.getElementById('searchInput').value || 
+                                 document.getElementById('typeFilter').value || 
+                                 document.getElementById('brandFilter').value || 
+                                 document.getElementById('statusFilter').value || 
+                                 document.getElementById('trackingFilter').value;
+                
+                if (hasFilters) {
+                    currentPage = 1; 
+                    loadEquipmentData(); 
+                }
             });
         }
     });
@@ -747,4 +809,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Filtreleri temizleme butonu
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function() {
+            // Tüm filtreleri temizle
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('brandFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('trackingFilter').value = '';
+            
+            // Sayfayı yenile (PHP verilerine geri dön)
+            window.location.reload();
+        });
+    }
+    
+    // Sayfa yüklendiğinde sadece event listener'ları ekle, veri yükleme yapma
+    // PHP ile veriler zaten yüklenmiş durumda
 });

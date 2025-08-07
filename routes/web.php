@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Admin\EquipmentStockController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -39,8 +40,14 @@ Route::get('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockContro
 Route::put('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
 Route::delete('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
 
+// Stok ekleme formunu göster
+Route::get('/admin/stock/create', [EquipmentStockController::class, 'create'])->name('stock.create');
+// Stok ekleme işlemi
+Route::post('/admin/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
+
 Route::get('/admin/Ekle', function () {
-    return view('admin.stock.create');
+    $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
+    return view('admin.stock.create', compact('categories'));
 })->name('stock.create');
 
 Route::get('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');

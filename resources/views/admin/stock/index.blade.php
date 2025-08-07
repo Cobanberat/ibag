@@ -29,6 +29,7 @@
         </select>
         <input type="text" class="form-control form-control-sm" id="filterSearch" style="width: 200px;" placeholder="Ürün ara...">
         <button class="btn btn-sm btn-outline-secondary" id="filterBtn"><i class="fas fa-filter"></i> Filtrele</button>
+        <button class="btn btn-sm btn-outline-warning" id="clearFiltersBtn"><i class="fas fa-times"></i> Filtreleri Temizle</button>
         <button class="btn btn-add-product d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
             <i class="fas fa-plus"></i> Yeni Ekipman
         </button>
@@ -74,7 +75,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">Miktar</label>
+                                        <label class="form-label fw-bold" id="quantityLabel">Miktar</label>
                                         <input type="number" class="form-control" name="quantity" min="1" value="1" required>
                                     </div>
                                 </div>
@@ -115,7 +116,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">Miktar</label>
+                                        <label class="form-label fw-bold" id="manualQuantityLabel">Miktar</label>
                                         <input type="number" class="form-control" name="manual_quantity" min="1" value="1">
                                     </div>
                                 </div>
@@ -152,7 +153,7 @@
                                             </label>
                                         </div>
                                         <small class="text-muted">
-                                            <strong>Aktifse:</strong> Her ürün ayrı kod, ayrı resim (Jeneratör, bilgisayar gibi)<br>
+                                            <strong>Aktifse:</strong> Her ürün ayrı kod, ayrı resim, tek adet (Jeneratör, bilgisayar gibi)<br>
                                             <strong>Kapalıysa:</strong> Tek kod, tek resim, miktar bazlı (Kablo, vida gibi)
                                         </small>
                                     </div>
@@ -325,35 +326,24 @@
                     </thead>
                     <tbody id="stockTableBody">
                         @forelse($stocks as $stock)
-                            @php
-                                $totalQuantity = $stock->total_quantity ?? 0;
-                                $criticalLevel = $stock->critical_level ?? 3;
-                                $isLowStock = $totalQuantity <= $criticalLevel && $totalQuantity > 0;
-                                $isEmpty = $totalQuantity == 0;
-                                $isSufficient = $totalQuantity > $criticalLevel;
-                                
-                                $rowClass = $isEmpty ? 'table-danger' : ($isLowStock ? 'table-warning' : 'table-success');
-                                $percentage = $totalQuantity > 0 ? min(100, ($totalQuantity / max(1, $criticalLevel)) * 100) : 0;
-                                $barClass = $isEmpty ? 'bg-danger' : ($isLowStock ? 'bg-warning' : 'bg-success');
-                            @endphp
-                            <tr class="{{ $rowClass }}" data-id="{{ $stock->id }}">
+                            <tr class="{{ $stock->row_class }}" data-id="{{ $stock->id }}">
                                 <td><input type="checkbox" class="stock-checkbox" value="{{ $stock->id }}"></td>
                                 <td>
                                     <span class="fw-bold">{{ $stock->name ?? '-' }}</span>
                                     <br><small class="text-muted">{{ $stock->code ?? '-' }}</small>
                                 </td>
                                 <td>{{ $stock->category->name ?? '-' }}</td>
-                                <td>{{ $totalQuantity }}</td>
-                                <td>{{ $criticalLevel }}</td>
+                                <td>{{ $stock->total_quantity }}</td>
+                                <td>{{ $stock->critical_level }}</td>
                                 <td>
                                     <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar {{ $barClass }}" style="width: {{ $percentage }}%"></div>
+                                        <div class="progress-bar {{ $stock->bar_class }}" style="width: {{ $stock->percentage }}%"></div>
                                     </div>
                                 </td>
                                 <td>
-                                    @if($isEmpty)
+                                    @if($stock->status_badge === 'empty')
                                         <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>
-                                    @elseif($isLowStock)
+                                    @elseif($stock->status_badge === 'low')
                                         <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>
                                     @else
                                         <span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>
@@ -395,7 +385,37 @@
                     </div>
                     <nav aria-label="Sayfalama">
                         <ul class="pagination mb-0" id="pagination">
-                            <!-- Sayfalama JavaScript ile yönetilecek -->
+                            @if($pagination['last_page'] > 1)
+                                <!-- Önceki sayfa -->
+                                @if($pagination['current_page'] > 1)
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ $pagination['current_page'] - 1 }}">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                @endif
+
+                                <!-- Sayfa numaraları -->
+                                @php
+                                    $startPage = max(1, $pagination['current_page'] - 2);
+                                    $endPage = min($pagination['last_page'], $pagination['current_page'] + 2);
+                                @endphp
+
+                                @for($i = $startPage; $i <= $endPage; $i++)
+                                    <li class="page-item {{ $i == $pagination['current_page'] ? 'active' : '' }}">
+                                        <a class="page-link" href="?page={{ $i }}">{{ $i }}</a>
+                                    </li>
+                                @endfor
+
+                                <!-- Sonraki sayfa -->
+                                @if($pagination['current_page'] < $pagination['last_page'])
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ $pagination['current_page'] + 1 }}">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                @endif
+                            @endif
                         </ul>
                     </nav>
                 </div>
@@ -476,8 +496,8 @@
                 <div class="row">
                     <div class="col-md-6">
                 <div class="mb-3">
-                            <label for="operationAmount" class="form-label fw-bold">Miktar</label>
-                    <input type="number" class="form-control" id="operationAmount" min="1" required>
+                                                            <label for="operationAmount" class="form-label fw-bold" id="operationAmountLabel">Miktar</label>
+                                <input type="number" class="form-control" id="operationAmount" min="1" required>
                         </div>
                     </div>
                     <div class="col-md-6">
