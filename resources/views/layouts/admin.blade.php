@@ -231,6 +231,48 @@
             @yield('content')
         </main>
 
+        <!-- Toast Container -->
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+            @if(session('success'))
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header bg-success text-white">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong class="me-auto">Başarılı!</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        {{ session('success') }}
+                    </div>
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header bg-danger text-white">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong class="me-auto">Hata!</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        {{ session('error') }}
+                    </div>
+                </div>
+            @endif
+            
+            @if(session('warning'))
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header bg-warning text-dark">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong class="me-auto">Uyarı!</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        {{ session('warning') }}
+                    </div>
+                </div>
+            @endif
+        </div>
+
         <footer class="footer">
             <div class="container-fluid">
                 <div class="row text-muted">
@@ -588,6 +630,17 @@ document.addEventListener("DOMContentLoaded", function() {
         if (window.feather) {
             feather.replace();
         }
+        
+        // Toast otomatik kaybolma
+        document.addEventListener('DOMContentLoaded', function() {
+            var toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function(toast) {
+                setTimeout(function() {
+                    var bsToast = new bootstrap.Toast(toast);
+                    bsToast.hide();
+                }, 5000); // 5 saniye sonra kaybolur
+            });
+        });
     </script>
 @endpush
 

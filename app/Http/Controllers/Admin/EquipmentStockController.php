@@ -234,9 +234,24 @@ class EquipmentStockController extends Controller
      */
     public function store(Request $request)
     {
+        // Debug: Gelen veriyi logla
+        \Log::info('Store method called', [
+            'request_data' => $request->all(),
+            'has_name' => $request->has('name'),
+            'has_category_id' => $request->has('category_id'),
+            'method' => $request->method(),
+            'url' => $request->url(),
+            'headers' => $request->headers->all(),
+            'is_ajax' => $request->ajax()
+        ]);
+        
+        // AJAX isteği kontrolü
+        $isAjax = $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest';
+        
         // Manuel ekipman oluşturma modu
         if ($request->has('name') && $request->has('category_id')) {
-            $validated = $request->validate([
+            try {
+                $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'category_id' => 'required|exists:equipment_categories,id',
                 'code' => 'nullable|string|max:255',
@@ -244,6 +259,7 @@ class EquipmentStockController extends Controller
                 'model' => 'nullable|string|max:255',
                 'quantity' => 'required|integer|min:1',
                 'size' => 'nullable|string|max:255',
+                'feature' => 'nullable|string',
                 'critical_level' => 'nullable|integer|min:1',
                 'note' => 'nullable|string',
                 'status' => 'nullable|string|max:255',
@@ -253,7 +269,15 @@ class EquipmentStockController extends Controller
 
             // Individual tracking kontrolü - validation sonrası
             $individualTracking = filter_var($validated['individual_tracking'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            if ($individualTracking && $validated['quantity'] != 1) {
+            $quantity = (int)($validated['quantity'] ?? 1);
+            
+            \Log::info('Validation passed', [
+                'validated_data' => $validated,
+                'individual_tracking' => $individualTracking,
+                'quantity' => $quantity
+            ]);
+            
+            if ($individualTracking && $quantity != 1) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ayrı takip özelliği olan ekipmanlarda miktar her zaman 1 olmalıdır'
@@ -266,6 +290,11 @@ class EquipmentStockController extends Controller
                 'category_id' => $validated['category_id'],
                 'critical_level' => $validated['critical_level'] ?? 3,
                 'individual_tracking' => $individualTracking
+            ]);
+            
+            \Log::info('Equipment created', [
+                'equipment_id' => $equipment->id,
+                'equipment_data' => $equipment->toArray()
             ]);
 
             if ($individualTracking) {
@@ -324,14 +353,30 @@ class EquipmentStockController extends Controller
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Yeni ekipman ve stok başarıyla oluşturuldu',
-                'data' => [
-                    'equipment' => $equipment,
-                    'stocks' => $stocks
-                ]
-            ]);
+            \Log::info('Redirecting with success message');
+            
+            if ($isAjax) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Yeni ekipman ve stok başarıyla oluşturuldu'
+                ]);
+            } else {
+                return redirect()->route('stock.create')->with('success', 'Yeni ekipman ve stok başarıyla oluşturuldu');
+            }
+            } catch (\Exception $e) {
+                \Log::error('Store method error: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                if ($isAjax) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ekipman eklenirken hata oluştu: ' . $e->getMessage()
+                    ], 500);
+                } else {
+                    return redirect()->route('stock.create')->with('error', 'Ekipman eklenirken hata oluştu: ' . $e->getMessage());
+                }
+            }
         }
 
         // Mevcut ekipmana stok ekleme modu
@@ -364,11 +409,14 @@ class EquipmentStockController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Stok başarıyla oluşturuldu',
-            'data' => $stocks
-        ]);
+        if ($isAjax) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Stok başarıyla oluşturuldu'
+            ]);
+        } else {
+            return redirect()->route('stock.create')->with('success', 'Stok başarıyla oluşturuldu');
+        }
     }
 
     /**
@@ -494,7 +542,7 @@ class EquipmentStockController extends Controller
             
             $validated = $request->validate([
                 'type' => 'required|in:in,out',
-                'amount' => 'required|integer|min:1',
+                'amount' => 'nullable|integer|min:1',
                 'note' => 'nullable|string',
                 'code' => 'nullable|string|max:255',
                 'location' => 'nullable|string|max:255',
@@ -508,6 +556,9 @@ class EquipmentStockController extends Controller
                 'reference_code' => 'nullable|string|max:255',
                 'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
+            
+            // Amount varsayılan değer
+            $validated['amount'] = $validated['amount'] ?? 1;
 
         // Individual tracking kontrolü
         if ($equipment->individual_tracking && $validated['amount'] != 1) {
@@ -753,7 +804,14 @@ class EquipmentStockController extends Controller
      */
     public function bulkDestroy(Request $request)
     {
-        $ids = $request->input('ids', []);
+        $idsInput = $request->input('ids', []);
+        
+        // JSON string ise decode et
+        if (is_string($idsInput)) {
+            $ids = json_decode($idsInput, true);
+        } else {
+            $ids = $idsInput;
+        }
         
         if (empty($ids)) {
             return response()->json([

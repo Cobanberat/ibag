@@ -34,21 +34,20 @@ Route::get('/admin/stock/validate-code', [App\Http\Controllers\Admin\EquipmentSt
 Route::get('/admin/stock/validate-reference-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateReferenceCode'])->name('admin.stock.validate-reference-code');
 Route::get('/admin/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
 Route::post('/admin/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
-Route::post('/admin/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'store'])->name('admin.stock.store');
+
 Route::post('/admin/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
 Route::get('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
 Route::put('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
 Route::delete('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
 
 // Stok ekleme formunu göster
-Route::get('/admin/stock/create', [EquipmentStockController::class, 'create'])->name('stock.create');
-// Stok ekleme işlemi
-Route::post('/admin/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
-
 Route::get('/admin/Ekle', function () {
     $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
     return view('admin.stock.create', compact('categories'));
 })->name('stock.create');
+
+// Stok ekleme işlemi
+Route::post('/admin/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
 
 Route::get('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');
 Route::get('/admin/kategori/data', [App\Http\Controllers\Admin\CategoryController::class, 'getCategoryData'])->name('admin.kategori.data');

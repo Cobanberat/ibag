@@ -460,7 +460,7 @@ function handleReferenceCodeInput() {
 function submitStockOperation() {
     const stockId = document.getElementById('stockId').value;
     const type = document.getElementById('operationType').value;
-    const amount = document.getElementById('operationAmount').value;
+    const amount = document.getElementById('operationAmount').value || '1'; // Varsayılan değer
     const note = document.getElementById('operationNote').value;
     const code = document.getElementById('operationCode').value;
     const useSameProperties = document.getElementById('useSameProperties')?.checked || false;
@@ -481,7 +481,8 @@ function submitStockOperation() {
         return;
     }
 
-    if (!amount || amount <= 0) {
+    // Stok çıkışında amount kontrolü (individual tracking için gizli olabilir)
+    if (type === 'in' && (!amount || amount <= 0)) {
         showToast('Lütfen geçerli bir miktar girin', 'error');
         return;
     }
@@ -505,7 +506,7 @@ function submitStockOperation() {
 
     const formData = new FormData();
     formData.append('type', type);
-    formData.append('amount', parseInt(amount));
+    formData.append('amount', parseInt(amount) || 1); // Varsayılan değer
     formData.append('note', note);
     
     if (type === 'in') {
@@ -708,8 +709,26 @@ function deleteStock(stockId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // DOM'dan satırı kaldır
+                    const row = document.querySelector(`tr[data-id="${stockId}"]`);
+                    if (row) {
+                        row.remove();
+                    }
+                    
+                    // Tablo boşsa "Henüz stok bulunmuyor" mesajını göster
+                    const tbody = document.getElementById('stockTableBody');
+                    if (tbody && tbody.children.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">Henüz stok bulunmuyor</p>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
                     showToast(data.message, 'success');
-                    loadStockData();
                 } else {
                     showToast(data.message, 'error');
                 }
@@ -1004,12 +1023,36 @@ function deleteSelectedStocks() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire(
-                        'Silindi!',
-                        data.message,
-                        'success'
-                    );
-                    loadStockData(1);
+                    // DOM'dan seçili satırları kaldır
+                    selectedCheckboxes.forEach(checkbox => {
+                        const row = checkbox.closest('tr');
+                        if (row) {
+                            row.remove();
+                        }
+                    });
+                    
+                    // Select all checkbox'ı temizle
+                    const selectAllCheckbox = document.getElementById('selectAll');
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    }
+                    
+                    // Toast mesajı göster
+                    showToast(data.message, 'success');
+                    
+                    // Tablo boşsa "Henüz stok bulunmuyor" mesajını göster
+                    const tbody = document.getElementById('stockTableBody');
+                    if (tbody && tbody.children.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">Henüz stok bulunmuyor</p>
+                                </td>
+                            </tr>
+                        `;
+                    }
                 } else {
                     Swal.fire(
                         'Hata!',

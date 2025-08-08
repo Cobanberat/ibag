@@ -3,6 +3,10 @@
 <div class="container mt-4">
     <h3 class="mb-4 fw-bold"><i class="fas fa-plus me-2 text-primary"></i>Yeni Ekipman Ekle</h3>
     <form id="addProductForm" enctype="multipart/form-data" method="POST" action="{{ route('stock.store') }}">
+        <!-- Debug: Form action URL'ini göster -->
+        <div class="alert alert-info">
+            <strong>Debug:</strong> Form action: {{ route('stock.store') }}
+        </div>
         @csrf
         <div class="row g-3">
             <div class="col-md-6">
@@ -84,4 +88,45 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addProductForm');
+    
+    form.addEventListener('submit', function(e) {
+        console.log('Form submit edildi!');
+        console.log('Form data:', new FormData(form));
+        
+        // Form verilerini kontrol et
+        const formData = new FormData(form);
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
+        
+        // Form submit edilirken loading göster
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Kaydediliyor...';
+        submitBtn.disabled = true;
+        
+        // Form normal şekilde submit edilsin (redirect için)
+        // JavaScript ile AJAX yapmıyoruz, normal form submit kullanıyoruz
+    });
+    
+    // Individual tracking checkbox kontrolü
+    const individualTrackingCheckbox = document.getElementById('individual_tracking');
+    const quantityInput = document.getElementById('quantity');
+    
+    individualTrackingCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            quantityInput.value = '1';
+            quantityInput.readOnly = true;
+            quantityInput.style.backgroundColor = '#f8f9fa';
+        } else {
+            quantityInput.readOnly = false;
+            quantityInput.style.backgroundColor = '';
+        }
+    });
+});
+</script>
 @endsection
