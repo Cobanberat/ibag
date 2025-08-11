@@ -100,7 +100,7 @@
     <div class="card shadow-lg border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="equipmentTable" style="min-height:400px;">
+                <table class="table table-hover align-middle mb-0" id="equipmentTable">
                     <thead class="table-light">
                         <tr>
                             <th>Sıra</th>

@@ -250,7 +250,7 @@ function stockIn(stockId) {
     document.getElementById('operationAmount').value = '';
     document.getElementById('operationNote').value = '';
     
-    // Stok girişi için alanları göster
+    // Stok girişi için alanları başlangıçta göster
     document.getElementById('samePropertiesOption').style.display = 'block';
     document.getElementById('operationImageOptions').style.display = 'block';
     document.getElementById('manualPropertiesSection').style.display = 'none';
@@ -260,7 +260,10 @@ function stockIn(stockId) {
     fetch(`/admin/stock/${stockId}/info`)
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.data.individual_tracking) {
+            const isIndividual = !!(data && data.data && (data.data.individual_tracking === true || data.data.individual_tracking === 1 || data.data.individual_tracking === '1'));
+            if (data.success && isIndividual) {
+                const badge = document.getElementById('trackingTypeBadge');
+                if (badge) { badge.textContent = 'Ayrı Takip'; badge.className = 'badge bg-info'; }
                 // Individual tracking: Miktar her zaman 1
                 document.getElementById('operationAmount').value = '1';
                 document.getElementById('operationAmount').disabled = true;
@@ -271,16 +274,27 @@ function stockIn(stockId) {
                 if (operationAmountLabel) {
                     operationAmountLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
                 }
+                // Ayrı takipte özellik seçenekleri açık
+                document.getElementById('samePropertiesOption').style.display = 'block';
+                document.getElementById('operationImageOptions').style.display = 'block';
+                // manualPropertiesSection görünürlüğü toggleManualProperties ile yönetilir
             } else {
-                // Toplu tracking: Miktar girişi (kaç adet ekipman eklenecek)
+                const badge = document.getElementById('trackingTypeBadge');
+                if (badge) { badge.textContent = 'Toplu Takip'; badge.className = 'badge bg-secondary'; }
+                // Toplu tracking: Miktar girişi (kaç adet eklenecek)
                 document.getElementById('operationAmount').disabled = false;
                 document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
                 
                 // Etiketi güncelle
                 const operationAmountLabel = document.getElementById('operationAmountLabel');
                 if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Adet (Her biri ayrı kod ile)';
+                    operationAmountLabel.textContent = 'Miktar';
                 }
+                // Toplu takipte özellik kopyalama/girme alanlarına gerek yok
+                document.getElementById('samePropertiesOption').style.display = 'none';
+                document.getElementById('manualPropertiesSection').style.display = 'none';
+                // Görsel opsiyonları açık kalsın (isteğe bağlı güncel resim)
+                document.getElementById('operationImageOptions').style.display = 'block';
             }
         })
         .catch(() => {
@@ -321,25 +335,30 @@ function stockOut(stockId) {
     fetch(`/admin/stock/${stockId}/info`)
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.data.individual_tracking) {
-                // Individual tracking: Sadece kod girişi
+            const isIndividual = !!(data && data.data && (data.data.individual_tracking === true || data.data.individual_tracking === 1 || data.data.individual_tracking === '1'));
+            if (data.success && isIndividual) {
+                const badge = document.getElementById('trackingTypeBadge');
+                if (badge) { badge.textContent = 'Ayrı Takip'; badge.className = 'badge bg-info'; }
+                // Individual tracking: Her zaman 1 adet düşer, miktar alanı gizle
                 document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
                 document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
                 
                 // Etiketi güncelle
                 const operationAmountLabel = document.getElementById('operationAmountLabel');
                 if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
+                    operationAmountLabel.textContent = 'Çıkış Adedi';
                 }
             } else {
-                // Toplu tracking: Kod girişi (her ekipman ayrı kod ile)
-                document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
-                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
+                const badge = document.getElementById('trackingTypeBadge');
+                if (badge) { badge.textContent = 'Toplu Takip'; badge.className = 'badge bg-secondary'; }
+                // Toplu tracking: Miktar girişi, kod gerekmiyor
+                document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
+                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
                 
                 // Etiketi güncelle
                 const operationAmountLabel = document.getElementById('operationAmountLabel');
                 if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Adet (Her ürün ayrı kod)';
+                    operationAmountLabel.textContent = 'Çıkış Adedi';
                 }
             }
         })
@@ -487,18 +506,27 @@ function submitStockOperation() {
         return;
     }
 
-    // Stok çıkışında kod kontrolü
+    // Stok çıkışında doğrulama
     if (type === 'out') {
-        if (!code || code.trim() === '') {
-            showToast('Stok çıkışı için kod girmelisiniz', 'error');
-            return;
-        }
-        
-        // Kod geçerliliğini kontrol et
-        const codeInput = document.getElementById('operationCode');
-        if (codeInput.classList.contains('is-invalid')) {
-            showToast('Geçersiz stok kodu', 'error');
-            return;
+        // Ekipmanın takip tipini öğren
+        // stockOut çağrısında zaten ayarlanmış görünürlüğe göre kontrol yapalım
+        const codeRowVisible = document.getElementById('operationCode').parentElement.parentElement.style.display !== 'none';
+        const amountRowVisible = document.getElementById('operationAmount').parentElement.parentElement.style.display !== 'none';
+
+        if (amountRowVisible) {
+            if (!amount || parseInt(amount) < 1) {
+                showToast('Geçerli bir çıkış adedi girin', 'error');
+                return;
+            }
+        } else if (codeRowVisible) {
+            // Ayrı takip: miktar gizli, kod opsiyonel ama girilmişse doğrula
+            if (code && code.trim() !== '') {
+                const codeInput = document.getElementById('operationCode');
+                if (codeInput.classList.contains('is-invalid')) {
+                    showToast('Geçersiz stok kodu', 'error');
+                    return;
+                }
+            }
         }
     }
 
@@ -510,19 +538,19 @@ function submitStockOperation() {
     formData.append('note', note);
     
     if (type === 'in') {
-        // Stok girişi için özellikler ve resimler
-        formData.append('use_same_properties', useSameProperties ? '1' : '0');
-        formData.append('use_single_image', useSingleImage ? '1' : '0');
-        
-        // Manuel özellikler
-        if (!useSameProperties) {
-            formData.append('brand', brand);
-            formData.append('model', model);
-            formData.append('size', size);
-            formData.append('feature', feature);
-        } else {
-            // Referans kodu ekle
-            formData.append('reference_code', referenceCode);
+        // Stok girişi için özellikler ve resimler (yalnızca ayrı takipte gerekli)
+        const samePropsSectionVisible = document.getElementById('samePropertiesOption').style.display !== 'none';
+        if (samePropsSectionVisible) {
+            formData.append('use_same_properties', useSameProperties ? '1' : '0');
+            formData.append('use_single_image', useSingleImage ? '1' : '0');
+            if (!useSameProperties) {
+                formData.append('brand', brand);
+                formData.append('model', model);
+                formData.append('size', size);
+                formData.append('feature', feature);
+            } else {
+                formData.append('reference_code', referenceCode);
+            }
         }
         
         if (photoFiles && photoFiles.length > 0) {
@@ -896,13 +924,22 @@ function addStock() {
             return;
         }
         
-        // Resim işlemi
+        // Backend için gerekli alanları ekle
+        formData.set('type', 'in');
+        formData.set('amount', quantity);
+        // Özellikleri aynı kullan ve tek resim kullan bayrakları (varsayılan olarak evet)
+        formData.set('use_same_properties', '1');
+        formData.set('use_single_image', '1');
+
+        // Resim işlemi: stockOperation photos[] bekliyor
         const photoFile = formData.get('photo');
         if (photoFile && photoFile.size > 0) {
-            formData.append('photo', photoFile);
+            // FormData'daki tekil 'photo' alanını temizleyip dizi formatında ekleyelim
+            formData.delete('photo');
+            formData.append('photos[]', photoFile);
         }
         
-        // Stok girişi işlemi
+    // Stok girişi işlemi
         fetch(`/admin/stock/${equipmentId}/operation`, {
             method: 'POST',
             body: formData,
@@ -939,6 +976,9 @@ function addStock() {
             return;
         }
         
+        // Backend 'quantity' bekliyor; manual_quantity'yi eşitle
+        formData.set('quantity', quantity);
+
         // Resim işlemi
         const photoFile = formData.get('photo');
         if (photoFile && photoFile.size > 0) {

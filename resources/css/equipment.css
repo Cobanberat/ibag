@@ -181,7 +181,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    height: 40px !important;
+    min-height: 40px;
 }
 
 .editable-cell:hover {

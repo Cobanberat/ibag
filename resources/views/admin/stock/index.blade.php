@@ -434,6 +434,9 @@
             <div class="modal-body">
                 <input type="hidden" id="stockId">
                 <input type="hidden" id="operationType">
+                    <div class="mb-2">
+                        <span id="trackingTypeBadge" class="badge bg-secondary" style="display:inline-block;">Takip Türü</span>
+                    </div>
                 
                 <div class="mb-3">
                     <label for="operationTitle" class="form-label fw-bold">İşlem Türü</label>
