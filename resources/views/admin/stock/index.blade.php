@@ -128,8 +128,24 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">Kritik Seviye</label>
-                                        <input type="number" class="form-control" name="critical_level" min="1" value="3">
+                                        <label class="form-label fw-bold">Birim Türü</label>
+                                        <select class="form-select border-0" name="unit_type" id="modalUnitType" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                            <option value="adet">Adet</option>
+                                            <option value="metre">Metre</option>
+                                            <option value="kilogram">Kilogram</option>
+                                            <option value="litre">Litre</option>
+                                            <option value="paket">Paket</option>
+                                            <option value="kutu">Kutu</option>
+                                            <option value="çift">Çift</option>
+                                            <option value="takım">Takım</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold" id="modalCriticalLevelLabel">Kritik Seviye</label>
+                                        <input type="number" class="form-control" name="critical_level" id="modalCriticalLevel" min="1" value="3" step="0.01">
+                                        <small class="form-text text-muted" id="modalCriticalLevelHelp">Birim türüne göre kritik seviye</small>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -236,39 +252,7 @@
             </div>
         </div>
     </div>
-    <!-- Stok Girişi/Çıkışı Modalı -->
-    <div class="modal fade" id="stockInOutModal" tabindex="-1" aria-labelledby="stockInOutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="stockInOutModalLabel"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="stockInOutForm" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <input type="hidden" name="productId">
-                        <input type="hidden" name="type">
-                        <div class="mb-3">
-                            <label class="form-label">Miktar</label>
-                            <input type="number" class="form-control" name="amount" min="1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Açıklama</label>
-                            <textarea class="form-control" name="desc" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Ürün Fotoğrafı</label>
-                            <input type="file" class="form-control" name="photo" accept="image/*">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                        <button type="submit" class="btn btn-primary">Kaydet</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- KALDIRILDI: Eski stok giriş/çıkış modalı (tek modal mimarisi için) -->
     <!-- Stok Hareketleri Modalı -->
     <div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -317,6 +301,7 @@
                             <th><input type="checkbox" id="selectAll"></th>
                             <th>Ürün</th>
                             <th>Kategori</th>
+                            <th>Birim Türü</th>
                             <th>Miktar</th>
                             <th>Kritik Seviye</th>
                             <th>Stok Durumu</th>
@@ -333,6 +318,25 @@
                                     <br><small class="text-muted">{{ $stock->code ?? '-' }}</small>
                                 </td>
                                 <td>{{ $stock->category->name ?? '-' }}</td>
+                                <td>
+                                    @if($stock->equipment && $stock->equipment->unit_type)
+                                        @php
+                                            $unitTypes = [
+                                                'adet' => 'Adet',
+                                                'metre' => 'Metre',
+                                                'kilogram' => 'Kilogram',
+                                                'litre' => 'Litre',
+                                                'paket' => 'Paket',
+                                                'kutu' => 'Kutu',
+                                                'çift' => 'Çift',
+                                                'takım' => 'Takım'
+                                            ];
+                                        @endphp
+                                        <span class="badge bg-info">{{ $unitTypes[$stock->equipment->unit_type] ?? 'Adet' }}</span>
+                                    @else
+                                        <span class="badge bg-secondary">Adet</span>
+                                    @endif
+                                </td>
                                 <td>{{ $stock->total_quantity }}</td>
                                 <td>{{ $stock->critical_level }}</td>
                                 <td>
@@ -366,7 +370,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="9" class="text-center py-4">
                                     <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz stok bulunmuyor</p>
                                 </td>
@@ -413,7 +417,7 @@
                                         <a class="page-link" href="?page={{ $pagination['current_page'] + 1 }}">
                                             <i class="fas fa-chevron-right"></i>
                                         </a>
-                                    </li>
+                                    </li>  
                                 @endif
                             @endif
                         </ul>
@@ -423,7 +427,7 @@
         </div>
     </div>
 
-<!-- Stok İşlemi Modal -->
+<!-- Tekil Modal: Stok işlemleri ve düzenleme -->
 <div class="modal fade" id="stockOperationModal" tabindex="-1" aria-labelledby="stockOperationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -434,6 +438,9 @@
             <div class="modal-body">
                 <input type="hidden" id="stockId">
                 <input type="hidden" id="operationType">
+                
+                <!-- Stok Giriş/Çıkış Bölümü -->
+                <div id="operationSection">
                     <div class="mb-2">
                         <span id="trackingTypeBadge" class="badge bg-secondary" style="display:inline-block;">Takip Türü</span>
                     </div>
@@ -512,6 +519,23 @@
                     </div>
                 </div>
                 
+                <!-- Birim Türü Güncelleme -->
+                <div class="mb-3">
+                    <label for="operationUnitType" class="form-label fw-bold">Birim Türü Güncelle</label>
+                    <select class="form-select" id="operationUnitType">
+                        <option value="">Mevcut birim türünü koru</option>
+                        <option value="adet">Adet</option>
+                        <option value="metre">Metre</option>
+                        <option value="kilogram">Kilogram</option>
+                        <option value="litre">Litre</option>
+                        <option value="paket">Paket</option>
+                        <option value="kutu">Kutu</option>
+                        <option value="çift">Çift</option>
+                        <option value="takım">Takım</option>
+                    </select>
+                    <small class="form-text text-muted">Sadece değiştirmek istiyorsanız seçin</small>
+                </div>
+                
                 <div class="mb-3">
                     <label for="operationNote" class="form-label fw-bold">Not (Opsiyonel)</label>
                     <textarea class="form-control" id="operationNote" rows="3" placeholder="İşlem hakkında not..."></textarea>
@@ -534,56 +558,56 @@
                             <label class="form-label fw-bold">Ekipman Fotoğrafı</label>
                             <input type="file" class="form-control" id="operationPhoto" accept="image/*" multiple>
                             <small class="text-muted">Miktar kadar resim seçebilirsiniz (örn: 3 adet için 3 resim)</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <button type="button" class="btn btn-primary" onclick="submitStockOperation()">Kaydet</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Stok Düzenleme Modal -->
-<div class="modal fade" id="editStockModal" tabindex="-1" aria-labelledby="editStockModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editStockModalLabel">Ekipman Düzenle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
+                <!-- Düzenleme Bölümü -->
+                <div id="editSection" style="display:none;">
                 <input type="hidden" id="editStockId">
-                
                 <div class="mb-3">
                     <label for="editStockName" class="form-label">Ekipman Adı</label>
                     <input type="text" class="form-control" id="editStockName" required>
                 </div>
-                
                 <div class="mb-3">
                     <label for="editStockCode" class="form-label">Ekipman Kodu</label>
                     <input type="text" class="form-control" id="editStockCode" required>
                 </div>
-                
+                    <div class="mb-3">
+                        <label for="editStockUnitType" class="form-label">Birim Türü</label>
+                        <select class="form-select" id="editStockUnitType" required>
+                            <option value="adet">Adet</option>
+                            <option value="metre">Metre</option>
+                            <option value="kilogram">Kilogram</option>
+                            <option value="litre">Litre</option>
+                            <option value="paket">Paket</option>
+                            <option value="kutu">Kutu</option>
+                            <option value="çift">Çift</option>
+                            <option value="takım">Takım</option>
+                        </select>
+                    </div>
                 <div class="mb-3">
                     <label for="editStockCriticalLevel" class="form-label">Kritik Seviye</label>
-                    <input type="number" class="form-control" id="editStockCriticalLevel" min="1" required>
+                        <input type="number" class="form-control" id="editStockCriticalLevel" min="1" step="0.01" required>
+                        <small class="form-text text-muted" id="editCriticalLevelHelp">Birim türüne göre kritik seviye</small>
                 </div>
-                
                 <div class="mb-3">
                     <label for="editStockNote" class="form-label">Not (Opsiyonel)</label>
                     <textarea class="form-control" id="editStockNote" rows="3" placeholder="Ekipman hakkında not..."></textarea>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <button type="button" class="btn btn-primary" onclick="submitEditStock()">Güncelle</button>
+                <button type="button" id="btnSubmitOperation" class="btn btn-primary" onclick="submitStockOperation()">Kaydet</button>
+                <button type="button" id="btnSubmitEdit" class="btn btn-primary" onclick="submitEditStock()" style="display:none;">Güncelle</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- KALDIRILDI: Ayrı düzenleme modalı (tek modal mimarisi için) -->
 
 @endsection
 

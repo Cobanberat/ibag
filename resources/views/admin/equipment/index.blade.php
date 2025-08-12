@@ -110,6 +110,7 @@
                             <th>Model</th>
                             <th>Beden</th>
                             <th>Özellik</th>
+                            <th>Birim Türü</th>
                             <th>Adet/Takip</th>
                             <th>Durum</th>
                             <th>Lokasyon</th>
@@ -128,6 +129,25 @@
                                 <td class="editable-cell" data-field="model" data-id="{{ $stock->id }}">{{ $stock->model ?? '-' }}</td>
                                 <td class="editable-cell" data-field="size" data-id="{{ $stock->id }}">{{ $stock->size ?? '-' }}</td>
                                 <td class="editable-cell" data-field="feature" data-id="{{ $stock->id }}">{{ $stock->feature ?? '-' }}</td>
+                                <td>
+                                    @if($stock->equipment && $stock->equipment->unit_type)
+                                        @php
+                                            $unitTypes = [
+                                                'adet' => 'Adet',
+                                                'metre' => 'Metre',
+                                                'kilogram' => 'Kilogram',
+                                                'litre' => 'Litre',
+                                                'paket' => 'Paket',
+                                                'kutu' => 'Kutu',
+                                                'çift' => 'Çift',
+                                                'takım' => 'Takım'
+                                            ];
+                                        @endphp
+                                        <span class="badge bg-info">{{ $unitTypes[$stock->equipment->unit_type] ?? 'Adet' }}</span>
+                                    @else
+                                        <span class="badge bg-secondary">Adet</span>
+                                    @endif
+                                </td>
                                 <td class="editable-cell" data-field="quantity" data-id="{{ $stock->id }}">
                                     @if($stock->equipment && $stock->equipment->individual_tracking)
                                         <span class="badge bg-info">Ayrı Takip</span>
@@ -153,7 +173,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="text-center py-4">
+                                <td colspan="14" class="text-center py-4">
                                     <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz ekipman bulunmuyor</p>
                                 </td>
@@ -192,6 +212,7 @@
                     <p><strong>Model:</strong> <span id="detailModel">-</span></p>
                     <p><strong>Beden:</strong> <span id="detailSize">-</span></p>
                     <p><strong>Özellik:</strong> <span id="detailFeature">-</span></p>
+                    <p><strong>Birim Türü:</strong> <span id="detailUnitType">-</span></p>
                     <p><strong>Adet/Takip:</strong> <span id="detailCount">-</span></p>
                     <p><strong>Takip Türü:</strong> <span id="detailTrackingType">-</span></p>
                     <p><strong>Durum:</strong> <span id="detailStatus">-</span></p>

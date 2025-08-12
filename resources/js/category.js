@@ -260,6 +260,9 @@ function deleteCategory(id) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire(
                         'Silindi!',
                         'Kategori başarıyla silindi.',
@@ -267,6 +270,9 @@ function deleteCategory(id) {
                     );
                     loadCategoryData(1); // İlk sayfaya dön
                 } else {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire(
                         'Hata!',
                         data.message || 'Kategori silinirken hata oluştu',
@@ -275,6 +281,9 @@ function deleteCategory(id) {
                 }
             })
             .catch(error => {
+                // Loading ekranını kapat
+                Swal.close();
+                
                 console.error('Kategori silme hatası:', error);
                 Swal.fire(
                     'Hata!',
@@ -330,6 +339,9 @@ function deleteSelectedCategories() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire(
                         'Silindi!',
                         data.message,
@@ -337,6 +349,9 @@ function deleteSelectedCategories() {
                     );
                     loadCategoryData(1); // İlk sayfaya dön
                 } else {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire(
                         'Hata!',
                         data.message,
@@ -345,6 +360,9 @@ function deleteSelectedCategories() {
                 }
             })
             .catch(error => {
+                // Loading ekranını kapat
+                Swal.close();
+                
                 console.error('Toplu silme hatası:', error);
                 Swal.fire(
                     'Hata!',

@@ -260,7 +260,8 @@ class EquipmentStockController extends Controller
                 'quantity' => 'required|integer|min:1',
                 'size' => 'nullable|string|max:255',
                 'feature' => 'nullable|string',
-                'critical_level' => 'nullable|integer|min:1',
+                'unit_type' => 'required|in:adet,metre,kilogram,litre,paket,kutu,çift,takım',
+                'critical_level' => 'nullable|numeric|min:0.01',
                 'note' => 'nullable|string',
                 'status' => 'nullable|string|max:255',
                 'location' => 'nullable|string|max:255',
@@ -288,6 +289,7 @@ class EquipmentStockController extends Controller
             $equipment = Equipment::create([
                 'name' => $validated['name'],
                 'category_id' => $validated['category_id'],
+                'unit_type' => $validated['unit_type'],
                 'critical_level' => $validated['critical_level'] ?? 3,
                 'individual_tracking' => $individualTracking
             ]);
@@ -490,13 +492,15 @@ class EquipmentStockController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:255|unique:equipments,code,' . $id,
-            'critical_level' => 'required|integer|min:1',
+            'unit_type' => 'required|in:adet,metre,kilogram,litre,paket,kutu,çift,takım',
+            'critical_level' => 'required|numeric|min:0.01',
             'note' => 'nullable|string'
         ]);
 
         $equipment->update([
             'name' => $validated['name'],
             'code' => $validated['code'],
+            'unit_type' => $validated['unit_type'],
             'critical_level' => $validated['critical_level']
         ]);
 
@@ -581,11 +585,17 @@ class EquipmentStockController extends Controller
                 'size' => 'nullable|string|max:255',
                 'feature' => 'nullable|string',
                 'reference_code' => 'nullable|string|max:255',
+                'unit_type' => 'nullable|in:adet,metre,kilogram,litre,paket,kutu,çift,takım',
                 'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
             
             // Amount varsayılan değer
             $validated['amount'] = $validated['amount'] ?? 1;
+
+            // Unit type güncelleme (eğer gönderildiyse)
+            if (isset($validated['unit_type']) && !empty($validated['unit_type'])) {
+                $equipment->update(['unit_type' => $validated['unit_type']]);
+            }
 
         // Individual tracking kontrolü
         if ($equipment->individual_tracking && $validated['amount'] != 1) {

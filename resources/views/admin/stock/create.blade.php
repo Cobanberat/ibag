@@ -43,8 +43,22 @@
                 <input type="number" class="form-control" id="quantity" name="quantity" min="1" value="1" required>
             </div>
             <div class="col-md-2">
+                <label for="unit_type" class="form-label fw-bold">Birim Türü <span class="text-danger">*</span></label>
+                <select class="form-select" id="unit_type" name="unit_type" required>
+                    <option value="adet">Adet</option>
+                    <option value="metre">Metre</option>
+                    <option value="kilogram">Kilogram</option>
+                    <option value="litre">Litre</option>
+                    <option value="paket">Paket</option>
+                    <option value="kutu">Kutu</option>
+                    <option value="çift">Çift</option>
+                    <option value="takım">Takım</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label for="critical_level" class="form-label fw-bold">Kritik Seviye</label>
-                <input type="number" class="form-control" id="critical_level" name="critical_level" min="1" value="3">
+                <input type="number" class="form-control" id="critical_level" name="critical_level" min="1" value="3" step="0.01">
+                <small class="form-text text-muted" id="criticalLevelHelp">Birim türüne göre kritik seviye</small>
             </div>
             <div class="col-md-6">
                 <label for="code" class="form-label fw-bold">Ekipman Kodu</label>
@@ -92,6 +106,51 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('addProductForm');
+    const unitTypeSelect = document.getElementById('unit_type');
+    const criticalLevelInput = document.getElementById('critical_level');
+    const criticalLevelHelp = document.getElementById('criticalLevelHelp');
+    
+    // Birim türü değiştiğinde kritik seviye yardım metnini güncelle
+    function updateCriticalLevelHelp() {
+        const unitType = unitTypeSelect.value;
+        const unitLabels = {
+            'adet': 'Adet',
+            'metre': 'Metre',
+            'kilogram': 'Kilogram',
+            'litre': 'Litre',
+            'paket': 'Paket',
+            'kutu': 'Kutu',
+            'çift': 'Çift',
+            'takım': 'Takım'
+        };
+        
+        const label = unitLabels[unitType] || 'Adet';
+        criticalLevelHelp.textContent = `${label} cinsinden kritik seviye (örn: ${unitType === 'adet' ? '3' : unitType === 'metre' ? '100' : '5'})`;
+        
+        // Birim türüne göre step değerini ayarla
+        if (unitType === 'adet' || unitType === 'paket' || unitType === 'kutu' || unitType === 'çift' || unitType === 'takım') {
+            criticalLevelInput.step = '1';
+            criticalLevelInput.min = '1';
+        } else {
+            criticalLevelInput.step = '0.01';
+            criticalLevelInput.min = '0.01';
+        }
+        
+        // Birim türüne göre placeholder güncelle
+        if (unitType === 'metre') {
+            criticalLevelInput.placeholder = '100';
+        } else if (unitType === 'kilogram') {
+            criticalLevelInput.placeholder = '5';
+        } else if (unitType === 'litre') {
+            criticalLevelInput.placeholder = '10';
+        } else {
+            criticalLevelInput.placeholder = '3';
+        }
+    }
+    
+    // Sayfa yüklendiğinde ve birim türü değiştiğinde yardım metnini güncelle
+    updateCriticalLevelHelp();
+    unitTypeSelect.addEventListener('change', updateCriticalLevelHelp);
     
     form.addEventListener('submit', function(e) {
         console.log('Form submit edildi!');

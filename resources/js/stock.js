@@ -244,6 +244,17 @@ function loadStockData(page = 1) {
 function stockIn(stockId) {
     // Modal açma işlemi
     const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
+    // Tek modal: işlem bölümünü göster, düzenleme bölümünü gizle
+    const titleEl = document.getElementById('stockOperationModalLabel');
+    if (titleEl) titleEl.textContent = 'Stok Girişi';
+    const operationSection = document.getElementById('operationSection');
+    const editSection = document.getElementById('editSection');
+    if (operationSection) operationSection.style.display = 'block';
+    if (editSection) editSection.style.display = 'none';
+    const btnSubmitOperation = document.getElementById('btnSubmitOperation');
+    const btnSubmitEdit = document.getElementById('btnSubmitEdit');
+    if (btnSubmitOperation) btnSubmitOperation.style.display = 'inline-block';
+    if (btnSubmitEdit) btnSubmitEdit.style.display = 'none';
     document.getElementById('operationType').value = 'in';
     document.getElementById('stockId').value = stockId;
     document.getElementById('operationTitle').textContent = 'Stok Girişi';
@@ -319,6 +330,17 @@ function stockIn(stockId) {
 function stockOut(stockId) {
     // Modal açma işlemi
     const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
+    // Tek modal: işlem bölümünü göster, düzenleme bölümünü gizle
+    const titleEl = document.getElementById('stockOperationModalLabel');
+    if (titleEl) titleEl.textContent = 'Stok Çıkışı';
+    const operationSection = document.getElementById('operationSection');
+    const editSection = document.getElementById('editSection');
+    if (operationSection) operationSection.style.display = 'block';
+    if (editSection) editSection.style.display = 'none';
+    const btnSubmitOperation = document.getElementById('btnSubmitOperation');
+    const btnSubmitEdit = document.getElementById('btnSubmitEdit');
+    if (btnSubmitOperation) btnSubmitOperation.style.display = 'inline-block';
+    if (btnSubmitEdit) btnSubmitEdit.style.display = 'none';
     document.getElementById('operationType').value = 'out';
     document.getElementById('stockId').value = stockId;
     document.getElementById('operationTitle').textContent = 'Stok Çıkışı';
@@ -487,6 +509,7 @@ function submitStockOperation() {
     const photoFiles = document.getElementById('operationPhoto')?.files;
     const individualTracking = document.getElementById('individualTracking')?.checked || false;
     const referenceCode = document.getElementById('referenceCode')?.value || '';
+    const unitType = document.getElementById('operationUnitType')?.value || '';
     
     // Manuel özellikler
     const brand = document.getElementById('operationBrand')?.value || '';
@@ -536,6 +559,11 @@ function submitStockOperation() {
     formData.append('type', type);
     formData.append('amount', parseInt(amount) || 1); // Varsayılan değer
     formData.append('note', note);
+    
+    // Unit type güncelleme (eğer seçildiyse)
+    if (unitType && unitType.trim() !== '') {
+        formData.append('unit_type', unitType);
+    }
     
     if (type === 'in') {
         // Stok girişi için özellikler ve resimler (yalnızca ayrı takipte gerekli)
@@ -609,7 +637,7 @@ function submitStockOperation() {
     });
 }
 
-// Modal içindeki Enter tuşu olayını yakala
+// Modal içindeki Enter tuşu olayını yakala (tek modal için)
 document.addEventListener('DOMContentLoaded', function() {
     const modalElement = document.getElementById('stockOperationModal');
     if (modalElement) {
@@ -617,20 +645,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 e.stopPropagation();
-                submitStockOperation();
-                return false;
-            }
-        });
-    }
-
-    // Düzenleme modalı için Enter tuşu desteği
-    const editModalElement = document.getElementById('editStockModal');
-    if (editModalElement) {
-        editModalElement.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                e.stopPropagation();
-                submitEditStock();
+                const operationSection = document.getElementById('operationSection');
+                const editSection = document.getElementById('editSection');
+                const isEditVisible = editSection && editSection.style.display !== 'none';
+                if (isEditVisible) {
+                    submitEditStock();
+                } else {
+                    submitStockOperation();
+                }
                 return false;
             }
         });
@@ -643,16 +665,33 @@ function editStock(stockId) {
     const row = document.querySelector(`tr[data-id="${stockId}"]`);
     const name = row.querySelector('td:nth-child(2) .fw-bold').textContent;
     const code = row.querySelector('td:nth-child(2) small').textContent;
-    const category = row.querySelector('td:nth-child(3)').textContent;
     const criticalLevel = row.querySelector('td:nth-child(5)').textContent;
-    
-    // Modal açma işlemi
-    const modal = new bootstrap.Modal(document.getElementById('editStockModal'));
+
+    // Tek modal içinde düzenleme bölümü
+    const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
+    const titleEl = document.getElementById('stockOperationModalLabel');
+    if (titleEl) titleEl.textContent = 'Ekipman Düzenle';
+    const operationSection = document.getElementById('operationSection');
+    const editSection = document.getElementById('editSection');
+    if (operationSection) operationSection.style.display = 'none';
+    if (editSection) editSection.style.display = 'block';
+    const btnSubmitOperation = document.getElementById('btnSubmitOperation');
+    const btnSubmitEdit = document.getElementById('btnSubmitEdit');
+    if (btnSubmitOperation) btnSubmitOperation.style.display = 'none';
+    if (btnSubmitEdit) btnSubmitEdit.style.display = 'inline-block';
+
     document.getElementById('editStockId').value = stockId;
     document.getElementById('editStockName').value = name;
     document.getElementById('editStockCode').value = code;
     document.getElementById('editStockCriticalLevel').value = criticalLevel;
     document.getElementById('editStockNote').value = '';
+    
+    // Birim türü varsayılan olarak 'adet' seçili
+    document.getElementById('editStockUnitType').value = 'adet';
+    
+    // Birim türü yardım metnini güncelle
+    updateEditCriticalLevelHelp();
+    
     modal.show();
 }
 
@@ -661,10 +700,11 @@ function submitEditStock() {
     const stockId = document.getElementById('editStockId').value;
     const name = document.getElementById('editStockName').value;
     const code = document.getElementById('editStockCode').value;
+    const unitType = document.getElementById('editStockUnitType').value;
     const criticalLevel = document.getElementById('editStockCriticalLevel').value;
     const note = document.getElementById('editStockNote').value;
 
-    if (!name || !code || !criticalLevel) {
+    if (!name || !code || !unitType || !criticalLevel) {
         showToast('Lütfen tüm zorunlu alanları doldurun', 'error');
         return;
     }
@@ -674,7 +714,7 @@ function submitEditStock() {
         return;
     }
 
-    console.log('Stok düzenleme gönderiliyor:', { stockId, name, code, criticalLevel, note });
+    console.log('Stok düzenleme gönderiliyor:', { stockId, name, code, unitType, criticalLevel, note });
 
     fetch(`/admin/stock/${stockId}`, {
         method: 'PUT',
@@ -685,7 +725,8 @@ function submitEditStock() {
         body: JSON.stringify({
             name: name,
             code: code,
-            critical_level: parseInt(criticalLevel),
+            unit_type: unitType,
+            critical_level: parseFloat(criticalLevel),
             note: note
         })
     })
@@ -701,7 +742,7 @@ function submitEditStock() {
         if (data.success) {
             showToast(data.message, 'success');
             // Modal'ı kapat
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editStockModal'));
+            const modal = bootstrap.Modal.getInstance(document.getElementById('stockOperationModal'));
             modal.hide();
             // Tabloyu yenile
             loadStockData();
@@ -811,6 +852,12 @@ function renderStockTable(stocks) {
                     <br><small class="text-muted">${stock.code || '-'}</small>
                 </td>
                 <td>${stock.category?.name || '-'}</td>
+                <td>
+                    ${stock.equipment && stock.equipment.unit_type ? 
+                        `<span class="badge bg-info">${getUnitTypeLabel(stock.equipment.unit_type)}</span>` : 
+                        '<span class="badge bg-secondary">Adet</span>'
+                    }
+                </td>
                 <td>${totalQuantity}</td>
                 <td>${criticalLevel}</td>
                 <td>
@@ -1063,6 +1110,9 @@ function deleteSelectedStocks() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     // DOM'dan seçili satırları kaldır
                     selectedCheckboxes.forEach(checkbox => {
                         const row = checkbox.closest('tr');
@@ -1094,6 +1144,9 @@ function deleteSelectedStocks() {
                         `;
                     }
                 } else {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire(
                         'Hata!',
                         data.message,
@@ -1102,6 +1155,9 @@ function deleteSelectedStocks() {
                 }
             })
             .catch(error => {
+                // Loading ekranını kapat
+                Swal.close();
+                
                 console.error('Toplu silme hatası:', error);
                 Swal.fire(
                     'Hata!',
@@ -1358,6 +1414,21 @@ document.addEventListener('DOMContentLoaded', function() {
         useSameProperties.addEventListener('change', toggleManualProperties);
     }
 
+    // Birim türü değişikliklerini dinle
+    const modalUnitType = document.getElementById('modalUnitType');
+    if (modalUnitType) {
+        modalUnitType.addEventListener('change', updateModalCriticalLevelHelp);
+        // Sayfa yüklendiğinde yardım metnini güncelle
+        setTimeout(() => {
+            updateModalCriticalLevelHelp();
+        }, 100);
+    }
+
+    const editStockUnitType = document.getElementById('editStockUnitType');
+    if (editStockUnitType) {
+        editStockUnitType.addEventListener('change', updateEditCriticalLevelHelp);
+    }
+
     // Stok ekleme
     const addProductForm = document.getElementById('addProductForm');
     if (addProductForm) {
@@ -1384,3 +1455,105 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Birim türü etiketini döndüren yardımcı fonksiyon
+function getUnitTypeLabel(unitType) {
+    const unitTypes = {
+        'adet': 'Adet',
+        'metre': 'Metre',
+        'kilogram': 'Kilogram',
+        'litre': 'Litre',
+        'paket': 'Paket',
+        'kutu': 'Kutu',
+        'çift': 'Çift',
+        'takım': 'Takım'
+    };
+    return unitTypes[unitType] || 'Adet';
+}
+
+// Birim türü değişikliklerini dinleyen yardımcı fonksiyonlar
+function updateEditCriticalLevelHelp() {
+    const unitTypeSelect = document.getElementById('editStockUnitType');
+    const criticalLevelInput = document.getElementById('editStockCriticalLevel');
+    const criticalLevelHelp = document.getElementById('editCriticalLevelHelp');
+    
+    if (!unitTypeSelect || !criticalLevelInput || !criticalLevelHelp) return;
+    
+    const unitType = unitTypeSelect.value;
+    const unitLabels = {
+        'adet': 'Adet',
+        'metre': 'Metre',
+        'kilogram': 'Kilogram',
+        'litre': 'Litre',
+        'paket': 'Paket',
+        'kutu': 'Kutu',
+        'çift': 'Çift',
+        'takım': 'Takım'
+    };
+    
+    const label = unitLabels[unitType] || 'Adet';
+    criticalLevelHelp.textContent = `${label} cinsinden kritik seviye (örn: ${unitType === 'adet' ? '3' : unitType === 'metre' ? '100' : '5'})`;
+    
+    // Birim türüne göre step değerini ayarla
+    if (unitType === 'adet' || unitType === 'paket' || unitType === 'kutu' || unitType === 'çift' || unitType === 'takım') {
+        criticalLevelInput.step = '1';
+        criticalLevelInput.min = '1';
+    } else {
+        criticalLevelInput.step = '0.01';
+        criticalLevelInput.min = '0.01';
+    }
+    
+    // Birim türüne göre placeholder güncelle
+    if (unitType === 'metre') {
+        criticalLevelInput.placeholder = '100';
+    } else if (unitType === 'kilogram') {
+        criticalLevelInput.placeholder = '5';
+    } else if (unitType === 'litre') {
+        criticalLevelInput.placeholder = '10';
+    } else {
+        criticalLevelInput.placeholder = '3';
+    }
+}
+
+function updateModalCriticalLevelHelp() {
+    const unitTypeSelect = document.getElementById('modalUnitType');
+    const criticalLevelInput = document.getElementById('modalCriticalLevel');
+    const criticalLevelHelp = document.getElementById('modalCriticalLevelHelp');
+    
+    if (!unitTypeSelect || !criticalLevelInput || !criticalLevelHelp) return;
+    
+    const unitType = unitTypeSelect.value;
+    const unitLabels = {
+        'adet': 'Adet',
+        'metre': 'Metre',
+        'kilogram': 'Kilogram',
+        'litre': 'Litre',
+        'paket': 'Paket',
+        'kutu': 'Kutu',
+        'çift': 'Çift',
+        'takım': 'Takım'
+    };
+    
+    const label = unitLabels[unitType] || 'Adet';
+    criticalLevelHelp.textContent = `${label} cinsinden kritik seviye (örn: ${unitType === 'adet' ? '3' : unitType === 'metre' ? '100' : '5'})`;
+    
+    // Birim türüne göre step değerini ayarla
+    if (unitType === 'adet' || unitType === 'paket' || unitType === 'kutu' || unitType === 'çift' || unitType === 'takım') {
+        criticalLevelInput.step = '1';
+        criticalLevelInput.min = '1';
+    } else {
+        criticalLevelInput.step = '0.01';
+        criticalLevelInput.min = '0.01';
+    }
+    
+    // Birim türüne göre placeholder güncelle
+    if (unitType === 'metre') {
+        criticalLevelInput.placeholder = '100';
+    } else if (unitType === 'kilogram') {
+        criticalLevelInput.placeholder = '5';
+    } else if (unitType === 'litre') {
+        criticalLevelInput.placeholder = '10';
+    } else {
+        criticalLevelInput.placeholder = '3';
+    }
+}

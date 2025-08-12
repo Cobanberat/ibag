@@ -18,6 +18,23 @@ window.showDetail = function(id) {
                 document.getElementById('detailSize').innerText = stock.size || '-';
                 document.getElementById('detailFeature').innerText = stock.feature || '-';
                 
+                // Birim türü bilgisini göster
+                if (stock.equipment && stock.equipment.unit_type) {
+                    const unitTypes = {
+                        'adet': 'Adet',
+                        'metre': 'Metre',
+                        'kilogram': 'Kilogram',
+                        'litre': 'Litre',
+                        'paket': 'Paket',
+                        'kutu': 'Kutu',
+                        'çift': 'Çift',
+                        'takım': 'Takım'
+                    };
+                    document.getElementById('detailUnitType').innerText = unitTypes[stock.equipment.unit_type] || 'Adet';
+                } else {
+                    document.getElementById('detailUnitType').innerText = 'Adet';
+                }
+                
                 // Individual tracking kontrolü
                 if (stock.equipment && stock.equipment.individual_tracking) {
                     document.getElementById('detailCount').innerText = stock.quantity || 0;
@@ -75,6 +92,9 @@ window.deleteEquipment = function(id) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire({
                         title: 'Başarılı!',
                         text: 'Ekipman başarıyla silindi.',
@@ -86,6 +106,9 @@ window.deleteEquipment = function(id) {
                         window.location.reload();
                     });
                 } else {
+                    // Loading ekranını kapat
+                    Swal.close();
+                    
                     Swal.fire({
                         title: 'Hata!',
                         text: 'Ekipman silinirken hata oluştu.',
@@ -94,6 +117,9 @@ window.deleteEquipment = function(id) {
                 }
             })
             .catch(error => {
+                // Loading ekranını kapat
+                Swal.close();
+                
                 console.error('Silme hatası:', error);
                 Swal.fire({
                     title: 'Hata!',
