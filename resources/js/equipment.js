@@ -12,6 +12,33 @@ window.showDetail = function(id) {
                 const stock = data.data;
                 document.getElementById('detailSno').innerText = stock.id;
                 document.getElementById('detailCode').innerText = stock.code || '-';
+                
+                // Resim gösterimi
+                const detailImage = document.getElementById('detailImage');
+                console.log('Stock data:', stock); // Debug için
+                console.log('Stock photo:', stock.photo); // Debug için
+                console.log('Equipment images:', stock.equipment?.images); // Debug için
+                
+                // Önce stok kaydında resim var mı kontrol et
+                if (stock.photo) {
+                    detailImage.src = '/' + stock.photo;
+                    detailImage.style.display = 'block';
+                } 
+                // Stok kaydında resim yoksa, ekipman resimlerinde bu ekipmana ait resim var mı kontrol et
+                else if (stock.equipment && stock.equipment.images && stock.equipment.images.length > 0) {
+                    // Bu ekipmana ait resimleri filtrele
+                    const equipmentImages = stock.equipment.images.filter(img => img.equipment_id == stock.equipment.id);
+                    if (equipmentImages.length > 0) {
+                        detailImage.src = '/' + equipmentImages[0].image;
+                        detailImage.style.display = 'block';
+                    } else {
+                        detailImage.style.display = 'none';
+                    }
+                } else {
+                    // Hiç resim yoksa gizle
+                    detailImage.style.display = 'none';
+                }
+                
                 document.getElementById('detailType').innerText = stock.equipment?.name || '-';
                 document.getElementById('detailBrand').innerText = stock.brand || '-';
                 document.getElementById('detailModel').innerText = stock.model || '-';
@@ -455,6 +482,8 @@ function getCsrfToken() {
   }
   function renderPagination(pageCount) {
       let pag = document.getElementById('pagination');
+      if (!pag) return; // Element yoksa çık
+      
       pag.innerHTML = '';
       if(pageCount<=1) return;
 
@@ -509,11 +538,11 @@ function getCsrfToken() {
 
 // Veri yükleme fonksiyonu
 function loadEquipmentData() {
-    const search = document.getElementById('searchInput').value;
-    const type = document.getElementById('typeFilter').value;
-    const brand = document.getElementById('brandFilter').value;
-    const status = document.getElementById('statusFilter').value;
-    const tracking = document.getElementById('trackingFilter').value;
+    const search = document.getElementById('searchInput')?.value || '';
+    const type = document.getElementById('typeFilter')?.value || '';
+    const brand = document.getElementById('brandFilter')?.value || '';
+    const status = document.getElementById('statusFilter')?.value || '';
+    const tracking = document.getElementById('trackingFilter')?.value || '';
 
     // Loading göster
     const tbody = document.querySelector('#equipmentTable tbody');
@@ -565,10 +594,11 @@ function loadEquipmentData() {
 // Pagination güncelleme
 function updatePagination(pagination) {
     const paginationContainer = document.querySelector('#pagination');
-    if (paginationContainer) {
-        paginationContainer.innerHTML = '';
-        
-        if (pagination.last_page <= 1) return;
+    if (!paginationContainer) return; // Element yoksa çık
+    
+    paginationContainer.innerHTML = '';
+    
+    if (pagination.last_page <= 1) return;
 
         // Önceki sayfa
         if (pagination.current_page > 1) {
@@ -656,8 +686,6 @@ function updatePagination(pagination) {
         infoText.textContent = `Toplam ${pagination.total} kayıttan ${startItem}-${endItem} arası gösteriliyor`;
     }
 }
-
-
 
 // Toast bildirimi gösterme fonksiyonu
 window.showToast = function(message, type = 'info') {
@@ -785,30 +813,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('input', function(){ 
-                // Sadece filtre değeri varsa JavaScript ile yükle
-                const hasFilters = document.getElementById('searchInput').value || 
-                                 document.getElementById('typeFilter').value || 
-                                 document.getElementById('brandFilter').value || 
-                                 document.getElementById('statusFilter').value || 
-                                 document.getElementById('trackingFilter').value;
-                
-                if (hasFilters) {
-                    currentPage = 1; 
-                    loadEquipmentData(); 
-                }
+                // Input değeri değiştiğinde anlık filtreleme yap
+                currentPage = 1; 
+                loadEquipmentData(); 
             });
             element.addEventListener('change', function(){ 
-                // Sadece filtre değeri varsa JavaScript ile yükle
-                const hasFilters = document.getElementById('searchInput').value || 
-                                 document.getElementById('typeFilter').value || 
-                                 document.getElementById('brandFilter').value || 
-                                 document.getElementById('statusFilter').value || 
-                                 document.getElementById('trackingFilter').value;
-                
-                if (hasFilters) {
-                    currentPage = 1; 
-                    loadEquipmentData(); 
-                }
+                // Select değeri değiştiğinde anlık filtreleme yap
+                currentPage = 1; 
+                loadEquipmentData(); 
             });
         }
     });
@@ -847,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('statusFilter').value = '';
             document.getElementById('trackingFilter').value = '';
             
-            // Sayfayı yenile (PHP verilerine geri dön)
+            // Hemen sayfayı yenile (PHP verilerine geri dön)
             window.location.reload();
         });
     }

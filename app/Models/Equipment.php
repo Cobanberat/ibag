@@ -44,7 +44,16 @@ class Equipment extends Model
     // Birim türü etiketini döndür
     public function getUnitTypeLabelAttribute()
     {
+        if (!$this->unit_type || empty(trim($this->unit_type))) {
+            return 'Adet';
+        }
         return self::UNIT_TYPES[$this->unit_type] ?? 'Adet';
+    }
+
+    // Birim türü değerini güvenli şekilde döndür
+    public function getSafeUnitTypeAttribute()
+    {
+        return $this->unit_type ?: 'adet';
     }
 
     // Birim türü seçeneklerini döndür

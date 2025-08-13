@@ -187,11 +187,11 @@
                     <div class="text-muted">
                         Toplam {{ $equipmentStocks->total() }} kayıttan {{ $equipmentStocks->firstItem() ?? 0 }}-{{ $equipmentStocks->lastItem() ?? 0 }} arası gösteriliyor
                     </div>
-                    <ul class="pagination justify-content-end mb-0" id="pagination">
+                    <div class="mb-0">
                         @if($equipmentStocks->hasPages())
-                            {{ $equipmentStocks->links() }}
+                            {{ $equipmentStocks->onEachSide(1)->links('pagination::bootstrap-5') }}
                         @endif
-                    </ul>
+                    </div>
                 </div>
             </nav>
         </div>
@@ -207,6 +207,10 @@
                 <div class="modal-body">
                     <p><strong>Sıra:</strong> <span id="detailSno">-</span></p>
                     <p><strong>Kod:</strong> <span id="detailCode">-</span></p>
+                    <p><strong>Resim:</strong></p>
+                    <div class="text-center mb-3">
+                        <img id="detailImage" src="" alt="Ekipman Resmi" class="img-fluid rounded" style="max-width: 300px; max-height: 200px; object-fit: contain;">
+                    </div>
                     <p><strong>Ürün Cinsi:</strong> <span id="detailType">-</span></p>
                     <p><strong>Marka:</strong> <span id="detailBrand">-</span></p>
                     <p><strong>Model:</strong> <span id="detailModel">-</span></p>

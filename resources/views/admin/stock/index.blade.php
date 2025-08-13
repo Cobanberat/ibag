@@ -316,26 +316,10 @@
                                 <td>
                                     <span class="fw-bold">{{ $stock->name ?? '-' }}</span>
                                     <br><small class="text-muted">{{ $stock->code ?? '-' }}</small>
-                                </td>
+                                </td>   
                                 <td>{{ $stock->category->name ?? '-' }}</td>
                                 <td>
-                                    @if($stock->equipment && $stock->equipment->unit_type)
-                                        @php
-                                            $unitTypes = [
-                                                'adet' => 'Adet',
-                                                'metre' => 'Metre',
-                                                'kilogram' => 'Kilogram',
-                                                'litre' => 'Litre',
-                                                'paket' => 'Paket',
-                                                'kutu' => 'Kutu',
-                                                'çift' => 'Çift',
-                                                'takım' => 'Takım'
-                                            ];
-                                        @endphp
-                                        <span class="badge bg-info">{{ $unitTypes[$stock->equipment->unit_type] ?? 'Adet' }}</span>
-                                    @else
-                                        <span class="badge bg-secondary">Adet</span>
-                                    @endif
+                                    <span class="badge bg-info">{{ $stock->unit_type_label }}</span>
                                 </td>
                                 <td>{{ $stock->total_quantity }}</td>
                                 <td>{{ $stock->critical_level }}</td>

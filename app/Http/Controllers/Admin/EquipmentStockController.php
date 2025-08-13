@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EquipmentStock;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
+use App\Models\EquipmentImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -312,7 +313,7 @@ class EquipmentStockController extends Controller
                         $photoPath = 'uploads/equipment/' . $photoName;
                     }
 
-                    $stocks[] = EquipmentStock::create([
+                    $createdStock = EquipmentStock::create([
                         'equipment_id' => $equipment->id,
                         'code' => $validated['code'] ?: $this->generateRandomCode(),
                         'brand' => $validated['brand'],
@@ -325,6 +326,15 @@ class EquipmentStockController extends Controller
                         'location' => $validated['location'] ?? 'Depo',
                         'photo' => $photoPath
                     ]);
+                    $stocks[] = $createdStock;
+
+                    // Ekipman resimleri tablosuna da kaydet
+                    if ($photoPath) {
+                        EquipmentImage::create([
+                            'equipment_id' => $equipment->id,
+                            'image' => $photoPath,
+                        ]);
+                    }
                 }
             } else {
                 // Toplu tracking: Tek kayıt olarak quantity = $quantity
@@ -336,7 +346,7 @@ class EquipmentStockController extends Controller
                     $photoPath = 'uploads/equipment/' . $photoName;
                 }
 
-                EquipmentStock::create([
+                $createdStock = EquipmentStock::create([
                     'equipment_id' => $equipment->id,
                     'code' => $validated['code'] ?: $this->generateRandomCode(),
                     'brand' => $validated['brand'],
@@ -349,6 +359,14 @@ class EquipmentStockController extends Controller
                     'location' => $validated['location'] ?? 'Depo',
                     'photo' => $photoPath
                 ]);
+
+                // Ekipman resimleri tablosuna da kaydet
+                if ($photoPath) {
+                    EquipmentImage::create([
+                        'equipment_id' => $equipment->id,
+                        'image' => $photoPath,
+                    ]);
+                }
             }
 
             \Log::info('Redirecting with success message');
@@ -718,11 +736,20 @@ class EquipmentStockController extends Controller
                         $photoName = time() . '_' . $i . '_' . $photo->getClientOriginalName();
                         $photo->move(public_path('uploads/equipment'), $photoName);
                         $stockData['photo'] = 'uploads/equipment/' . $photoName;
+                        // Ekipman resimlerine de ekle
+                        EquipmentImage::create([
+                            'equipment_id' => $equipment->id,
+                            'image' => 'uploads/equipment/' . $photoName,
+                        ]);
                     } elseif ($useSingleImage && isset($photos[0])) {
                         $photo = $photos[0];
                         $photoName = time() . '_' . $i . '_' . $photo->getClientOriginalName();
                         $photo->move(public_path('uploads/equipment'), $photoName);
                         $stockData['photo'] = 'uploads/equipment/' . $photoName;
+                        EquipmentImage::create([
+                            'equipment_id' => $equipment->id,
+                            'image' => 'uploads/equipment/' . $photoName,
+                        ]);
                     }
                     
                     $equipment->stocks()->create($stockData);
@@ -738,6 +765,10 @@ class EquipmentStockController extends Controller
                     $photoName = time() . '_0_' . $photo->getClientOriginalName();
                     $photo->move(public_path('uploads/equipment'), $photoName);
                     $photoPath = 'uploads/equipment/' . $photoName;
+                    EquipmentImage::create([
+                        'equipment_id' => $equipment->id,
+                        'image' => $photoPath,
+                    ]);
                 }
 
                 if ($existingAggregate) {

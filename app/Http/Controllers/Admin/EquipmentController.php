@@ -20,7 +20,8 @@ class EquipmentController extends Controller
         // Individual tracking kontrolü: Ayrı takip özelliği olan ekipmanlar için her kayıt ayrı gösterilir
         $equipmentStocks = EquipmentStock::with(['equipment.category'])
             ->orderBy('id', 'asc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('admin.equipment.index', compact('equipmentStocks', 'pageTitle'));
     }
@@ -66,7 +67,7 @@ class EquipmentController extends Controller
             });
         }
 
-        $equipmentStocks = $query->orderBy('id', 'asc')->paginate(15);
+        $equipmentStocks = $query->orderBy('id', 'asc')->paginate(15)->withQueryString();
 
         return response()->json([
             'data' => $equipmentStocks->items(),
@@ -117,7 +118,12 @@ class EquipmentController extends Controller
      */
     public function show($id)
     {
-        $equipmentStock = EquipmentStock::with(['equipment.category'])->findOrFail($id);
+        $equipmentStock = EquipmentStock::with(['equipment.category', 'equipment.images'])->findOrFail($id);
+        
+        // Ekipman resimlerini de ekle
+        if ($equipmentStock->equipment) {
+            $equipmentStock->equipment->load('images');
+        }
         
         return response()->json([
             'success' => true,
