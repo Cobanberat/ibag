@@ -316,7 +316,7 @@
                                 <td>
                                     <span class="fw-bold">{{ $stock->name ?? '-' }}</span>
                                     <br><small class="text-muted">{{ $stock->code ?? '-' }}</small>
-                                </td>   
+                                </td>
                                 <td>{{ $stock->category->name ?? '-' }}</td>
                                 <td>
                                     <span class="badge bg-info">{{ $stock->unit_type_label }}</span>

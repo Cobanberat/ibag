@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Admin\EquipmentStockController;
+use App\Http\Controllers\Admin\AssignmentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -49,6 +50,9 @@ Route::get('/admin/Ekle', function () {
 // Stok ekleme işlemi
 Route::post('/admin/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
 
+Route::post('/assignments/store', [AssignmentController::class, 'store'])->name('assignments.store');
+
+
 Route::get('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');
 Route::get('/admin/kategori/data', [App\Http\Controllers\Admin\CategoryController::class, 'getCategoryData'])->name('admin.kategori.data');
 Route::post('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.kategori.store');
@@ -62,9 +66,7 @@ Route::get('/admin/kategori/export/csv', [App\Http\Controllers\Admin\CategoryCon
 //     return view('admin.equipment.Features');
 // })->name('admin.ekipman');
 
-Route::get('/admin/gidenGelen', function () {
-    return view('admin.comingGoing.index');
-})->name('admin.gidenGelen');
+
 
 Route::get('/admin/ekipmanDurumu', function () {
     return view('admin.equipment.Status');
@@ -106,9 +108,31 @@ Route::get('/admin/kullanicilar', function () {
     return view('admin.users.index');
 })->name('admin.users');
 
-Route::get('/admin/isEkle', function () {
-    return view('admin.works.index');
-})->name('admin.isEkle');
+
+Route::middleware('auth')->group(function() {
+    Route::get('/admin/teslim', [App\Http\Controllers\Admin\AssignmentController::class, 'myAssignments'])->name('admin.teslimEt');
+    Route::put('/admin/teslim-et/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'returnAssignment'])->name('admin.teslimAl');
+});
+
+
+
+Route::get('admin/gidenGelen', [AssignmentController::class, 'comingGoing'])
+    ->name('admin.gidenGelen')
+    ->middleware('auth');
+
+Route::post('admin/finish/{id}', [AssignmentController::class, 'finish'])
+    ->name('assignments.finish')
+    ->middleware('auth');
+
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'create'])
+        ->name('admin.zimmetAl');
+
+    Route::post('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'store'])
+        ->name('admin.zimmetAl.store');
+});
+
 
 Route::get('/admin/ekipmanlar', [App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipments');
 Route::get('/admin/ekipmanlar/data', [App\Http\Controllers\Admin\EquipmentController::class, 'getEquipmentData'])->name('admin.equipments.data');

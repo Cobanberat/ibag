@@ -15,7 +15,8 @@
     <link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/favicon.ico" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
 
     <link rel="canonical" href="https://demo-basic.adminkit.io/" />
     <!-- Bootstrap 5 CSS -->
@@ -26,6 +27,11 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css"/>
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- JS (Blade dosyasının altına ekle) -->
+
 
    
 
@@ -59,10 +65,16 @@
                         <span class="align-middle">Ana Sayfa</span>
                     </a>
                 </li>
-                <li class="sidebar-item{{ request()->routeIs('admin.isEkle') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.isEkle') }}">
+                <li class="sidebar-item{{ request()->routeIs('admin.zimmetAl') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.zimmetAl') }}">
                         <i class="align-middle" data-feather="plus-circle"></i>
-                        <span class="align-middle">İş Ekle</span>
+                        <span class="align-middle">Zimmet Al</span>
+                    </a>
+                </li>
+                <li class="sidebar-item{{ request()->routeIs('admin.teslimEt') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.teslimEt') }}">
+                        <i class="align-middle" data-feather="corner-up-right"></i>
+                        <span class="align-middle">Teslim Et</span>
                     </a>
                 </li>
 
@@ -212,7 +224,7 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{route('admin.profile')}}"><i
+                            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.profile') }}"><i
                                         class="fas fa-user-circle fa-fw"></i> Profilim</a></li>
                             <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i
                                         class="fas fa-cog fa-fw"></i> Ayarlar</a></li>
@@ -233,7 +245,7 @@
 
         <!-- Toast Container -->
         <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-            @if(session('success'))
+            @if (session('success'))
                 <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header bg-success text-white">
                         <i class="fas fa-check-circle me-2"></i>
@@ -246,7 +258,7 @@
                 </div>
             @endif
             
-            @if(session('error'))
+            @if (session('error'))
                 <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header bg-danger text-white">
                         <i class="fas fa-exclamation-circle me-2"></i>
@@ -259,7 +271,7 @@
                 </div>
             @endif
             
-            @if(session('warning'))
+            @if (session('warning'))
                 <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header bg-warning text-dark">
                         <i class="fas fa-exclamation-triangle me-2"></i>
@@ -269,263 +281,266 @@
                     <div class="toast-body">
                         {{ session('warning') }}
                     </div>
-                </div>
-            @endif
+                </div> @endif
         </div>
 
         <footer class="footer">
-            <div class="container-fluid">
-                <div class="row text-muted">
-                    <div class="col-12 text-center">
-                        <p class="mb-0">
-                            &copy; {{ date('Y') }} <strong>İBag</strong> | Tüm hakları saklıdır.
-                        </p>
-                    </div>
-                </div>
+    <div class="container-fluid">
+        <div class="row text-muted">
+            <div class="col-12 text-center">
+                <p class="mb-0">
+                    &copy; {{ date('Y') }} <strong>İBag</strong> | Tüm hakları saklıdır.
+                </p>
             </div>
-        </footer>
+        </div>
     </div>
-</div>
-</div>
+    </footer>
+    </div>
+    </div>
+    </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    var canvasLine = document.getElementById("chartjs-dashboard-line");
-    if (canvasLine) {
-        var ctx = canvasLine.getContext("2d");
-        var gradient = ctx.createLinearGradient(0, 0, 0, 225);
-        gradient.addColorStop(0, "rgba(215, 227, 244, 1)");
-        gradient.addColorStop(1, "rgba(215, 227, 244, 0)");
-        new Chart(canvasLine, {
-            type: "line",
-            data: {
-                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-                    "Dec"
-                ],
-                datasets: [{
-                    label: "Sales ($)",
-                    fill: true,
-                    backgroundColor: gradient,
-                    borderColor: window.theme.primary,
-                    data: [
-                        2115,
-                        1562,
-                        1584,
-                        1892,
-                        1587,
-                        1923,
-                        2566,
-                        2448,
-                        2805,
-                        3438,
-                        2917,
-                        3327
-                    ]
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                legend: {
-                    display: false
-                },
-                tooltips: {
-                    intersect: false
-                },
-                hover: {
-                    intersect: true
-                },
-                plugins: {
-                    filler: {
-                        propagate: false
-                    }
-                },
-                scales: {
-                    xAxes: [{
-                        reverse: true,
-                        gridLines: {
-                            color: "rgba(0,0,0,0.0)"
-                        }
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            stepSize: 1000
-                        },
-                        display: true,
-                        borderDash: [3, 3],
-                        gridLines: {
-                            color: "rgba(0,0,0,0.0)"
-                        }
-                    }]
-                }
-            }
-        });
-    }
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    var canvasPie = document.getElementById("chartjs-dashboard-pie");
-    if (canvasPie) {
-        new Chart(canvasPie, {
-            type: "pie",
-            data: {
-                labels: ["Chrome", "Firefox", "IE"],
-                datasets: [{
-                    data: [4306, 3801, 1689],
-                    backgroundColor: [
-                        window.theme.primary,
-                        window.theme.warning,
-                        window.theme.danger
-                    ],
-                    borderWidth: 5
-                }]
-            },
-            options: {
-                responsive: !window.MSInputMethodContext,
-                maintainAspectRatio: false,
-                legend: {
-                    display: false
-                },
-                cutoutPercentage: 75
-            }
-        });
-    }
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    var canvasBar = document.getElementById("chartjs-dashboard-bar");
-    if (canvasBar) {
-        new Chart(canvasBar, {
-            type: "bar",
-            data: {
-                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-                    "Dec"
-                ],
-                datasets: [{
-                    label: "This year",
-                    backgroundColor: window.theme.primary,
-                    borderColor: window.theme.primary,
-                    hoverBackgroundColor: window.theme.primary,
-                    hoverBorderColor: window.theme.primary,
-                    data: [54, 67, 41, 55, 62, 45, 55, 73, 60, 76, 48, 79],
-                    barPercentage: .75,
-                    categoryPercentage: .5
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                legend: {
-                    display: false
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvasLine = document.getElementById("chartjs-dashboard-line");
+            if (canvasLine) {
+                var ctx = canvasLine.getContext("2d");
+                var gradient = ctx.createLinearGradient(0, 0, 0, 225);
+                gradient.addColorStop(0, "rgba(215, 227, 244, 1)");
+                gradient.addColorStop(1, "rgba(215, 227, 244, 0)");
+                new Chart(canvasLine, {
+                    type: "line",
+                    data: {
+                        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
+                            "Nov",
+                            "Dec"
+                        ],
+                        datasets: [{
+                            label: "Sales ($)",
+                            fill: true,
+                            backgroundColor: gradient,
+                            borderColor: window.theme.primary,
+                            data: [
+                                2115,
+                                1562,
+                                1584,
+                                1892,
+                                1587,
+                                1923,
+                                2566,
+                                2448,
+                                2805,
+                                3438,
+                                2917,
+                                3327
+                            ]
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: {
                             display: false
                         },
-                        stacked: false,
-                        ticks: {
-                            stepSize: 20
+                        tooltips: {
+                            intersect: false
+                        },
+                        hover: {
+                            intersect: true
+                        },
+                        plugins: {
+                            filler: {
+                                propagate: false
+                            }
+                        },
+                        scales: {
+                            xAxes: [{
+                                reverse: true,
+                                gridLines: {
+                                    color: "rgba(0,0,0,0.0)"
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    stepSize: 1000
+                                },
+                                display: true,
+                                borderDash: [3, 3],
+                                gridLines: {
+                                    color: "rgba(0,0,0,0.0)"
+                                }
+                            }]
                         }
-                    }],
-                    xAxes: [{
-                        stacked: false,
-                        gridLines: {
-                            color: "transparent"
-                        }
-                    }]
-                }
+                    }
+                });
             }
         });
-    }
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    var worldMap = document.getElementById("world_map");
-    if (worldMap && typeof jsVectorMap !== 'undefined') {
-        var markers = [{
-                coords: [31.230391, 121.473701],
-                name: "Shanghai"
-            },
-            {
-                coords: [28.704060, 77.102493],
-                name: "Delhi"
-            },
-            {
-                coords: [6.524379, 3.379206],
-                name: "Lagos"
-            },
-            {
-                coords: [35.689487, 139.691711],
-                name: "Tokyo"
-            },
-            {
-                coords: [23.129110, 113.264381],
-                name: "Guangzhou"
-            },
-            {
-                coords: [40.7127837, -74.0059413],
-                name: "New York"
-            },
-            {
-                coords: [34.052235, -118.243683],
-                name: "Los Angeles"
-            },
-            {
-                coords: [41.878113, -87.629799],
-                name: "Chicago"
-            },
-            {
-                coords: [51.507351, -0.127758],
-                name: "London"
-            },
-            {
-                coords: [40.416775, -3.703790],
-                name: "Madrid "
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvasPie = document.getElementById("chartjs-dashboard-pie");
+            if (canvasPie) {
+                new Chart(canvasPie, {
+                    type: "pie",
+                    data: {
+                        labels: ["Chrome", "Firefox", "IE"],
+                        datasets: [{
+                            data: [4306, 3801, 1689],
+                            backgroundColor: [
+                                window.theme.primary,
+                                window.theme.warning,
+                                window.theme.danger
+                            ],
+                            borderWidth: 5
+                        }]
+                    },
+                    options: {
+                        responsive: !window.MSInputMethodContext,
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 75
+                    }
+                });
             }
-        ];
-        var map = new jsVectorMap({
-            map: "world",
-            selector: "#world_map",
-            zoomButtons: true,
-            markers: markers,
-            markerStyle: {
-                initial: {
-                    r: 9,
-                    strokeWidth: 7,
-                    stokeOpacity: .4,
-                    fill: window.theme.primary
-                },
-                hover: {
-                    fill: window.theme.primary,
-                    stroke: window.theme.primary
-                }
-            },
-            zoomOnScroll: false
         });
-        window.addEventListener("resize", () => {
-            map.updateSize();
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvasBar = document.getElementById("chartjs-dashboard-bar");
+            if (canvasBar) {
+                new Chart(canvasBar, {
+                    type: "bar",
+                    data: {
+                        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
+                            "Nov",
+                            "Dec"
+                        ],
+                        datasets: [{
+                            label: "This year",
+                            backgroundColor: window.theme.primary,
+                            borderColor: window.theme.primary,
+                            hoverBackgroundColor: window.theme.primary,
+                            hoverBorderColor: window.theme.primary,
+                            data: [54, 67, 41, 55, 62, 45, 55, 73, 60, 76, 48, 79],
+                            barPercentage: .75,
+                            categoryPercentage: .5
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: false
+                        },
+                        scales: {
+                            yAxes: [{
+                                gridLines: {
+                                    display: false
+                                },
+                                stacked: false,
+                                ticks: {
+                                    stepSize: 20
+                                }
+                            }],
+                            xAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    color: "transparent"
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
         });
-    }
-});
-</script>
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var worldMap = document.getElementById("world_map");
+            if (worldMap && typeof jsVectorMap !== 'undefined') {
+                var markers = [{
+                        coords: [31.230391, 121.473701],
+                        name: "Shanghai"
+                    },
+                    {
+                        coords: [28.704060, 77.102493],
+                        name: "Delhi"
+                    },
+                    {
+                        coords: [6.524379, 3.379206],
+                        name: "Lagos"
+                    },
+                    {
+                        coords: [35.689487, 139.691711],
+                        name: "Tokyo"
+                    },
+                    {
+                        coords: [23.129110, 113.264381],
+                        name: "Guangzhou"
+                    },
+                    {
+                        coords: [40.7127837, -74.0059413],
+                        name: "New York"
+                    },
+                    {
+                        coords: [34.052235, -118.243683],
+                        name: "Los Angeles"
+                    },
+                    {
+                        coords: [41.878113, -87.629799],
+                        name: "Chicago"
+                    },
+                    {
+                        coords: [51.507351, -0.127758],
+                        name: "London"
+                    },
+                    {
+                        coords: [40.416775, -3.703790],
+                        name: "Madrid "
+                    }
+                ];
+                var map = new jsVectorMap({
+                    map: "world",
+                    selector: "#world_map",
+                    zoomButtons: true,
+                    markers: markers,
+                    markerStyle: {
+                        initial: {
+                            r: 9,
+                            strokeWidth: 7,
+                            stokeOpacity: .4,
+                            fill: window.theme.primary
+                        },
+                        hover: {
+                            fill: window.theme.primary,
+                            stroke: window.theme.primary
+                        }
+                    },
+                    zoomOnScroll: false
+                });
+                window.addEventListener("resize", () => {
+                    map.updateSize();
+                });
+            }
+        });
+    </script>
 
-@stack('scripts')
-</body>
+    @stack('scripts')
+    </body>
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Flatpickr -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<!-- xlsx (Excel için) -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- xlsx (Excel için) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 
 
 </html>
@@ -630,7 +645,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (window.feather) {
             feather.replace();
         }
-        
+
         // Toast otomatik kaybolma
         document.addEventListener('DOMContentLoaded', function() {
             var toasts = document.querySelectorAll('.toast');
@@ -643,5 +658,3 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     </script>
 @endpush
-
-

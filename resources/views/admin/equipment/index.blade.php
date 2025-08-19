@@ -86,7 +86,7 @@
         </div>
         <div class="col-md-3">
             <select class="form-select w-auto" id="trackingFilter" style="max-width:180px">
-                <option value="">Tüm Takip Türleri</option>
+                <option value="">Tüm Takip Türleri</option>  
                 <option value="1">Ayrı Takip</option>
                 <option value="0">Toplu Takip</option>
             </select>
