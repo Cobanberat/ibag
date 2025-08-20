@@ -62,38 +62,23 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="row mb-4 g-2">
-        <div class="col-md-3">
-            <input type="text" class="form-control w-auto" placeholder="Ara..." id="searchInput" style="max-width:200px;">
+        <div class="col-md-4">
+            <input type="text" class="form-control" placeholder="Ara..." id="searchInput">
         </div>
         <div class="col-md-3">
-            <select class="form-select w-auto" id="typeFilter" style="max-width:180px;">
-                <option value="">Tüm Ürün Cinsleri</option>
-                <option>2.5 KW Benzinli Jeneratör</option>
-                <option>3.5 KW Benzinli Jeneratör</option>
-                <option>4.4 KW Benzinli Jeneratör</option>
-                <option>7.5 KW Dizel Jeneratör</option>
+            <select class="form-select" id="categoryFilter">
+                <option value="">Tüm Kategoriler</option>
+                @foreach($categories ?? [] as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
             </select>
         </div>
         <div class="col-md-3">
-            <input type="text" class="form-control w-auto" placeholder="Marka..." id="brandFilter" style="max-width:180px;">
+            <input type="text" class="form-control" placeholder="Ekipman Kodu" id="codeFilter">
         </div>
-        <div class="col-md-3">
-            <select class="form-select w-auto" id="statusFilter" style="max-width:160px">
-                <option value="">Tüm Durumlar</option>
-                <option>Sıfır</option>
-                <option>Açık</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <select class="form-select w-auto" id="trackingFilter" style="max-width:180px">
-                <option value="">Tüm Takip Türleri</option>  
-                <option value="1">Ayrı Takip</option>
-                <option value="0">Toplu Takip</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <button type="button" class="btn btn-outline-secondary" id="clearFilters" style="max-width:180px;">
-                <i class="fas fa-times"></i> Filtreleri Temizle
+        <div class="col-md-2">
+            <button type="button" class="btn btn-outline-secondary" id="clearFilters">
+                <i class="fas fa-times"></i> Temizle
             </button>
         </div>
     </div>
@@ -113,7 +98,6 @@
                             <th>Birim Türü</th>
                             <th>Adet/Takip</th>
                             <th>Durum</th>
-                            <th>Lokasyon</th>
                             <th>Tarih</th>
                             <th>Not</th>
                             <th>İşlemler</th>
@@ -121,7 +105,7 @@
                     </thead>
                     <tbody>
                         @forelse($equipmentStocks as $index => $stock)
-                            <tr data-id="{{ $stock->id }}">
+                            <tr data-id="{{ $stock->id }}" data-category="{{ $stock->equipment->category->id ?? '' }}">
                                 <td>{{ ($equipmentStocks->currentPage() - 1) * $equipmentStocks->perPage() + $index + 1 }}</td>
                                 <td class="editable-cell" data-field="code" data-id="{{ $stock->id }}">{{ $stock->code ?? '-' }}</td>
                                 <td class="editable-cell" data-field="equipment_name" data-id="{{ $stock->id }}">{{ $stock->equipment->name ?? '-' }}</td>
@@ -156,12 +140,11 @@
                                         {{ $stock->quantity ?? 0 }}
                                     @endif
                                 </td>
-                                <td class="editable-cell" data-field="status" data-id="{{ $stock->id }}">{{ $stock->status ?? '-' }}</td>
-                                <td class="editable-cell" data-field="location" data-id="{{ $stock->id }}">{{ $stock->location ?? '-' }}</td>
+                                <td>{{ $stock->status ?? '-' }}</td>
                                 <td>{{ $stock->created_at ? $stock->created_at->format('d.m.Y') : '-' }}</td>
                                 <td class="editable-cell" data-field="note" data-id="{{ $stock->id }}">{{ $stock->note ?? '-' }}</td>
                                 <td>
-                                    <div class="btn-group" role="group">
+                                    <div class="d-flex gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="showDetail({{ $stock->id }})">
                                             <i class="fas fa-eye"></i>
                                         </button>
@@ -173,7 +156,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="14" class="text-center py-4">
+                                <td colspan="13" class="text-center py-4">
                                     <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz ekipman bulunmuyor</p>
                                 </td>

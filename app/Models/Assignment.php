@@ -9,6 +9,7 @@ class Assignment extends Model
         'user_id',
         'note',
         'status',
+        'damage_note',
     ];
 
     // Atama ile kullanıcı ilişkisi

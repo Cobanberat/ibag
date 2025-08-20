@@ -50,7 +50,7 @@ Route::get('/admin/Ekle', function () {
 // Stok ekleme işlemi
 Route::post('/admin/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
 
-Route::post('/assignments/store', [AssignmentController::class, 'store'])->name('assignments.store');
+
 
 
 Route::get('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');

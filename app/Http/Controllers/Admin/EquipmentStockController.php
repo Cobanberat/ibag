@@ -43,7 +43,16 @@ class EquipmentStockController extends Controller
         
         // Her ekipman için stok miktarını ve durumunu hesaplayalım
         $equipmentsWithStock = $equipments->map(function($equipment) {
-            $totalQuantity = $equipment->stocks()->sum('quantity') ?? 0;
+            // Tek takip ekipmanlarda sadece aktif stokları say
+            if ($equipment->individual_tracking) {
+                $totalQuantity = $equipment->stocks()
+                    ->whereIn('status', ['Aktif', 'aktif', 'Sıfır', 'sıfır', 'available', 'Available'])
+                    ->count();
+            } else {
+                // Çoklu takip ekipmanlarda quantity toplamını al
+                $totalQuantity = $equipment->stocks()->sum('quantity') ?? 0;
+            }
+            
             $criticalLevel = $equipment->critical_level ?? 3;
             
             // Stok durumu hesaplama
@@ -116,7 +125,16 @@ class EquipmentStockController extends Controller
             
             // Her ekipman için stok miktarını ve durumunu hesaplayalım
             $equipmentsWithStock = $equipments->map(function($equipment) {
-                $totalQuantity = $equipment->stocks()->sum('quantity') ?? 0;
+                // Tek takip ekipmanlarda sadece aktif stokları say
+                if ($equipment->individual_tracking) {
+                    $totalQuantity = $equipment->stocks()
+                        ->whereIn('status', ['Aktif', 'aktif', 'Sıfır', 'sıfır', 'available', 'Available'])
+                        ->count();
+                } else {
+                    // Çoklu takip ekipmanlarda quantity toplamını al
+                    $totalQuantity = $equipment->stocks()->sum('quantity') ?? 0;
+                }
+                
                 $criticalLevel = $equipment->critical_level ?? 3;
                 
                 // Stok durumu hesaplama
@@ -160,7 +178,7 @@ class EquipmentStockController extends Controller
             $filteredEquipments = $equipmentsWithStock;
 
             // Search filter
-            if ($request->has('search') && !empty($request->search)) {
+            if ($request->has('search') && $request->search !== '') {
                 $search = $request->search;
                 $filteredEquipments = $filteredEquipments->filter(function($equipment) use ($search) {
                     return stripos($equipment->name, $search) !== false || 
@@ -169,7 +187,7 @@ class EquipmentStockController extends Controller
             }
 
             // Category filter
-            if ($request->has('category') && !empty($request->category)) {
+            if ($request->has('category') && $request->category !== '') {
                 $filteredEquipments = $filteredEquipments->filter(function($equipment) use ($request) {
                     return $equipment->category_id == $request->category;
                 });
@@ -624,7 +642,15 @@ class EquipmentStockController extends Controller
         }
 
         // Mevcut toplam stok miktarını hesapla
-        $currentTotal = $equipment->stocks()->sum('quantity');
+        if ($equipment->individual_tracking) {
+            // Tek takip ekipmanlarda sadece aktif stokları say
+            $currentTotal = $equipment->stocks()
+                ->whereIn('status', ['Aktif', 'aktif', 'Sıfır', 'sıfır', 'available', 'Available'])
+                ->count();
+        } else {
+            // Çoklu takip ekipmanlarda quantity toplamını al
+            $currentTotal = $equipment->stocks()->sum('quantity');
+        }
 
         if ($validated['type'] === 'out') {
             if ($equipment->individual_tracking) {
@@ -828,7 +854,15 @@ class EquipmentStockController extends Controller
         }
 
         // Güncellenmiş toplam miktarı hesapla
-        $newTotal = $equipment->stocks()->sum('quantity');
+        if ($equipment->individual_tracking) {
+            // Tek takip ekipmanlarda sadece aktif stokları say
+            $newTotal = $equipment->stocks()
+                ->whereIn('status', ['Aktif', 'aktif', 'Sıfır', 'sıfır', 'available', 'Available'])
+                ->count();
+        } else {
+            // Çoklu takip ekipmanlarda quantity toplamını al
+            $newTotal = $equipment->stocks()->sum('quantity');
+        }
 
         return response()->json([
             'success' => true,
@@ -921,14 +955,46 @@ class EquipmentStockController extends Controller
     public function getStatistics()
     {
         $totalEquipments = Equipment::count();
-        $totalQuantity = EquipmentStock::sum('quantity');
-        $lowStockCount = Equipment::withCount(['stocks as total_quantity' => function($query) {
-            $query->select(\DB::raw('SUM(quantity)'));
-        }])->having('total_quantity', '<=', \DB::raw('critical_level'))
-          ->having('total_quantity', '>', 0)->count();
-        $emptyStockCount = Equipment::withCount(['stocks as total_quantity' => function($query) {
-            $query->select(\DB::raw('SUM(quantity)'));
-        }])->having('total_quantity', 0)->count();
+        
+        // Toplam stok miktarını hesapla (tek/çoklu takip ayrımı ile)
+        $totalQuantity = 0;
+        $equipments = Equipment::with('stocks')->get();
+        
+        foreach ($equipments as $equipment) {
+            if ($equipment->individual_tracking) {
+                // Tek takip ekipmanlarda sadece aktif stokları say
+                $totalQuantity += $equipment->stocks()
+                    ->whereIn('status', ['Aktif', 'aktif', 'Sıfır', 'sıfır', 'available', 'Available'])
+                    ->count();
+            } else {
+                // Çoklu takip ekipmanlarda quantity toplamını al
+                $totalQuantity += $equipment->stocks()->sum('quantity') ?? 0;
+            }
+        }
+        
+        // Az stok ve boş stok sayılarını hesapla
+        $lowStockCount = 0;
+        $emptyStockCount = 0;
+        
+        foreach ($equipments as $equipment) {
+            if ($equipment->individual_tracking) {
+                // Tek takip ekipmanlarda sadece aktif stokları say
+                $stockCount = $equipment->stocks()
+                    ->whereIn('status', ['Aktif', 'aktif', 'Sıfır', 'sıfır', 'available', 'Available'])
+                    ->count();
+            } else {
+                // Çoklu takip ekipmanlarda quantity toplamını al
+                $stockCount = $equipment->stocks()->sum('quantity') ?? 0;
+            }
+            
+            $criticalLevel = $equipment->critical_level ?? 3;
+            
+            if ($stockCount == 0) {
+                $emptyStockCount++;
+            } elseif ($stockCount <= $criticalLevel) {
+                $lowStockCount++;
+            }
+        }
 
         return response()->json([
             'success' => true,

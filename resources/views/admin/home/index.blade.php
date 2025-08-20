@@ -14,7 +14,7 @@
                     <span class="fw-bold fs-5"><i class="fa fa-bolt text-warning me-2"></i>Hızlı İşlemler</span>
                 </div>
                 <div class="card-body d-flex flex-wrap justify-content-center gap-3 p-3">
-                    <a href="{{route('admin.equipments')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Yeni ekipman ekle">
+                    <a href="{{route('stock.create')}}" class="quick-action-btn" data-bs-toggle="tooltip" title="Yeni ekipman ekle">
                         <div class="quick-action-icon bg-gradient-primary"><i class="fa fa-plus-circle"></i></div>
                         <div class="quick-action-label">Ekipman Ekle</div>
                     </a>

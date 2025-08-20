@@ -23,7 +23,16 @@ class EquipmentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.equipment.index', compact('equipmentStocks', 'pageTitle'));
+        // Kategorileri çek
+        $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
+        
+        // Ekipman listesini çek (tekrar olmadan)
+        $equipmentList = Equipment::select('id', 'name')
+            ->distinct()
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.equipment.index', compact('equipmentStocks', 'pageTitle', 'categories', 'equipmentList'));
     }
 
     /**
@@ -43,27 +52,24 @@ class EquipmentController extends Controller
               ->orWhere('model', 'like', "%{$search}%");
         }
 
-        // Type filter
-        if ($request->has('type') && !empty($request->type)) {
-            $query->whereHas('equipment', function($q) use ($request) {
-                $q->where('name', $request->type);
+        // Category filter
+        if ($request->has('category') && $request->category !== '') {
+            $query->whereHas('equipment.category', function($q) use ($request) {
+                $q->where('id', $request->category);
             });
         }
 
-        // Brand filter
-        if ($request->has('brand') && !empty($request->brand)) {
-            $query->where('brand', 'like', "%{$request->brand}%");
-        }
-
-        // Status filter
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('status', $request->status);
+        // Equipment filter
+        if ($request->has('equipment') && !empty($request->equipment)) {
+            $query->whereHas('equipment', function($q) use ($request) {
+                $q->where('id', $request->equipment);
+            });
         }
 
         // Individual tracking filter
-        if ($request->has('individual_tracking') && $request->individual_tracking !== '') {
+        if ($request->has('tracking') && $request->tracking !== '') {
             $query->whereHas('equipment', function($q) use ($request) {
-                $q->where('individual_tracking', $request->individual_tracking);
+                $q->where('individual_tracking', $request->tracking);
             });
         }
 

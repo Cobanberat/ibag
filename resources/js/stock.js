@@ -191,10 +191,9 @@ function updateImageOptions() {
 function loadStockData(page = 1) {
     const searchValue = document.getElementById('filterSearch').value;
     const categoryValue = document.getElementById('filterCategory').value;
-    const statusValue = document.getElementById('filterStatus').value;
 
     // Eğer hiç filtre yoksa ve ilk sayfa ise, PHP ile render edilmiş veriyi kullan
-    if (page === 1 && !searchValue && !categoryValue && !statusValue) {
+    if (page === 1 && !searchValue && !categoryValue) {
         return; // PHP ile render edilmiş veriyi kullan
     }
 
@@ -211,7 +210,7 @@ function loadStockData(page = 1) {
         </tr>
     `;
 
-    fetch(`/admin/stock/data?search=${encodeURIComponent(searchValue)}&category=${encodeURIComponent(categoryValue)}&status=${encodeURIComponent(statusValue)}&page=${page}`, {
+    fetch(`/admin/stock/data?search=${encodeURIComponent(searchValue)}&category=${encodeURIComponent(categoryValue)}&page=${page}`, {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -1286,23 +1285,28 @@ document.addEventListener('DOMContentLoaded', function() {
     function debouncedSearch() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            // Sadece arama yapıldığında AJAX çağrısı yap
-            if (searchInput.value.trim() !== '') {
-                loadStockData(1);
-            }
+            // Her zaman AJAX çağrısı yap
+            loadStockData(1);
         }, 500); // 500ms bekle
     }
 
     if (searchInput) {
         searchInput.addEventListener('input', debouncedSearch);
+        // Arama input'unda silme işlemini de dinle
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                if (this.value === '') {
+                    // Arama temizlendiğinde hemen yükle
+                    loadStockData(1);
+                }
+            }
+        });
     }
 
     if (categorySelect) {
         categorySelect.addEventListener('change', () => {
-            // Sadece kategori seçildiğinde AJAX çağrısı yap
-            if (categorySelect.value !== '') {
-                loadStockData(1);
-            }
+            // Kategori seçildiğinde her zaman AJAX çağrısı yap
+            loadStockData(1);
         });
     }
 
@@ -1329,10 +1333,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Tüm filtreleri temizle
             if (searchInput) searchInput.value = '';
             if (categorySelect) categorySelect.value = '';
-            if (statusSelect) statusSelect.value = '';
             
-            // Sayfayı yenile (PHP ile render edilmiş haline dön)
-            window.location.reload();
+            // Filtreleri temizle ve tabloyu yeniden render et
+            filterStockTable();
         });
     }
 

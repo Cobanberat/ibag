@@ -6,9 +6,8 @@ function getCsrfToken() {
 // Kategori verilerini yükleme
 function loadCategoryData(page = 1) {
     const searchValue = document.getElementById('categorySearch').value;
-    const sortValue = document.getElementById('sortSelect').value;
 
-    fetch(`/admin/kategori/data?search=${encodeURIComponent(searchValue)}&sort=${encodeURIComponent(sortValue)}&page=${page}`, {
+    fetch(`/admin/kategori/data?search=${encodeURIComponent(searchValue)}&page=${page}`, {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -491,12 +490,13 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', loadCategoryData);
     }
 
-    if (sortSelect) {
-        sortSelect.addEventListener('change', loadCategoryData);
-    }
-
-    if (filterBtn) {
-        filterBtn.addEventListener('click', loadCategoryData);
+    // Clear filters butonu
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            loadCategoryData(1);
+        });
     }
 
     // Kategori ekleme

@@ -9,7 +9,10 @@ class AssignmentItem extends Model
     protected $fillable = [
         'assignment_id',
         'equipment_id',
-        'photo_path'
+        'quantity',
+        'photo_path',
+        'return_photo_path',
+        'returned_quantity'
     ];
 
     public function assignment()

@@ -16,7 +16,9 @@ class AssignmentController extends Controller
     {
         $pageTitle = "Yeni Zimmet";
 
+        // Sadece kullanılabilir ekipmanları getir
         $equipmentStocks = EquipmentStock::with(['equipment.category'])
+            ->whereIn('status', ['Sıfır', 'sıfır', 'Aktif', 'aktif', 'available', 'Available'])
             ->orderBy('id', 'asc')
             ->get();
 
@@ -29,6 +31,16 @@ class AssignmentController extends Controller
 
     public function store(Request $request)
     {
+        // Validation
+        $request->validate([
+            'equipment_id' => 'required|array',
+            'equipment_id.*' => 'required|exists:equipments,id',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|integer|min:1',
+            'equipment_photo' => 'required|array',
+            'equipment_photo.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
         $assignment = Assignment::create([
             'user_id' => auth()->id(),
             'note'    => $request->note,
@@ -37,6 +49,14 @@ class AssignmentController extends Controller
 
         foreach ($request->equipment_id as $key => $equipmentId) {
             $equipment = Equipment::find($equipmentId);
+            $quantity = (int) $request->quantity[$key];
+
+            // Basit validation - JavaScript'te zaten stok kontrolü yapılıyor
+            if ($equipment->individual_tracking && $quantity != 1) {
+                return redirect()->back()
+                    ->withErrors(['error' => "{$equipment->name} tek takip ekipmanıdır, sadece 1 adet alınabilir"])
+                    ->withInput();
+            }
 
             $filePath = null;
 
@@ -50,15 +70,36 @@ class AssignmentController extends Controller
                 $filePath = $file->store('equipment_photos', 'public');
             }
 
+            // AssignmentItem oluştur
             AssignmentItem::create([
                 'assignment_id' => $assignment->id,
                 'equipment_id'  => $equipmentId,
+                'quantity'      => $quantity,
                 'photo_path'    => $filePath,
             ]);
+
+            // Stoktan düş
+            if ($equipment->individual_tracking) {
+                // Ayrı takip - durumu "Kullanımda" yap
+                $stock = EquipmentStock::where('equipment_id', $equipmentId)->first();
+                if ($stock) {
+                    $stock->update(['status' => 'Kullanımda']);
+                }
+            } else {
+                // Toplu takip - miktarı azalt
+                $stock = EquipmentStock::where('equipment_id', $equipmentId)->first();
+                if ($stock) {
+                    $stock->quantity -= $quantity;
+                    if ($stock->quantity <= 0) {
+                        $stock->status = 'Yok';
+                    }
+                    $stock->save();
+                }
+            }
         }
 
         return redirect()->route('admin.zimmetAl')
-            ->with('success', 'Zimmet başarıyla oluşturuldu.');
+            ->with('success', 'Zimmet başarıyla oluşturuldu ve stoktan düşürüldü.');
     }
 
     public function myAssignments()
@@ -75,70 +116,119 @@ class AssignmentController extends Controller
      */
     public function returnAssignment(Request $request, $id)
     {
+        // Validation
+        $request->validate([
+            'return_photos' => 'required|array',
+            'return_photos.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'used_qty' => 'array',
+            'used_qty.*' => 'integer|min:0'
+        ]);
+
         $assignment = Assignment::where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
-
+            
         foreach ($assignment->items as $item) {
-            if ($item->equipment->individual_tracking && isset($request->return_photos[$item->id])) {
+            if (isset($request->return_photos[$item->id])) {
 
-                $usedQty = (int) $request->used_qty[$item->id]; // kullanıcı kaç tane kullandı
-                $usedQty = min($usedQty, $item->quantity);      // maksimum alınan adedi geçmesin
+                // Kullanıcıdan gelen kullanılan miktar bilgisi
+                $usedQty = isset($request->used_qty[$item->id])
+                    ? (int) $request->used_qty[$item->id]
+                    : $item->quantity; // Eğer belirtilmemişse tamamını kullanmış kabul et
+
+                // Alınan adedi aşmasın
+                $usedQty = min($usedQty, $item->quantity);
+                
+                // Geri dönen miktar
+                $returnedQty = $item->quantity - $usedQty;
 
                 // Fotoğraf yükleme
-                $file     = $request->file("return_photos.$item->id");
+                $file = $request->file("return_photos.{$item->id}");
                 $filePath = $file->store('equipment_returns', 'public');
 
                 // AssignmentItem tablosuna kaydet
                 $item->update([
                     'return_photo_path' => $filePath,
-                    'used_quantity'     => $usedQty,
+                    'returned_quantity' => $returnedQty, // Geri dönen miktar
                 ]);
 
-                // StockDepo'da status = 1 yap
-                $stocks = StockDepo::where('equipment_id', $item->equipment_id)
-                    ->where('status', 0) // aktif olmayanları bul
-                    ->limit($usedQty)
-                    ->get();
-
-                foreach ($stocks as $stock) {
-                    $stock->status = 1; // aktif
-                    $stock->save();
+                // --- Stok güncelleme ---
+                if ($item->equipment->individual_tracking) {
+                    // Ayrı takip - geri dönen ekipmanları "Aktif" durumuna getir
+                    if ($returnedQty > 0) {
+                        $stocksToReturn = EquipmentStock::where('equipment_id', $item->equipment_id)
+                            ->where('status', 'Kullanımda')
+                            ->limit($returnedQty)
+                            ->get();
+                            
+                        foreach ($stocksToReturn as $stock) {
+                            $stock->update(['status' => 'Aktif']);
+                        }
+                    }
+                    
+                    // Kullanılan (kayıp/hasarlı) ekipmanları "Arızalı" durumuna getir
+                    if ($usedQty > $returnedQty) {
+                        $damagedQty = $usedQty - $returnedQty;
+                        $stocksToDamage = EquipmentStock::where('equipment_id', $item->equipment_id)
+                            ->where('status', 'Kullanımda')
+                            ->limit($damagedQty)
+                            ->get();
+                            
+                        foreach ($stocksToDamage as $stock) {
+                            $stock->update(['status' => 'Arızalı']);
+                        }
+                    }
+                } else {
+                    // Toplu takip - geri dönen miktarı stoka ekle
+                    $stock = EquipmentStock::where('equipment_id', $item->equipment_id)->first();
+                    if ($stock) {
+                        $stock->quantity += $returnedQty;
+                        // Stok durumunu güncelle
+                        if ($stock->quantity > 0) {
+                            $stock->status = 'Aktif';
+                        } else {
+                            $stock->status = 'Yok';
+                        }
+                        $stock->save();
+                    }
                 }
             }
         }
 
-        $assignment->status = 1; // teslim tamamlandı
+        // Zimmeti tamamlandı olarak işaretle
+        $assignment->status = '1';
+        $assignment->damage_note = $request->damage_note; // Arıza notunu kaydet
         $assignment->save();
 
-        return redirect()->route('admin.teslimEt')->with('success', 'Zimmet başarıyla geri teslim edildi.');
+        return redirect()->route('admin.teslimEt')->with('success', 'Zimmet başarıyla geri teslim edildi ve stok güncellendi.');
     }
 
     public function finish($id)
     {
-        $assignment = Assignment::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        // Admin kullanıcıları için user_id kontrolünü kaldırıyoruz
+        $assignment = Assignment::findOrFail($id);
 
         $assignment->status = 1;
         $assignment->save();
 
-        return redirect()->route('admin.gidenGelen')->with('success', 'Zimmet başarıyla geri teslim edildi.');
+        return redirect()->route('admin.gidenGelen')->with('success', 'Zimmet başarıyla tamamlandı ve teslim edilenler listesine eklendi.');
     }
 
     public function comingGoing()
     {
-        // Status 0 → Gidenler
-        $gidenAssignments = Assignment::with('user')
+        // Status 0 → Zimmet alınanlar (bekleyen)
+        $gidenAssignments = Assignment::with(['user', 'items.equipment.category'])
             ->where('status', 0)
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        // Status 1 → Gelenler
-        $gelenAssignments = Assignment::with('user')
+        // Status 1 → Teslim edilenler (tamamlanan)
+        $gelenAssignments = Assignment::with(['user', 'items.equipment.category'])
             ->where('status', 1)
+            ->orderBy('updated_at', 'desc')
             ->get();
 
-        $pageTitle = 'Giden-Gelen Ekipman İşlemleri';
+        $pageTitle = 'Zimmet Takip Sistemi';
 
         return view('admin.comingGoing.index', compact('gidenAssignments', 'gelenAssignments', 'pageTitle'));
     }

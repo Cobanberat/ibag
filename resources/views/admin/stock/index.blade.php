@@ -14,22 +14,15 @@
         <i class="fas fa-exclamation-circle me-2"></i>
         Kritik seviyenin altına düşen ürünler var! Lütfen stokları kontrol edin.
     </div>
-    <div class="filter-bar mb-2">
-        <select class="form-select form-select-sm border-0" id="filterCategory" style="width: 150px; background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
-            <option value="">Kategori Seç</option>
+    <div class="filter-bar mb-2 d-flex gap-3 align-items-center">
+        <input type="text" class="form-control form-control-sm" id="filterSearch" placeholder="Ekipman ara..." style="width: 250px;">
+        <select class="form-select form-select-sm" id="filterCategory" style="width: 200px;">
+            <option value="">Tüm Kategoriler</option>
             @foreach($categories as $category)
                 <option value="{{ $category->id }}">{{ $category->name }}</option>
             @endforeach
         </select>
-        <select class="form-select form-select-sm border-0" id="filterStatus" style="width: 150px; background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
-            <option value="">Durum Seç</option>
-            <option value="sufficient">Yeterli</option>
-            <option value="low">Az Stok</option>
-            <option value="empty">Tükendi</option>
-        </select>
-        <input type="text" class="form-control form-control-sm" id="filterSearch" style="width: 200px;" placeholder="Ürün ara...">
-        <button class="btn btn-sm btn-outline-secondary" id="filterBtn"><i class="fas fa-filter"></i> Filtrele</button>
-        <button class="btn btn-sm btn-outline-warning" id="clearFiltersBtn"><i class="fas fa-times"></i> Filtreleri Temizle</button>
+        <button class="btn btn-sm btn-outline-secondary" id="clearFiltersBtn"><i class="fas fa-times"></i> Temizle</button>
         <button class="btn btn-add-product d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
             <i class="fas fa-plus"></i> Yeni Ekipman
         </button>

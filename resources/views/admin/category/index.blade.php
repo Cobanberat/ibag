@@ -13,17 +13,8 @@
     <h3 class="fw-bold mb-0">Kategoriler</h3>
 </div>
 <div class="filter-bar mb-2">
-    <input type="text" class="form-control form-control-sm" id="categorySearch" style="width: 200px;" placeholder="Kategori ara...">
-    <button class="btn btn-sm btn-outline-secondary" id="filterBtn"><i class="fas fa-search"></i> Filtrele</button>
-    <select class="form-select form-select-sm" id="sortSelect" style="width: 150px;">
-        <option value="">Sırala</option>
-        <option value="most">En Çok Ürün</option>
-        <option value="least">En Az Ürün</option>
-        <option value="newest">En Yeni</option>
-        <option value="oldest">En Eski</option>
-    </select>
-    <button class="btn btn-sm btn-outline-success"><i class="fas fa-file-excel"></i> Excel</button>
-    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i> PDF</button>
+    <input type="text" class="form-control form-control-sm" id="categorySearch" placeholder="Kategori ara..." style="width: 300px;">
+    <button class="btn btn-sm btn-outline-secondary" id="clearFilters"><i class="fas fa-times"></i> Temizle</button>
     <button class="btn btn-add-category p-2 ms-auto" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
         <i class="fas fa-plus"></i> Yeni Kategori
     </button>
