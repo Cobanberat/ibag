@@ -1310,6 +1310,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Basit filtreleme fonksiyonu
+    function filterStockTable() {
+        const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+        const categoryValue = categorySelect ? categorySelect.value : '';
+
+        // URL parametrelerini oluştur
+        const params = new URLSearchParams();
+        if (searchValue) params.append('search', searchValue);
+        if (categoryValue) params.append('category', categoryValue);
+
+        // Sayfayı yeniden yükle
+        const currentUrl = new URL(window.location);
+        currentUrl.search = params.toString();
+        window.location.href = currentUrl.toString();
+    }
+
     if (statusSelect) {
         statusSelect.addEventListener('change', () => {
             // Sadece durum seçildiğinde AJAX çağrısı yap
@@ -1321,8 +1337,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (filterBtn) {
         filterBtn.addEventListener('click', () => {
-            // Filtre butonuna basıldığında her zaman AJAX çağrısı yap
-            loadStockData(1);
+            // Filtre butonuna basıldığında basit filtreleme yap
+            filterStockTable();
         });
     }
 
@@ -1334,8 +1350,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (searchInput) searchInput.value = '';
             if (categorySelect) categorySelect.value = '';
             
-            // Filtreleri temizle ve tabloyu yeniden render et
-            filterStockTable();
+            // Filtreleri temizle ve sayfayı yenile
+            window.location.reload();
         });
     }
 

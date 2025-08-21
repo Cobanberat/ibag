@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-@vite(['resources/css/comingGoing.css'])
+@vite(['resources/css/comingGoing.css', 'resources/js/comingGoing.js'])
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">

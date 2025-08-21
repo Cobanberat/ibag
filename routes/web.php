@@ -68,17 +68,25 @@ Route::get('/admin/kategori/export/csv', [App\Http\Controllers\Admin\CategoryCon
 
 
 
-Route::get('/admin/ekipmanDurumu', function () {
-    return view('admin.equipment.Status');
-})->name('admin.equipmentStatus');
+Route::get('/admin/ekipmanDurumu', [App\Http\Controllers\Admin\EquipmentStatusController::class, 'index'])->name('admin.equipmentStatus');
+
+// Fault routes
+Route::prefix('admin/fault')->name('admin.fault.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\FaultController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\Admin\FaultController::class, 'store'])->name('store');
+    Route::get('/status', [App\Http\Controllers\Admin\FaultController::class, 'status'])->name('status');
+    Route::post('/{id}/resolve', [App\Http\Controllers\Admin\FaultController::class, 'resolve'])->name('resolve');
+    Route::patch('/{id}/status', [App\Http\Controllers\Admin\FaultController::class, 'updateStatus'])->name('updateStatus');
+});
 
 Route::get('/admin/durumKontrol', function () {
     return view('admin.statusCheck.index');
 })->name('admin.statusCheck'); 
 
-Route::get('/admin/ArizaBildirimi', function () {
-    return view('admin.fault.index');
-})->name('admin.fault');
+// Bu route kaldırıldı çünkü FaultController kullanılıyor
+// Route::get('/admin/ArizaBildirimi', function () {
+//     return view('admin.fault.index');
+// })->name('admin.fault');
 
 Route::get('/admin/Talepler', function () {
     return view('admin.requests.index');

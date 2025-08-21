@@ -196,4 +196,40 @@ class EquipmentController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Display equipment status page (maintenance and faulty equipment only)
+     */
+    public function status()
+    {
+        $pageTitle = 'Ekipman Durumu';
+        
+        // Sadece bakım gerektiren ve arızalı ekipman stoklarını çek
+        $maintenanceEquipment = EquipmentStock::with(['equipment.category'])
+            ->whereIn('status', ['bakım', 'arızalı', 'maintenance', 'faulty'])
+            ->get();
+            
+        // Kategorileri çek
+        $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
+        
+        // Sorumlu kişileri çek (users tablosundan)
+        $responsibleUsers = \App\Models\User::where('is_admin', 1)
+            ->orWhere('role', 'technician')
+            ->orderBy('name')
+            ->get();
+            
+        // Durum seçenekleri
+        $statusOptions = [
+            'bakım' => 'Bakım Gerekiyor',
+            'arızalı' => 'Arızalı'
+        ];
+
+        return view('admin.equipment.Status', compact(
+            'pageTitle', 
+            'maintenanceEquipment', 
+            'categories', 
+            'responsibleUsers',
+            'statusOptions'
+        ));
+    }
 } 

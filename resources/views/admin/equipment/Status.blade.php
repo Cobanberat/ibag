@@ -10,142 +10,188 @@
       <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Ekipman Durumu' }}</li>
   </ol>
 </nav>
-<!-- Bakım Gerektiren Ekipmanlar Butonu -->
-<div class="alert alert-warning shadow-sm d-flex align-items-center justify-content-between mb-4 mt-4 p-4" role="alert" style="border-left: 6px solid #ffc107;">
-  <div class="d-flex align-items-center">
-    <i class="fas fa-tools fa-2x me-3 text-warning"></i>
-    <div>
-      <h5 class="mb-1 fw-bold">Bakım Gerektiren Ekipmanlar</h5>
-      <div class="small text-dark">Bakım zamanı gelen ekipmanlar için hızlıca aksiyon alın.</div>
+<!-- Durum Özeti -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card bg-warning bg-opacity-10 border-warning border-0 shadow-sm">
+      <div class="card-body text-center">
+        <i class="fas fa-tools fa-3x text-warning mb-2"></i>
+        <h4 class="text-warning fw-bold">{{ $stats['bakim'] ?? 0 }}</h4>
+        <p class="text-muted mb-0">Bakım Gerektiren</p>
+      </div>
     </div>
   </div>
-  <button class="btn btn-warning d-flex align-items-center" id="bakimEkipmanModalBtn">
-    <i class="fas fa-eye me-1"></i> Bakım Gerektiren Ekipmanları Gör
-  </button>
+  <div class="col-md-4">
+    <div class="card bg-danger bg-opacity-10 border-danger border-0 shadow-sm">
+      <div class="card-body text-center">
+        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-2"></i>
+        <h4 class="text-danger fw-bold">{{ $stats['arizali'] ?? 0 }}</h4>
+        <p class="text-muted mb-0">Arızalı</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-info bg-opacity-10 border-info border-0 shadow-sm">
+      <div class="card-body text-center">
+        <i class="fas fa-clipboard-list fa-3x text-info mb-2"></i>
+        <h4 class="text-info fw-bold">{{ $stats['toplam'] ?? 0 }}</h4>
+        <p class="text-muted mb-0">Toplam</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Filtreleme Barı -->
 <div class="card shadow-sm mb-4">
   <div class="card-body">
-    <form class="row g-2 align-items-center">
+    <form class="row g-2 align-items-center" id="filterForm">
       <div class="col-md-3">
-        <input type="text" class="form-control" placeholder="Eşya Ara..."/>
+        <input type="text" class="form-control" id="searchInput" placeholder="Ekipman Ara..." value="{{ request('search') }}">
       </div>
       <div class="col-md-2">
-        <select class="form-select">
-          <option>Kategori (Tümü)</option>
-          <option>Elektrik</option>
-          <option>Medikal</option>
-          <option>İnşaat</option>
+        <select class="form-select" id="categoryFilter">
+          <option value="">Tüm Kategoriler</option>
+          @foreach($categories as $category)
+            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+              {{ $category->name }}
+            </option>
+          @endforeach
         </select>
       </div>
       <div class="col-md-2">
-        <select class="form-select">
-          <option>Durum (Tümü)</option>
-          <option>Sorunsuz</option>
-          <option>Bakım Gerekiyor</option>
-          <option>Arızalı</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <select class="form-select">
-          <option>Sorumlu (Tümü)</option>
-          <option>lazBerat</option>
-          <option>admin</option>
-          <option>teknisyen1</option>
+        <select class="form-select" id="statusFilter">
+          <option value="">Tüm Durumlar</option>
+          <option value="Bakım Gerekiyor" {{ request('status') == 'Bakım Gerekiyor' ? 'selected' : '' }}>Bakım Gerekiyor</option>
+          <option value="Arızalı" {{ request('status') == 'Arızalı' ? 'selected' : '' }}>Arızalı</option>
         </select>
       </div>
       <div class="col-md-3 text-end">
-        <button class="btn btn-primary"><i class="fas fa-search"></i> Filtrele</button>
+        <button type="button" class="btn btn-outline-secondary me-2" id="clearFilters">
+          <i class="fas fa-times"></i> Temizle
+        </button>
+        <button type="button" class="btn btn-primary" id="filterBtn">
+          <i class="fas fa-search"></i> Filtrele
+        </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Modern Eşya Kartları Grid -->
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-  <!-- Kart 1 -->
-  <div class="col">
-    <div class="equipment-card card h-100 border-0 position-relative">
-      <div class="equipment-img-box">
-        <img src="/images/gen-return.jpg" class="equipment-img" alt="Jeneratör" onerror="this.style.display='none';this.parentNode.querySelector('.equipment-placeholder').style.display='flex';">
+
+
+<!-- Modern Ekipman Kartları Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="equipmentGrid">
+  @forelse($equipmentStocks as $stock)
+    <div class="col">
+      <div class="equipment-card card h-100 border-0 position-relative">
+        <div class="equipment-img-box">
+          @php
+            $imagePath = null;
+            $imageFound = false;
+            
+            if($stock->equipment && $stock->equipment->images && $stock->equipment->images->count() > 0) {
+                $imagePath = 'storage/' . $stock->equipment->images->first()->path;
+                $imageFound = true;
+            }
+            // Sonra stock'un photo_path'ini kontrol et
+            elseif($stock->photo_path) {
+                $imagePath = 'storage/' . $stock->photo_path;
+                $imageFound = true;
+            }
+          @endphp
+          @if($imageFound)
+            <img src="{{ asset($imagePath) }}" class="equipment-img" alt="{{ $stock->equipment->name ?? 'Ekipman' }}" onerror="this.style.display='none';this.parentNode.querySelector('.equipment-placeholder').style.display='flex';">
+          @else
+            <div class="equipment-placeholder" style="display:flex;">
+              <i class="fas fa-cogs"></i>
+            </div>
+          @endif
         <div class="equipment-img-overlay"></div>
         <div class="equipment-title-bar">
-          <span class="fw-bold">Jeneratör 5kVA</span>
+            <span class="fw-bold">{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}</span>
+            @if(stripos($stock->status, 'bakım') !== false || $stock->status == 'Bakım Gerekiyor')
           <span class="equipment-status bg-warning text-dark">Bakım Gerekiyor</span>
+            @elseif(stripos($stock->status, 'arıza') !== false || stripos($stock->status, 'arızalı') !== false)
+              <span class="equipment-status bg-danger text-white">Arızalı</span>
+            @else
+              <span class="equipment-status bg-secondary text-white">{{ $stock->status }}</span>
+            @endif
+          </div>
+          @if($imageFound)
+            <div class="equipment-placeholder" style="display:none;">
+              <i class="fas fa-cogs"></i>
+            </div>
+          @endif
         </div>
-        <div class="equipment-placeholder" style="display:none;"><i class="fas fa-cogs"></i></div>
-      </div>
-      <div class="card-body">
+        <div class="card-body">
         <div class="mb-2">
-          <span class="badge bg-info text-dark me-1">Elektrik</span>
-          <span class="badge bg-primary">Acil</span>
+          @if($stock->equipment && $stock->equipment->category)
+            <span class="badge bg-info text-dark me-1">{{ $stock->equipment->category->name }}</span>
+          @endif
+          @if($stock->equipment && $stock->equipment->individual_tracking)
+            <span class="badge bg-primary">Ayrı Takip</span>
+          @endif
         </div>
-        <div class="mb-1 small"><i class="fas fa-user me-1"></i> Sorumlu: lazBerat</div>
-        <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 01.05.2025</div>
+        <div class="mb-1 small">
+          <i class="fas fa-code me-1"></i> Kod: {{ $stock->code ?? '-' }}
+        </div>
+        <div class="mb-1 small">
+          <i class="fas fa-calendar-alt me-1"></i> Güncellenme: {{ $stock->updated_at ? $stock->updated_at->format('d.m.Y') : '-' }}
+        </div>
+        @if($stock->note)
+          <div class="mb-1 small">
+            <i class="fas fa-sticky-note me-1"></i> Not: {{ Str::limit($stock->note, 50) }}
+          </div>
+        @endif
       </div>
-      <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
-        <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="1"><i class="fas fa-eye"></i> Detay</button>
-        <button class="btn btn-warning btn-sm ms-2 talep-olustur-btn" data-equipment="Jeneratör 5kVA"><i class="fas fa-plus"></i> Talep Oluştur</button>
+        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
+          <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="{{ $stock->id }}">
+            <i class="fas fa-eye"></i> Detay
+          </button>
+          @if(stripos($stock->status, 'arıza') !== false || stripos($stock->status, 'arızalı') !== false)
+            @if(!$stock->equipment || !$stock->equipment->individual_tracking)
+              <button class="btn btn-success btn-sm ariza-giderildi-btn" data-eid="{{ $stock->id }}">
+                <i class="fas fa-check"></i> Arıza Giderildi
+              </button>
+            @endif
+          @endif
+                     @if(!$stock->equipment || !$stock->equipment->individual_tracking)
+             @if(stripos($stock->status, 'arıza') !== false || stripos($stock->status, 'arızalı') !== false)
+               <button class="btn btn-success btn-sm ariza-giderildi-btn" data-eid="{{ $stock->id }}" data-equipment="{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}">
+                 <i class="fas fa-check"></i> Arıza Giderildi
+               </button>
+             @elseif(stripos($stock->status, 'bakım') !== false)
+               <button class="btn btn-success btn-sm bakim-giderildi-btn" data-eid="{{ $stock->id }}" data-equipment="{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}">
+                 <i class="fas fa-tools"></i> Bakım Giderildi
+               </button>
+             @endif
+           @endif
+        </div>
       </div>
     </div>
-  </div>
-  <!-- Kart 2 -->
-  <div class="col">
-    <div class="equipment-card card h-100 border-0 position-relative">
-      <div class="equipment-img-box">
-        <img src="/images/oksijen.jpg" class="equipment-img" alt="Oksijen" onerror="this.style.display='none';this.parentNode.querySelector('.equipment-placeholder').style.display='flex';">
-        <div class="equipment-img-overlay"></div>
-        <div class="equipment-title-bar">
-          <span class="fw-bold">Oksijen Konsantratörü</span>
-          <span class="equipment-status bg-success text-white">Sorunsuz</span>
-        </div>
-        <div class="equipment-placeholder" style="display:none;"><i class="fas fa-lungs"></i></div>
-      </div>
-      <div class="card-body">
-        <div class="mb-2">
-          <span class="badge bg-info text-dark me-1">Medikal</span>
-        </div>
-        <div class="mb-1 small"><i class="fas fa-user me-1"></i> Sorumlu: admin</div>
-        <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 10.05.2025</div>
-      </div>
-      <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
-        <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="2"><i class="fas fa-eye"></i> Detay</button>
-        <button class="btn btn-warning btn-sm ms-2 talep-olustur-btn" data-equipment="Oksijen Konsantratörü"><i class="fas fa-plus"></i> Talep Oluştur</button>
+  @empty
+    <div class="col-12">
+      <div class="text-center py-5">
+        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Bakım veya Arıza Gerektiren Ekipman Bulunamadı</h5>
+        <p class="text-muted">Tüm ekipmanlar sorunsuz durumda görünüyor.</p>
       </div>
     </div>
-  </div>
-  <!-- Kart 3 -->
-  <div class="col">
-    <div class="equipment-card card h-100 border-0 position-relative">
-      <div class="equipment-img-box">
-        <img src="/images/hilti.jpg" class="equipment-img" alt="Hilti" onerror="this.style.display='none';this.parentNode.querySelector('.equipment-placeholder').style.display='flex';">
-        <div class="equipment-img-overlay"></div>
-        <div class="equipment-title-bar">
-          <span class="fw-bold">Hilti Kırıcı</span>
-          <span class="equipment-status bg-danger text-white">Arızalı</span>
-        </div>
-        <div class="equipment-placeholder" style="display:none;"><i class="fas fa-hammer"></i></div>
-      </div>
-      <div class="card-body">
-        <div class="mb-2">
-          <span class="badge bg-info text-dark me-1">İnşaat</span>
-        </div>
-        <div class="mb-1 small"><i class="fas fa-user me-1"></i> Sorumlu: teknisyen1</div>
-        <div class="mb-1 small"><i class="fas fa-calendar-alt me-1"></i> Son Bakım: 05.06.2025</div>
-      </div>
-      <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center gap-2">
-        <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="3"><i class="fas fa-eye"></i> Detay</button>
-        <button class="btn btn-success btn-sm ms-2 ariza-giderildi-btn" data-eid="3"><i class="fas fa-check"></i> Arıza Giderildi</button>
-        <button class="btn btn-warning btn-sm ms-2 talep-olustur-btn" data-equipment="Hilti Kırıcı"><i class="fas fa-plus"></i> Talep Oluştur</button>
-      </div>
-    </div>
-  </div>
+  @endforelse
 </div>
-<!-- Pagination Bar (JS ile doldurulacak) -->
+<!-- Pagination Bar -->
+@if($equipmentStocks->hasPages())
 <nav aria-label="Ekipman Sayfalama" class="mt-3">
-  <ul class="pagination justify-content-end" id="equipmentPagination"></ul>
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="text-muted">
+      Toplam {{ $equipmentStocks->total() }} kayıttan {{ $equipmentStocks->firstItem() ?? 0 }}-{{ $equipmentStocks->lastItem() ?? 0 }} arası gösteriliyor
+    </div>
+    <div class="mb-0">
+      {{ $equipmentStocks->onEachSide(1)->links('pagination::bootstrap-5') }}
+    </div>
+  </div>
 </nav>
+@endif
 
 <!-- Bakım Gerektiren Ekipmanlar Modal -->
 <div class="modal fade" id="bakimEkipmanModal" tabindex="-1" aria-labelledby="bakimEkipmanModalLabel" aria-hidden="true">
@@ -157,37 +203,8 @@
       </div>
       <div class="modal-body">
         <div class="row row-cols-1 row-cols-md-2 g-3">
-          <!-- Jeneratör -->
-          <div class="col">
-            <div class="card shadow-sm border-0 card-hover">
-              <div class="d-flex align-items-center p-2">
-                <img src="/images/gen-return.jpg" alt="Jeneratör" class="rounded me-3" style="width:60px;height:60px;object-fit:cover;">
-                <div>
-                  <div class="fw-bold">Jeneratör 5kVA</div>
-                  <div class="small text-muted">Sorumlu: lazBerat</div>
-                  <span class="badge bg-warning text-dark mt-1">Bakım Gerekiyor</span>
-                </div>
-              </div>
-              <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="1"><i class="fas fa-eye"></i> Detay</button>
-              </div>
-            </div>
-          </div>
-          <!-- Hilti Kırıcı -->
-          <div class="col">
-            <div class="card shadow-sm border-0 card-hover">
-              <div class="d-flex align-items-center p-2">
-                <img src="/images/hilti.jpg" alt="Hilti" class="rounded me-3" style="width:60px;height:60px;object-fit:cover;">
-                <div>
-                  <div class="fw-bold">Hilti Kırıcı</div>
-                  <div class="small text-muted">Sorumlu: teknisyen1</div>
-                  <span class="badge bg-danger mt-1">Arızalı</span>
-                </div>
-              </div>
-              <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="3"><i class="fas fa-eye"></i> Detay</button>
-              </div>
-            </div>
+          <div class="col-12 text-center">
+            <p class="text-muted">Bu modal dinamik olarak doldurulacak.</p>
           </div>
         </div>
       </div>
@@ -198,66 +215,21 @@
   </div>
 </div>
 
-<!-- Detay Modalı (Jeneratör) -->
-<div class="modal fade" id="detayModal1" tabindex="-1" aria-labelledby="detayModal1Label" aria-hidden="true">
+<!-- Genel Detay Modalı -->
+<div class="modal fade" id="detayModal" tabindex="-1" aria-labelledby="detayModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header bg-warning bg-opacity-25">
-        <h5 class="modal-title" id="detayModal1Label"><i class="fas fa-tools text-warning me-2"></i>Jeneratör 5kVA Detayları</h5>
+      <div class="modal-header" id="detayModalHeader">
+        <h5 class="modal-title" id="detayModalLabel">
+          <i class="fas fa-info-circle me-2"></i>Ekipman Detayları
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
-      <div class="modal-body">
-        <!-- Detay içeriği -->
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <label class="fw-bold">Eşya Adı:</label>
-            <p>Jeneratör 5kVA</p>
-            <div class="mb-2">
-              <span class="badge bg-info text-dark me-1">Elektrik</span>
-              <span class="badge bg-primary">Acil</span>
-            </div>
-            <label class="fw-bold">Durumu:</label>
-            <p><span class="badge bg-warning text-dark">Bakım Gerekiyor</span></p>
-          </div>
-          <div class="col-md-4">
-            <label class="fw-bold">Son Kullanım Yeri:</label>
-            <p>Hatay - Kırıkhan</p>
-          </div>
-          <div class="col-md-4">
-            <label class="fw-bold">Sorumlu Kişi:</label>
-            <p>lazBerat</p>
-            <label class="fw-bold">Seri No:</label>
-            <p>GEN-5K-2023</p>
-          </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label class="fw-bold">Son Durum Fotoğrafı:</label><br>
-            <img src="/images/gen-return.jpg" alt="Durum Fotoğrafı" class="img-fluid rounded border shadow-sm mt-1">
-          </div>
-          <div class="col-md-6">
-            <label class="fw-bold">Yetkili Notu:</label>
-            <div class="border rounded p-2 bg-light fst-italic">
-              Cihaz çalışıyor fakat yağ filtresi sızdırıyor. Servis yönlendirildi.
-            </div>
-          </div>
-        </div>
-        <div class="mb-3">
-          <h6 class="fw-semibold"><i class="fas fa-history me-1"></i> Durum Geçmişi</h6>
-          <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between">
-              <span>17.06.2025 - Geri döndü: <em>Bakım Gerekiyor</em></span>
-              <span class="text-muted">lazBerat</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>15.06.2025 - Gönderildi: <em>Sorunsuz</em></span>
-              <span class="text-muted">admin</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>01.05.2025 - Akü değişimi yapıldı</span>
-              <span class="text-muted">teknisyen1</span>
-            </li>
-          </ul>
+      <div class="modal-body" id="detayModalBody">
+        <!-- Detay içeriği buraya Blade ile eklenecek -->
+        <div class="text-center py-4">
+          <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+          <p class="text-muted">Ekipman detayları gösterilecek</p>
         </div>
       </div>
       <div class="modal-footer">
@@ -266,69 +238,7 @@
     </div>
   </div>
 </div>
-<!-- Detay Modalı (Hilti Kırıcı) -->
-<div class="modal fade" id="detayModal3" tabindex="-1" aria-labelledby="detayModal3Label" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-danger bg-opacity-25">
-        <h5 class="modal-title" id="detayModal3Label"><i class="fas fa-exclamation-circle text-danger me-2"></i>Hilti Kırıcı Detayları</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <label class="fw-bold">Eşya Adı:</label>
-            <p>Hilti Kırıcı</p>
-            <div class="mb-2">
-              <span class="badge bg-info text-dark me-1">İnşaat</span>
-            </div>
-            <label class="fw-bold">Durumu:</label>
-            <p><span class="badge bg-danger">Arızalı</span></p>
-          </div>
-          <div class="col-md-4">
-            <label class="fw-bold">Son Kullanım Yeri:</label>
-            <p>Gaziantep - Şahinbey</p>
-           
-          </div>
-          <div class="col-md-4">
-            <label class="fw-bold">Sorumlu Kişi:</label>
-            <p>teknisyen1</p>
-            <label class="fw-bold">Seri No:</label>
-            <p>HILT-2024-01</p>
-          </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label class="fw-bold">Son Durum Fotoğrafı:</label><br>
-            <img src="/images/hilti.jpg" alt="Durum Fotoğrafı" class="img-fluid rounded border shadow-sm mt-1">
-          </div>
-          <div class="col-md-6">
-            <label class="fw-bold">Yetkili Notu:</label>
-            <div class="border rounded p-2 bg-light fst-italic">
-              Motor arızası tespit edildi. Servis bekleniyor.
-            </div>
-          </div>
-        </div>
-        <div class="mb-3">
-          <h6 class="fw-semibold"><i class="fas fa-history me-1"></i> Durum Geçmişi</h6>
-          <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between">
-              <span>19.06.2025 - Arızalı olarak bildirildi</span>
-              <span class="text-muted">teknisyen1</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>10.06.2025 - Kullanımda</span>
-              <span class="text-muted">teknisyen1</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- Servis Talep Modalı (örnek) -->
 
@@ -341,20 +251,60 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
       <div class="modal-body">
-        <form id="arizaGiderildiForm">
+        <form id="arizaGiderildiForm" action="{{ route('admin.fault.resolve', ['id' => 'PLACEHOLDER']) }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <input type="hidden" id="arizaEquipmentStockId" name="equipment_stock_id">
           <div class="mb-3">
             <label for="giderilmeTarihi" class="form-label">Giderilme Tarihi</label>
-            <input type="date" class="form-control" id="giderilmeTarihi" name="giderilmeTarihi" required>
+            <input type="date" class="form-control" id="giderilmeTarihi" name="resolved_date" required>
+          </div>
+          <div class="mb-3">
+            <label for="resolutionNote" class="form-label">Çözüm Açıklaması</label>
+            <textarea class="form-control" id="resolutionNote" name="resolution_note" rows="3" placeholder="Arıza nasıl giderildi?" required></textarea>
           </div>
           <div class="mb-3">
             <label for="ekipmanFoto" class="form-label">Ekipman Fotoğrafı</label>
-            <input type="file" class="form-control" id="ekipmanFoto" name="ekipmanFoto" accept="image/*" required>
+            <input type="file" class="form-control" id="ekipmanFoto" name="resolved_photo" accept="image/*" required>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
         <button type="submit" form="arizaGiderildiForm" class="btn btn-success">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bakım Giderildi Modalı -->
+<div class="modal fade" id="bakimGiderildiModal" tabindex="-1" aria-labelledby="bakimGiderildiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success bg-opacity-25">
+        <h5 class="modal-title" id="bakimGiderildiModalLabel"><i class="fas fa-tools text-success me-2"></i>Bakım Giderildi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <form id="bakimGiderildiForm" action="{{ route('admin.fault.resolve', ['id' => 'PLACEHOLDER']) }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <input type="hidden" id="bakimEquipmentStockId" name="equipment_stock_id">
+          <div class="mb-3">
+            <label for="bakimGiderilmeTarihi" class="form-label">Bakım Tarihi</label>
+            <input type="date" class="form-control" id="bakimGiderilmeTarihi" name="resolved_date" required>
+          </div>
+          <div class="mb-3">
+            <label for="bakimResolutionNote" class="form-label">Bakım Açıklaması</label>
+            <textarea class="form-control" id="bakimResolutionNote" name="resolution_note" rows="3" placeholder="Bakım nasıl yapıldı?" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="bakimEkipmanFoto" class="form-label">Ekipman Fotoğrafı</label>
+            <input type="file" class="form-control" id="bakimEkipmanFoto" name="resolved_photo" accept="image/*" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="submit" form="bakimGiderildiForm" class="btn btn-success">Kaydet</button>
       </div>
     </div>
   </div>

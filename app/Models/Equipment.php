@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Equipment extends Model
 {
     protected $table = 'equipments';
-    protected $fillable = ['name', 'category_id', 'critical_level', 'individual_tracking', 'unit_type'];
+    protected $fillable = ['name', 'category_id', 'critical_level', 'individual_tracking', 'unit_type', 'status', 'status_note', 'responsible_user_id'];
 
     // Birim türleri
     const UNIT_TYPES = [
@@ -39,6 +39,11 @@ class Equipment extends Model
     public function stockQuantity()
     {
         return $this->hasOne(Stock::class);
+    }
+
+    public function responsibleUser()
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
     // Birim türü etiketini döndür
