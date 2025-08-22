@@ -12,193 +12,286 @@
       <button class="btn btn-sm" style="background:transparent;border:none;box-shadow:none;" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle" style="color:#fff;font-size:1.3em;"></i></button>
     </div>
   </div>
+  
   <!-- Animasyonlu KPI kartları -->
   <div class="user-kpi-row mb-4">
     <div class="user-kpi-card shadow-lg" onclick="filterByKpi('all')" data-bs-toggle="tooltip" title="Tüm kullanıcıları gösterir.">
       <div class="user-kpi-icon"><i class="fas fa-users"></i></div>
-      <div class="user-kpi-value" id="kpiTotalUser">120</div>
+      <div class="user-kpi-value" id="kpiTotalUser">{{ $stats['total'] ?? 0 }}</div>
       <div class="user-kpi-label">Toplam Kullanıcı</div>
-      <div class="user-kpi-trend up"><i class="bi bi-arrow-up"></i> %3 artış</div>
+      <div class="user-kpi-trend up"><i class="bi bi-arrow-up"></i> {{ $stats['growth'] ?? 0 }}% artış</div>
     </div>
     <div class="user-kpi-card shadow-lg" onclick="filterByKpi('admin')" data-bs-toggle="tooltip" title="Sadece adminleri gösterir.">
       <div class="user-kpi-icon"><i class="fas fa-user-shield"></i></div>
-      <div class="user-kpi-value" id="kpiAdminUser">8</div>
+      <div class="user-kpi-value" id="kpiAdminUser">{{ $stats['admin'] ?? 0 }}</div>
       <div class="user-kpi-label">Admin</div>
-      <div class="user-kpi-trend up"><i class="bi bi-arrow-up"></i> %1 artış</div>
+      <div class="user-kpi-trend up"><i class="bi bi-arrow-up"></i> {{ $stats['admin_growth'] ?? 0 }}% artış</div>
     </div>
     <div class="user-kpi-card shadow-lg" onclick="filterByKpi('active')" data-bs-toggle="tooltip" title="Sadece aktif kullanıcıları gösterir.">
       <div class="user-kpi-icon"><i class="fas fa-user-check"></i></div>
-      <div class="user-kpi-value" id="kpiActiveUser">102</div>
+      <div class="user-kpi-value" id="kpiActiveUser">{{ $stats['active'] ?? 0 }}</div>
       <div class="user-kpi-label">Aktif Kullanıcı</div>
-      <div class="user-kpi-trend up"><i class="bi bi-arrow-up"></i> %2 artış</div>
+      <div class="user-kpi-trend up"><i class="bi bi-arrow-up"></i> {{ $stats['active_growth'] ?? 0 }}% artış</div>
     </div>
     <div class="user-kpi-card shadow-lg" onclick="filterByKpi('new')" data-bs-toggle="tooltip" title="Bu ay eklenen kullanıcıları gösterir.">
       <div class="user-kpi-icon"><i class="fas fa-user-plus"></i></div>
-      <div class="user-kpi-value" id="kpiNewUser">5</div>
+      <div class="user-kpi-value" id="kpiNewUser">{{ $stats['new_this_month'] ?? 0 }}</div>
       <div class="user-kpi-label">Bu Ay Eklenen</div>
-      <div class="user-kpi-trend down"><i class="bi bi-arrow-down"></i> %0.5 azalış</div>
+      <div class="user-kpi-trend down"><i class="bi bi-arrow-down"></i> {{ $stats['new_growth'] ?? 0 }}% azalış</div>
     </div>
   </div>
+  
   <!-- Modern filtre barı -->
   <div class="user-filter-bar mb-4 shadow-sm rounded-3 p-3" id="userFilterBar" style="background:linear-gradient(120deg,#f8fafc 60%,#e0e7ff 100%);">
-    <input type="text" class="form-control" id="userFilterDate" placeholder="📅 Tarih Aralığı">
-    <select class="form-select" id="userFilterRole">
-      <option value="Admin">Admin</option>
-      <option value="Kullanıcı">Kullanıcı</option>
-    </select>
-    <select class="form-select" id="userFilterStatus">
-      <option value="Aktif">Aktif</option>
-      <option value="Pasif">Pasif</option>
-    </select>
-    <input type="text" class="form-control" id="userSearch" placeholder="Kullanıcı ara">
-    <button class="btn btn-outline-primary" id="clearUserFiltersBtn"><i class="fas fa-times"></i> Sıfırla</button>
-    <button class="btn btn-outline-success" id="saveUserFiltersBtn"><i class="bi bi-bookmark"></i> Kaydet</button>
-    <button class="btn btn-outline-info" id="loadUserFiltersBtn"><i class="bi bi-arrow-clockwise"></i> Geri Yükle</button>
-    <div id="activeUserFilterChips" class="d-flex flex-wrap"></div>
-    <span id="activeUserFilterCount" class="badge bg-info ms-2" style="display:none;"></span>
-  </div>
-  <!-- Sticky header'lı, avatar'lı, aksiyonlu kullanıcı tablosu -->
-  <div class="card p-3 mb-4 shadow-lg">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h6 class="fw-bold mb-2" style="font-size:1.15rem;"><i class="fas fa-users"></i> Kullanıcı Listesi</h6>
-      <div>
-        <span id="selectedUserCount" class="badge bg-primary me-2" style="display:none;"></span>
-        <button class="btn btn-outline-secondary btn-sm" id="exportUserExcelBtn" title="Excel'e Aktar"><i class="bi bi-file-earmark-excel"></i></button>
-        <button class="btn btn-outline-primary btn-sm" id="addUserBtn" title="Yeni Kullanıcı Ekle"><i class="bi bi-plus-circle"></i></button>
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label mb-1">Rol</label>
+        <select class="form-select" id="userFilterRole">
+          <option value="">Tüm Roller</option>
+          <option value="admin">Admin</option>
+          <option value="user">Kullanıcı</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1">Durum</label>
+        <select class="form-select" id="userFilterStatus">
+          <option value="">Tüm Durumlar</option>
+          <option value="active">Aktif</option>
+          <option value="inactive">Pasif</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label mb-1">Arama</label>
+        <input type="text" class="form-control" id="userSearch" placeholder="Ad, e-posta veya kullanıcı adı ara...">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100" id="clearUserFiltersBtn">
+          <i class="fas fa-times"></i> Sıfırla
+        </button>
       </div>
     </div>
-    <div class="table-responsive" style="overflow-x:unset;">
+  </div>
+  
+  <!-- Sticky header'lı, avatar'lı, aksiyonlu kullanıcı tablosu -->
+  <div class="card p-3 mb-4 shadow-lg">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0" style="font-size:1.15rem;">
+        <i class="fas fa-users"></i> Kullanıcı Listesi
+        <span class="badge bg-primary ms-2" id="userCount">{{ count($users ?? []) }}</span>
+      </h6>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-success btn-sm" id="addUserBtn" title="Yeni Kullanıcı Ekle">
+          <i class="bi bi-plus-circle"></i> Yeni Kullanıcı
+        </button>
+        <button class="btn btn-outline-info btn-sm" id="exportUserExcelBtn" title="Excel'e Aktar">
+          <i class="bi bi-file-earmark-excel"></i> Excel
+        </button>
+      </div>
+    </div>
+    
+    <div class="table-responsive" style="overflow-x: visible;">
       <table class="table user-table table-striped table-hover mb-0 w-100 align-middle" id="userTable">
         <thead class="sticky-top bg-white shadow-sm">
           <tr>
-            <th><input type="checkbox" id="selectAllUserRows"></th>
-            <th></th>
-            <th>#</th>
+            <th style="width: 50px;">
+              <input type="checkbox" id="selectAllUserRows" class="form-check-input">
+            </th>
+            <th style="width: 60px;">Avatar</th>
+            <th style="width: 60px;">#</th>
             <th>Ad Soyad</th>
             <th>E-posta</th>
             <th>Rol</th>
+            <th>Durum</th>
             <th>Son Giriş</th>
             <th>Kayıt Tarihi</th>
-            <th>Aksiyon</th>
+            <th style="width: 120px;">Aksiyon</th>
           </tr>
         </thead>
         <tbody id="userTableBody">
-          <tr>
-            <td><input type="checkbox" class="form-check-input user-row-check"></td>
-            <td><span class="user-avatar">AK</span></td>
-            <td>1</td>
-            <td>Ali Kaya</td>
-            <td>ali.kaya@example.com</td>
-            <td><span class="badge bg-primary">Admin</span></td>
-            <td>2024-06-20 09:12</td>
-            <td>2023-12-01</td>
-            <td>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
-              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="form-check-input user-row-check"></td>
-            <td><span class="user-avatar">AY</span></td>
-            <td>2</td>
-            <td>Ayşe Yılmaz</td>
-            <td>ayse.yilmaz@example.com</td>
-            <td><span class="badge bg-primary">Admin</span></td>
-            <td>2024-06-19 15:44</td>
-            <td>2024-01-10</td>
-            <td>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
-              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="form-check-input user-row-check"></td>
-            <td><span class="user-avatar">MD</span></td>
-            <td>3</td>
-            <td>Mehmet Demir</td>
-            <td>mehmet.demir@example.com</td>
-            <td><span class="badge bg-secondary">Kullanıcı</span></td>
-            <td>2024-06-18 11:22</td>
-            <td>2024-02-15</td>
-            <td>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
-              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="form-check-input user-row-check"></td>
-            <td><span class="user-avatar">FK</span></td>
-            <td>4</td>
-            <td>Fatma Kaya</td>
-            <td>fatma.kaya@example.com</td>
-            <td><span class="badge bg-secondary">Kullanıcı</span></td>
-            <td>2024-06-15 08:10</td>
-            <td>2024-03-05</td>
-            <td>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
-              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="form-check-input user-row-check"></td>
-            <td><span class="user-avatar">ZS</span></td>
-            <td>5</td>
-            <td>Zeynep Şahin</td>
-            <td>zeynep.sahin@example.com</td>
-            <td><span class="badge bg-secondary">Kullanıcı</span></td>
-            <td>2024-06-10 17:30</td>
-            <td>2024-04-12</td>
-            <td>
-              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-lock"></i></button>
-              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-            </td>
-          </tr>
+          @forelse($users ?? [] as $user)
+            <tr data-user-id="{{ $user->id }}" data-role="{{ $user->role }}" data-status="{{ $user->status }}">
+              <td>
+                <input type="checkbox" class="form-check-input user-row-check" value="{{ $user->id }}">
+              </td>
+              <td>
+                <span class="user-avatar" style="background: {{ $user->avatar_color ?? '#6366f1' }};">
+                  {{ strtoupper(substr($user->name ?? 'U', 0, 2)) }}
+                </span>
+              </td>
+              <td>{{ $loop->iteration }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div>
+                    <strong>{{ $user->name ?? 'İsimsiz' }}</strong>
+                    @if($user->username)
+                      <br><small class="text-muted">@{{ $user->username }}</small>
+                    @endif
+                  </div>
+                </div>
+              </td>
+              <td>{{ $user->email ?? 'E-posta yok' }}</td>
+              <td>
+                @if($user->role === 'admin')
+                  <span class="badge bg-primary">Admin</span>
+                @else
+                  <span class="badge bg-secondary">Kullanıcı</span>
+                @endif
+              </td>
+              <td>
+                @if($user->status === 'active')
+                  <span class="badge bg-success">Aktif</span>
+                @else
+                  <span class="badge bg-danger">Pasif</span>
+                @endif
+              </td>
+              <td>
+                @if($user->last_login_at)
+                  {{ \Carbon\Carbon::parse($user->last_login_at)->format('d.m.Y H:i') }}
+                @else
+                  <span class="text-muted">Hiç giriş yapmamış</span>
+                @endif
+              </td>
+              <td>
+                @if($user->created_at)
+                  {{ \Carbon\Carbon::parse($user->created_at)->format('d.m.Y') }}
+                @else
+                  <span class="text-muted">Tarih yok</span>
+                @endif
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info btn-sm" onclick="showUserDetail({{ $user->id }})" title="Detay">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-warning btn-sm" onclick="editUser({{ $user->id }})" title="Düzenle">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  @if($user->status === 'active')
+                    <button class="btn btn-outline-secondary btn-sm" onclick="toggleUserStatus({{ $user->id }})" title="Pasif Yap">
+                      <i class="bi bi-lock"></i>
+                    </button>
+                  @else
+                    <button class="btn btn-outline-success btn-sm" onclick="toggleUserStatus({{ $user->id }})" title="Aktif Yap">
+                      <i class="bi bi-unlock"></i>
+                    </button>
+                  @endif
+                  <button class="btn btn-outline-danger btn-sm" onclick="deleteUser({{ $user->id }})" title="Sil">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          @empty
+            <tr>
+              <td colspan="10" class="text-center py-5">
+                <div id="noUserDataIllu" class="no-data-illu">
+                  <img src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/no-data.png" alt="No Data" style="max-width:180px;opacity:.7;"><br>
+                  <span class="text-muted">Henüz kullanıcı bulunmuyor.</span>
+                  <button class="btn btn-success mt-3" id="addUserBtnEmpty">
+                    <i class="bi bi-plus-circle"></i> İlk Kullanıcıyı Ekle
+                  </button>
+                </div>
+              </td>
+            </tr>
+          @endforelse
         </tbody>
       </table>
-      <div id="noUserDataIllu" class="no-data-illu" style="display:none;">
-        <img src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/no-data.png" alt="No Data" style="max-width:180px;opacity:.7;"><br>
-        <span>Veri bulunamadı.</span>
-        <button class="btn btn-success mt-2" id="addUserBtnEmpty"><i class="bi bi-plus-circle"></i> Yeni Kullanıcı Ekle</button>
+    </div>
+    
+    @if(($users ?? [])->count() > 0)
+      <div class="mt-3 d-flex justify-content-between align-items-center">
+        <div>
+          <span id="selectedUserCount" class="badge bg-primary" style="display:none;">0 kullanıcı seçildi</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-danger btn-sm" id="bulkUserDeleteBtn" style="display:none;">
+            <i class="bi bi-trash"></i> Seçiliyi Sil
+          </button>
+          <button class="btn btn-warning btn-sm" id="bulkUserStatusBtn" style="display:none;">
+            <i class="bi bi-lock"></i> Durum Değiştir
+          </button>
+        </div>
       </div>
-    </div>
-    <div class="mt-2 d-flex gap-2 flex-wrap">
-      <button class="btn btn-danger btn-sm" id="bulkUserDeleteBtn"><i class="bi bi-trash"></i> Seçiliyi Sil</button>
-    </div>
+    @endif
   </div>
-  <div id="userSnackbar">Veriler güncellendi!</div>
+  
+  <div id="userSnackbar" class="user-snackbar">Veriler güncellendi!</div>
 </div>
-<!-- Kullanıcı Ekle Modalı -->
-<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+
+<!-- Kullanıcı Ekle/Düzenle Modalı -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addUserModalLabel">Yeni Kullanıcı Ekle</h5>
+        <h5 class="modal-title" id="userModalLabel">Yeni Kullanıcı Ekle</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
       <div class="modal-body">
-        <input type="text" class="form-control mb-2" id="newUserName" placeholder="Ad Soyad">
-        <input type="email" class="form-control mb-2" id="newUserEmail" placeholder="E-posta">
-        <select class="form-select mb-2" id="newUserRole">
-          <option value="Kullanıcı">Kullanıcı</option>
-          <option value="Admin">Admin</option>
-        </select>
-        <button class="btn btn-success w-100" id="saveNewUserBtn">Kaydet</button>
+        <form id="userForm">
+          @csrf
+          <input type="hidden" id="userId" name="user_id">
+          
+          <div class="mb-3">
+            <label for="userName" class="form-label">Ad Soyad <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="userName" name="name" required placeholder="Ad Soyad giriniz">
+          </div>
+          
+          <div class="mb-3">
+            <label for="userEmail" class="form-label">E-posta <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="userEmail" name="email" required placeholder="E-posta adresi giriniz">
+          </div>
+          
+          <div class="mb-3">
+            <label for="userUsername" class="form-label">Kullanıcı Adı</label>
+            <input type="text" class="form-control" id="userUsername" name="username" placeholder="Kullanıcı adı (opsiyonel)">
+          </div>
+          
+          <div class="mb-3">
+            <label for="userRole" class="form-label">Rol <span class="text-danger">*</span></label>
+            <select class="form-select" id="userRole" name="role" required>
+              <option value="">Rol seçiniz</option>
+              <option value="user">Kullanıcı</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="userPassword" class="form-label">Şifre <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="userPassword" name="password" required placeholder="Şifre giriniz">
+            <small class="text-muted">En az 8 karakter olmalıdır</small>
+          </div>
+          
+          <div class="mb-3">
+            <label for="userPasswordConfirm" class="form-label">Şifre Tekrar <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="userPasswordConfirm" name="password_confirmation" required placeholder="Şifreyi tekrar giriniz">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="submit" form="userForm" class="btn btn-primary" id="saveUserBtn">
+          <i class="bi bi-save"></i> Kaydet
+        </button>
       </div>
     </div>
   </div>
 </div>
+
 <!-- Kullanıcı Detay Modalı -->
 <div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="userDetailModalLabel">Kullanıcı Detayı</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
-      <div class="modal-body" id="userDetailContent"></div>
+      <div class="modal-body" id="userDetailContent">
+        <!-- AJAX ile doldurulacak -->
+      </div>
     </div>
   </div>
 </div>
+
 <!-- Yardım Modalı -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -210,14 +303,14 @@
       <div class="modal-body">
         <ul>
           <li>KPI kartlarına tıklayarak hızlı filtre uygulayabilirsiniz.</li>
-          <li>Filtre barında filtreleri kaydedip geri yükleyebilirsiniz.</li>
-          <li>Tabloda arama, sıralama, sayfalama ve toplu işlem yapabilirsiniz.</li>
-          <li>Satırdaki üç nokta ile daha fazla aksiyona ulaşabilirsiniz.</li>
-          <li>Karanlık mod için sağ üstteki ay simgesine tıklayın.</li>
+          <li>Filtre barında rol ve durum filtrelerini kullanabilirsiniz.</li>
+          <li>Arama kutusunda ad, e-posta veya kullanıcı adı ile arama yapabilirsiniz.</li>
+          <li>Tabloda toplu işlem yapabilirsiniz (seçili kullanıcıları silme, durum değiştirme).</li>
+          <li>Her kullanıcı için detay görüntüleme, düzenleme ve silme işlemleri yapabilirsiniz.</li>
         </ul>
         <b>Klavye Kısayolları:</b>
         <ul>
-          <li><kbd>Ctrl</kbd> + <kbd>F</kbd>: Tablo arama kutusuna odaklan</li>
+          <li><kbd>Ctrl</kbd> + <kbd>F</kbd>: Arama kutusuna odaklan</li>
           <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd>: Yeni kullanıcı ekle</li>
           <li><kbd>Esc</kbd>: Açık modalı kapat</li>
         </ul>
@@ -225,5 +318,6 @@
     </div>
   </div>
 </div>
-@vite('resources/js/users.js')
+
+<script src="{{ asset('js/users.js') }}"></script>
 @endsection

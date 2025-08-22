@@ -30,6 +30,9 @@
     <!-- CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <!-- JS (Blade dosyasının altına ekle) -->
 
 
@@ -147,12 +150,12 @@
                         <span class="align-middle">Arıza Durumu</span>
                     </a>
                 </li>
-                <li class="sidebar-item{{ request()->routeIs('requests.index') ? ' active' : '' }}">
+                {{-- <li class="sidebar-item{{ request()->routeIs('requests.index') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('requests.index') }}">
                         <i class="align-middle" data-feather="clipboard"></i>
                         <span class="align-middle">Talepler</span>
                     </a>
-                </li>
+                </li> --}}
 
 
 
@@ -657,4 +660,12 @@
             });
         });
     </script>
+    
+    <!-- Arıza Yönetimi JavaScript -->
+    @if(request()->routeIs('admin.fault.*'))
+        <script src="{{ asset('js/fault-management.js') }}"></script>
+    @endif
+    
+    <!-- SweetAlert2 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endpush

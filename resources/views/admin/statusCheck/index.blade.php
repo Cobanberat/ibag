@@ -9,15 +9,75 @@
       <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Durum Kontrolü' }}</li>
   </ol>
 </nav>
-<!-- Bildirim ve Hatırlatıcılar -->
 
+<!-- İstatistik Kartları -->
+<div class="row mb-4">
+  <div class="col-md-2">
+    <div class="card text-white bg-danger">
+      <div class="card-body text-center">
+        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+        <h4>{{ $stats['acil_durum'] ?? 0 }}</h4>
+        <small>Acil Durum</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-white bg-warning">
+      <div class="card-body text-center">
+        <i class="fas fa-tools fa-2x mb-2"></i>
+        <h4>{{ $stats['toplam_bakim'] ?? 0 }}</h4>
+        <small>Bakım Gerekiyor</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-white bg-info">
+      <div class="card-body text-center">
+        <i class="fas fa-wrench fa-2x mb-2"></i>
+        <h4>{{ $stats['toplam_arizali'] ?? 0 }}</h4>
+        <small>Arızalı</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-white bg-success">
+      <div class="card-body text-center">
+        <i class="fas fa-check-circle fa-2x mb-2"></i>
+        <h4>{{ $stats['bu_ay_cozulen'] ?? 0 }}</h4>
+        <small>Bu Ay Çözülen</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-white bg-secondary">
+      <div class="card-body text-center">
+        <i class="fas fa-clock fa-2x mb-2"></i>
+        <h4>{{ $stats['bekleyen_islem'] ?? 0 }}</h4>
+        <small>Bekleyen İşlem</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-white bg-primary">
+      <div class="card-body text-center">
+        <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+        <h4>{{ $stats['yaklasan_bakim'] ?? 0 }}</h4>
+        <small>Yaklaşan Bakım</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bildirim ve Hatırlatıcılar -->
+@if(($stats['yaklasan_bakim'] ?? 0) > 0)
 <div class="alert alert-warning d-flex align-items-center justify-content-between mb-3 clickable-alert" role="alert" id="upcomingAlert">
   <div class="d-flex align-items-center">
     <i class="fas fa-bell fa-lg me-2"></i>
-    <div><b>2 ekipmanda yaklaşan bakım var!</b> <span class="small">Bakım planlaması yapmayı unutmayın.</span></div>
+    <div><b>{{ $stats['yaklasan_bakim'] }} ekipmanda yaklaşan bakım var!</b> <span class="small">Bakım planlaması yapmayı unutmayın.</span></div>
   </div>
   <button class="btn btn-sm btn-outline-warning" id="showUpcomingBtn"><i class="fas fa-list"></i> Ürünleri Gör</button>
 </div>
+@endif
 
 <!-- Filtreleme Barı -->
 <div class="mb-3">
@@ -50,7 +110,52 @@
                 <th class="text-end">Aksiyon</th>
               </tr>
             </thead>
-            <tbody id="acilDurumlarTableBody"></tbody>
+            <tbody id="acilDurumlarTableBody">
+              @forelse($acilDurumlar as $item)
+                <tr data-id="{{ $item['id'] }}" data-type="fault" class="aciliyet-{{ $item['aciliyet'] ?? 'normal' }}">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-tools me-2 text-muted"></i>
+                      <span>{{ $item['ekipman'] }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-{{ $item['priority'] === 'Yüksek' ? 'danger' : ($item['priority'] === 'Orta' ? 'warning' : 'secondary') }}">
+                      {{ $item['islem'] }}
+                    </span>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ $item['planlanan_tarih'] }}</small>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-circle me-1 text-muted"></i>
+                      <small>{{ $item['sorumlu'] }}</small>
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="showDetail('fault', {{ $item['id'] }})" title="Detay">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <div class="btn-group" role="group">
+                      <button class="btn btn-sm btn-outline-success" onclick="updateStatus('fault', {{ $item['id'] }}, 'İşlemde')" title="İşleme Al">
+                        <i class="fas fa-play"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('fault', {{ $item['id'] }}, 'Çözüldü')" title="Çözüldü Olarak İşaretle">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                    <br>Acil durum bulunmuyor
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
           </table>
           <nav><ul class="pagination justify-content-end m-3" id="acilDurumlarPagination"></ul></nav>
         </div>
@@ -73,7 +178,51 @@
                 <th class="text-end">Aksiyon</th>
               </tr>
             </thead>
-            <tbody id="yapilacaklarTableBody"></tbody>
+            <tbody id="yapilacaklarTableBody">
+              @forelse($yapilacaklar as $item)
+                <tr data-id="{{ $item['id'] }}" data-type="{{ $item['type'] }}">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-{{ $item['type'] === 'maintenance' ? 'calendar-check' : 'tools' }} me-2 text-muted"></i>
+                      <span>{{ $item['ekipman'] }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-{{ $item['priority'] === 'Yüksek' ? 'danger' : ($item['priority'] === 'Orta' ? 'warning' : 'info') }}">
+                      {{ $item['islem'] }}
+                    </span>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ $item['planlanan_tarih'] }}</small>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-circle me-1 text-muted"></i>
+                      <small>{{ $item['sorumlu'] }}</small>
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="showDetail('{{ $item['type'] }}', '{{ $item['id'] }}')" title="Detay">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    @if($item['type'] === 'fault')
+                    <div class="btn-group" role="group">
+                      <button class="btn btn-sm btn-outline-warning" onclick="updateStatus('fault', {{ $item['id'] }}, 'İşlemde')" title="İşleme Al">
+                        <i class="fas fa-play"></i>
+                      </button>
+                    </div>
+                    @endif
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fas fa-calendar-check fa-3x mb-3 text-info"></i>
+                    <br>Yapılması gereken işlem bulunmuyor
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
           </table>
           <nav><ul class="pagination justify-content-end m-3" id="yapilacaklarPagination"></ul></nav>
         </div>
@@ -106,6 +255,121 @@
 @vite('resources/js/statusCheck.js')
 
 <script>
+// Detay modalını göster
+function showDetail(type, id) {
+    fetch(`{{ route('admin.statusCheck.detail') }}?type=${type}&id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const modalBody = document.getElementById('infoModalBody');
+                let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Ekipman Bilgileri</h6>
+                            <p><strong>Ekipman:</strong> ${data.data.ekipman}</p>
+                            <p><strong>İşlem Tipi:</strong> ${data.data.tip}</p>
+                            <p><strong>Öncelik:</strong> <span class="badge bg-${data.data.oncelik === 'Yüksek' ? 'danger' : (data.data.oncelik === 'Orta' ? 'warning' : 'secondary')}">${data.data.oncelik}</span></p>
+                            <p><strong>Durum:</strong> <span class="badge bg-info">${data.data.durum}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">İşlem Bilgileri</h6>
+                            <p><strong>Bildirim Tarihi:</strong> ${data.data.bildirim_tarihi}</p>
+                            <p><strong>Bildiren:</strong> ${data.data.bildiren}</p>
+                            <p><strong>Sorumlu:</strong> ${data.data.sorumlu}</p>
+                            ${data.data.cozum_tarihi !== '-' ? `<p><strong>Çözüm Tarihi:</strong> ${data.data.cozum_tarihi}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="fw-bold">Açıklama</h6>
+                            <p class="text-muted">${data.data.aciklama || 'Açıklama bulunmuyor'}</p>
+                            ${data.data.cozum_notu !== '-' ? `
+                                <h6 class="fw-bold">Çözüm Notu</h6>
+                                <p class="text-success">${data.data.cozum_notu}</p>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                modalBody.innerHTML = html;
+                
+                const modal = new bootstrap.Modal(document.getElementById('infoModal'));
+                modal.show();
+            } else {
+                Swal.fire({
+                    title: 'Hata!',
+                    text: data.error || 'Detay bilgisi alınamadı',
+                    icon: 'error'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Hata!',
+                text: 'Detay bilgisi alınırken hata oluştu',
+                icon: 'error'
+            });
+        });
+}
+
+// Durum güncelle
+function updateStatus(type, id, status) {
+    const statusText = status === 'İşlemde' ? 'işleme almak' : 'çözüldü olarak işaretlemek';
+    
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: `Bu kaydı ${statusText} istediğinizden emin misiniz?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Evet, Güncelle!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`{{ route('admin.statusCheck.updateStatus') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    type: type,
+                    id: id,
+                    status: status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.error || 'İşlem başarısız',
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'İşlem sırasında hata oluştu',
+                    icon: 'error'
+                });
+            });
+        }
+    });
+}
+
 // Filtreleme fonksiyonu
 function filterActiveTabTable() {
   const search = document.getElementById('tabloAramaInput').value.trim().toLowerCase();
@@ -120,14 +384,71 @@ function filterActiveTabTable() {
     tr.style.display = (search === '' || text.includes(search)) ? '' : 'none';
   });
 }
-document.getElementById('tabloAramaInput').addEventListener('input', filterActiveTabTable);
-// Sekme değişince filtreyi uygula
-const tabBtns = document.querySelectorAll('#statusTab button[data-bs-toggle="tab"]');
-tabBtns.forEach(btn => {
-  btn.addEventListener('shown.bs.tab', function() {
-    filterActiveTabTable();
-  });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('tabloAramaInput').addEventListener('input', filterActiveTabTable);
+    
+    // Sekme değişince filtreyi uygula
+    const tabBtns = document.querySelectorAll('#statusTab button[data-bs-toggle="tab"]');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('shown.bs.tab', function() {
+        filterActiveTabTable();
+      });
+    });
+    
+    // Yaklaşan bakım butonuna tıklama
+    const showUpcomingBtn = document.getElementById('showUpcomingBtn');
+    if (showUpcomingBtn) {
+        showUpcomingBtn.addEventListener('click', function() {
+            // Yapılacaklar sekmesine geç
+            const yapilacaklarTab = document.getElementById('yapilacaklar-tab');
+            if (yapilacaklarTab) {
+                yapilacaklarTab.click();
+            }
+        });
+    }
 });
 </script>
+
+<style>
+.aciliyet-critical {
+    background-color: #ffebee !important;
+    border-left: 4px solid #f44336;
+}
+
+.aciliyet-warning {
+    background-color: #fff8e1 !important;
+    border-left: 4px solid #ff9800;
+}
+
+.aciliyet-normal {
+    background-color: #f9f9f9;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.btn-group .btn {
+    border-radius: 0.25rem !important;
+    margin-left: 2px;
+}
+
+.clickable-alert {
+    cursor: pointer;
+}
+
+.clickable-alert:hover {
+    opacity: 0.9;
+}
+</style>
 
 @endsection

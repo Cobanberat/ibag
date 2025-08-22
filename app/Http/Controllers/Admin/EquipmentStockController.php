@@ -282,9 +282,10 @@ class EquipmentStockController extends Controller
                 'unit_type' => 'required|in:adet,metre,kilogram,litre,paket,kutu,çift,takım',
                 'critical_level' => 'nullable|numeric|min:0.01',
                 'note' => 'nullable|string',
-                'status' => 'nullable|string|max:255',
+                'stock_status' => 'nullable|string|in:Aktif,Kullanımda,Yok,Sıfır',
                 'location' => 'nullable|string|max:255',
-                'individual_tracking' => 'nullable|boolean'
+                'individual_tracking' => 'nullable|boolean',
+                'next_maintenance_date' => 'nullable|date'
             ]);
 
             // Individual tracking kontrolü - validation sonrası
@@ -340,9 +341,10 @@ class EquipmentStockController extends Controller
                         'size' => $validated['size'],
                         'feature' => $validated['feature'] ?? null,
                         'note' => $validated['note'],
-                        'status' => $validated['status'] ?? 'aktif',
+                        'status' => $validated['stock_status'] ?? 'Aktif',
                         'location' => $validated['location'] ?? 'Depo',
-                        'photo' => $photoPath
+                        'photo_path' => $photoPath,
+                        'next_maintenance_date' => $validated['next_maintenance_date'] ?? null
                     ]);
                     $stocks[] = $createdStock;
 
@@ -373,9 +375,10 @@ class EquipmentStockController extends Controller
                     'size' => $validated['size'],
                     'feature' => $validated['feature'] ?? null,
                     'note' => $validated['note'],
-                    'status' => $validated['status'] ?? 'aktif',
+                    'status' => $validated['stock_status'] ?? 'Aktif',
                     'location' => $validated['location'] ?? 'Depo',
-                    'photo' => $photoPath
+                    'photo_path' => $photoPath,
+                    'next_maintenance_date' => $validated['next_maintenance_date'] ?? null
                 ]);
 
                 // Ekipman resimleri tablosuna da kaydet

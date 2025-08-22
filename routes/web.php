@@ -22,134 +22,109 @@ Route::middleware('auth')->group(function () {
         return view('home');
     })->name('home');
 });
-Route::middleware(['auth', 'is_admin'])->group(function () {
+
+// Tüm admin route'ları auth middleware ile korunuyor
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    
+    Route::get('/', function () {
+        return view('admin.home.index');
+    })->name('admin.dashboard');
+    
+    // Stock routes
+    Route::get('/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
+    Route::get('/stock/data', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStockData'])->name('admin.stock.data');
+    Route::get('/stock/statistics', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStatistics'])->name('admin.stock.statistics');
+    Route::get('/stock/validate-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateCode'])->name('admin.stock.validate-code');
+    Route::get('/stock/validate-reference-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateReferenceCode'])->name('admin.stock.validate-reference-code');
+    Route::get('/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
+    Route::post('/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
+    Route::post('/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
+    Route::get('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
+    Route::put('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
+    Route::delete('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
+
+    // Stok ekleme formunu göster
+    Route::get('/Ekle', function () {
+        $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
+        return view('admin.stock.create', compact('categories'));
+    })->name('stock.create');
+
+    // Stok ekleme işlemi
+    Route::post('/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
+
+    // Category routes
+    Route::get('/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');
+    Route::get('/kategori/data', [App\Http\Controllers\Admin\CategoryController::class, 'getCategoryData'])->name('admin.kategori.data');
+    Route::post('/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.kategori.store');
+    Route::get('/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'show'])->name('admin.kategori.show');
+    Route::put('/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('admin.kategori.update');
+    Route::delete('/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('admin.kategori.destroy');
+    Route::post('/kategori/bulk-delete', [App\Http\Controllers\Admin\CategoryController::class, 'bulkDestroy'])->name('admin.kategori.bulk-destroy');
+    Route::get('/kategori/export/csv', [App\Http\Controllers\Admin\CategoryController::class, 'exportCsv'])->name('admin.kategori.export.csv');
+
+    // Equipment Status routes
+    Route::get('/ekipmanDurumu', [App\Http\Controllers\Admin\EquipmentStatusController::class, 'index'])->name('admin.equipmentStatus');
+
+    // Fault routes
+    Route::prefix('fault')->name('admin.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\FaultController::class, 'index'])->name('fault');
+        Route::post('/', [App\Http\Controllers\Admin\FaultController::class, 'store'])->name('fault.store');
+        Route::get('/status', [App\Http\Controllers\Admin\FaultController::class, 'status'])->name('fault.status');
+        Route::get('/{id}', [App\Http\Controllers\Admin\FaultController::class, 'show'])->name('fault.show');
+        Route::post('/resolve', [App\Http\Controllers\Admin\FaultController::class, 'resolve'])->name('fault.resolve');
+        Route::patch('/{id}/status', [App\Http\Controllers\Admin\FaultController::class, 'updateStatus'])->name('fault.updateStatus');
+        Route::get('/{id}/resolved', [App\Http\Controllers\Admin\FaultController::class, 'getResolvedFault'])->name('fault.resolved');
+    });
+
+    // Status Check routes
+    Route::get('/durumKontrol', [App\Http\Controllers\Admin\StatusCheckController::class, 'index'])->name('admin.statusCheck');
+    Route::get('/durumKontrol/detail', [App\Http\Controllers\Admin\StatusCheckController::class, 'getDetail'])->name('admin.statusCheck.detail');
+    Route::post('/durumKontrol/update-status', [App\Http\Controllers\Admin\StatusCheckController::class, 'updateStatus'])->name('admin.statusCheck.updateStatus'); 
+
+    // Requests routes
+    Route::get('/Talep', function () {
+        return view('admin.requests.index');
+    })->name('requests.index');
+
+    // Fault Status routes
+    Route::get('/ArizaDurumu', function () {
+        return view('admin.fault.Status');
+    })->name('fault.status');
+
+    // Reporting routes
+    Route::get('/raporlama', function () {
+        return view('admin.reporting.index');
+    })->name('admin.reporting');
+
+    // Users routes
+    Route::get('/kullanicilar', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users');
+    Route::post('/kullanicilar', [App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/kullanicilar/{id}', [App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.users.show');
+    Route::put('/kullanicilar/{id}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/kullanicilar/{id}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::patch('/kullanicilar/{id}/status', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('admin.users.toggleStatus');
+    Route::post('/kullanicilar/bulk-delete', [App\Http\Controllers\Admin\UserController::class, 'bulkDelete'])->name('admin.users.bulkDelete');
+    Route::get('/kullanicilar/export/excel', [App\Http\Controllers\Admin\UserController::class, 'exportExcel'])->name('admin.users.exportExcel');
+
+    // Assignment routes
+    Route::get('/teslim', [App\Http\Controllers\Admin\AssignmentController::class, 'myAssignments'])->name('admin.teslimEt');
+    Route::put('/teslim-et/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'returnAssignment'])->name('admin.teslimAl');
+    Route::get('/gidenGelen', [AssignmentController::class, 'comingGoing'])->name('admin.gidenGelen');
+    Route::post('/finish/{id}', [AssignmentController::class, 'finish'])->name('assignments.finish');
+    Route::get('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'create'])->name('admin.zimmetAl');
+    Route::post('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'store'])->name('admin.zimmetAl.store');
+
+    // Equipment routes
+    Route::get('/ekipmanlar', [App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipments');
+    Route::get('/ekipmanlar/data', [App\Http\Controllers\Admin\EquipmentController::class, 'getEquipmentData'])->name('admin.equipments.data');
+    Route::get('/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'show'])->name('admin.equipments.show');
+    Route::put('/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'update'])->name('admin.equipments.update');
+    Route::delete('/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'destroy'])->name('admin.equipments.destroy');
+    Route::get('/ekipmanlar/export/csv', [App\Http\Controllers\Admin\EquipmentController::class, 'exportCsv'])->name('admin.equipments.export.csv');
+
+    // Profile routes
+    Route::get('/profilim', function () {
+        return view('admin.profile.index');
+    })->name('admin.profile');
 });
-Route::get('/admin', function () {
-    return view('admin.home.index');
-})->name('admin.dashboard');
-   
-Route::get('/admin/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
-Route::get('/admin/stock/data', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStockData'])->name('admin.stock.data');
-Route::get('/admin/stock/statistics', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStatistics'])->name('admin.stock.statistics');
-Route::get('/admin/stock/validate-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateCode'])->name('admin.stock.validate-code');
-Route::get('/admin/stock/validate-reference-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateReferenceCode'])->name('admin.stock.validate-reference-code');
-Route::get('/admin/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
-Route::post('/admin/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
-
-Route::post('/admin/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
-Route::get('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
-Route::put('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
-Route::delete('/admin/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
-
-// Stok ekleme formunu göster
-Route::get('/admin/Ekle', function () {
-    $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
-    return view('admin.stock.create', compact('categories'));
-})->name('stock.create');
-
-// Stok ekleme işlemi
-Route::post('/admin/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
-
-
-
-
-Route::get('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');
-Route::get('/admin/kategori/data', [App\Http\Controllers\Admin\CategoryController::class, 'getCategoryData'])->name('admin.kategori.data');
-Route::post('/admin/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.kategori.store');
-Route::get('/admin/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'show'])->name('admin.kategori.show');
-Route::put('/admin/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('admin.kategori.update');
-Route::delete('/admin/kategori/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('admin.kategori.destroy');
-Route::post('/admin/kategori/bulk-delete', [App\Http\Controllers\Admin\CategoryController::class, 'bulkDestroy'])->name('admin.kategori.bulk-destroy');
-Route::get('/admin/kategori/export/csv', [App\Http\Controllers\Admin\CategoryController::class, 'exportCsv'])->name('admin.kategori.export.csv');
-
-// Route::get('/admin/ekipmanÖzelikleri', function () {
-//     return view('admin.equipment.Features');
-// })->name('admin.ekipman');
-
-
-
-Route::get('/admin/ekipmanDurumu', [App\Http\Controllers\Admin\EquipmentStatusController::class, 'index'])->name('admin.equipmentStatus');
-
-// Fault routes
-Route::prefix('admin/fault')->name('admin.fault.')->group(function () {
-    Route::get('/', [App\Http\Controllers\Admin\FaultController::class, 'index'])->name('index');
-    Route::post('/', [App\Http\Controllers\Admin\FaultController::class, 'store'])->name('store');
-    Route::get('/status', [App\Http\Controllers\Admin\FaultController::class, 'status'])->name('status');
-    Route::post('/{id}/resolve', [App\Http\Controllers\Admin\FaultController::class, 'resolve'])->name('resolve');
-    Route::patch('/{id}/status', [App\Http\Controllers\Admin\FaultController::class, 'updateStatus'])->name('updateStatus');
-});
-
-Route::get('/admin/durumKontrol', function () {
-    return view('admin.statusCheck.index');
-})->name('admin.statusCheck'); 
-
-// Bu route kaldırıldı çünkü FaultController kullanılıyor
-// Route::get('/admin/ArizaBildirimi', function () {
-//     return view('admin.fault.index');
-// })->name('admin.fault');
-
-Route::get('/admin/Talepler', function () {
-    return view('admin.requests.index');
-})->name('requests.index');
-
-Route::get('/admin/ArizaDurumu', function () {
-    return view('admin.fault.Status');
-})->name('fault.status');
-
-Route::get('/admin/raporlama', function () {
-    return view('admin.reporting.index');
-})->name('admin.reporting');
-
-// Route::get('/admin/veriAnalizi', function () {
-//     return view('admin.analysis.dataAnalysis');
-// })->name('admin.dataAnalysis');
-
-//     Route::get('/admin/ekipmanAnalizi', function () {
-//     return view('admin.equipment.Analysis');
-// })->name('admin.equipmentAnalysis');
-
-// Route::get('/admin/uyeAnalizi', function () {
-//     return view('admin.analysis.memberAnalysis');
-// })->name('admin.memberAnalysis');
-
-Route::get('/admin/kullanicilar', function () {
-    return view('admin.users.index');
-})->name('admin.users');
-
-
-Route::middleware('auth')->group(function() {
-    Route::get('/admin/teslim', [App\Http\Controllers\Admin\AssignmentController::class, 'myAssignments'])->name('admin.teslimEt');
-    Route::put('/admin/teslim-et/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'returnAssignment'])->name('admin.teslimAl');
-});
-
-
-
-Route::get('admin/gidenGelen', [AssignmentController::class, 'comingGoing'])
-    ->name('admin.gidenGelen')
-    ->middleware('auth');
-
-Route::post('admin/finish/{id}', [AssignmentController::class, 'finish'])
-    ->name('assignments.finish')
-    ->middleware('auth');
-
-
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-    Route::get('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'create'])
-        ->name('admin.zimmetAl');
-
-    Route::post('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'store'])
-        ->name('admin.zimmetAl.store');
-});
-
-
-Route::get('/admin/ekipmanlar', [App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipments');
-Route::get('/admin/ekipmanlar/data', [App\Http\Controllers\Admin\EquipmentController::class, 'getEquipmentData'])->name('admin.equipments.data');
-Route::get('/admin/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'show'])->name('admin.equipments.show');
-Route::put('/admin/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'update'])->name('admin.equipments.update');
-Route::delete('/admin/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'destroy'])->name('admin.equipments.destroy');
-Route::get('/admin/ekipmanlar/export/csv', [App\Http\Controllers\Admin\EquipmentController::class, 'exportCsv'])->name('admin.equipments.export.csv');
-
-Route::get('/admin/profilim', function () {
-    return view('admin.profile.index');
-})->name('admin.profile');
 

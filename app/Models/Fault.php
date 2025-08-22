@@ -48,12 +48,12 @@ class Fault extends Model
     // Scope'lar
     public function scopeActive($query)
     {
-        return $query->whereIn('status', ['beklemede', 'işlemde']);
+        return $query->whereIn('status', ['Beklemede', 'İşlemde']);
     }
 
     public function scopeResolved($query)
     {
-        return $query->where('status', 'giderildi');
+        return $query->where('status', 'Çözüldü');
     }
 
     public function scopeByType($query, $type)
@@ -80,10 +80,10 @@ class Fault extends Model
     public function getStatusColorAttribute()
     {
         return match($this->status) {
-            'beklemede' => 'warning',
-            'işlemde' => 'info',
-            'giderildi' => 'success',
-            'iptal' => 'secondary',
+            'Beklemede' => 'warning',
+            'İşlemde' => 'info',
+            'Çözüldü' => 'success',
+            'İptal Edildi' => 'secondary',
             default => 'secondary'
         };
     }

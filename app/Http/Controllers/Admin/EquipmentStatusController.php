@@ -13,8 +13,10 @@ class EquipmentStatusController extends Controller
     {
         $pageTitle = 'Ekipman Durumu';
         
-        // Test için tüm ekipmanları çek
-        $query = EquipmentStock::with(['equipment.category', 'equipment.images']);
+        // Sadece arızalı veya bakım gerektiren ekipmanları çek
+        $query = EquipmentStock::with(['equipment.category', 'equipment.images', 'faults' => function($q) {
+            $q->whereIn('status', ['Beklemede', 'İşlemde']);
+        }]);
 
         // Arama filtresi
         if (request('search')) {
@@ -32,55 +34,36 @@ class EquipmentStatusController extends Controller
 
         // Durum filtresi
         if (request('status')) {
-            $query->where('status', request('status'));
+            if ($request->status === 'Bakım Gerekiyor') {
+                $query->whereHas('faults', function($q) {
+                    $q->where('type', 'bakım')->whereIn('status', ['Beklemede', 'İşlemde']);
+                });
+            } elseif ($request->status === 'Arızalı') {
+                $query->whereHas('faults', function($q) {
+                    $q->where('type', 'arıza')->whereIn('status', ['Beklemede', 'İşlemde']);
+                });
+            }
         }
+
+        // Sadece arızalı veya bakım gerektiren ekipmanları getir
+        $query->whereHas('faults', function($q) {
+            $q->whereIn('status', ['Beklemede', 'İşlemde']);
+        });
 
         $equipmentStocks = $query->orderBy('updated_at', 'desc')->paginate(12)->withQueryString();
-
-        // Debug - Veri kontrolü
-        \Log::info('EquipmentStatus - Query SQL: ' . $query->toSql());
-        \Log::info('EquipmentStatus - Bulunan ekipman sayısı: ' . $equipmentStocks->count());
-        \Log::info('EquipmentStatus - Toplam: ' . $equipmentStocks->total());
-        
-        if($equipmentStocks->count() > 0) {
-            \Log::info('EquipmentStatus - İlk ekipman: ', $equipmentStocks->first()->toArray());
-        } else {
-            \Log::info('EquipmentStatus - Hiç ekipman bulunamadı!');
-        }
 
         // Kategorileri çek
         $categories = EquipmentCategory::orderBy('name')->get();
 
-        // Durum istatistikleri
+        // Durum istatistikleri - faults tablosundan
         $stats = [
-            'bakim' => EquipmentStock::where(function($query) {
-                $query->where('status', 'like', '%bakım%')
-                      ->orWhere('status', 'like', '%Bakım%')
-                      ->orWhere('status', '=', 'Bakım Gerekiyor')
-                      ->orWhere('status', '=', 'bakım gerekiyor')
-                      ->orWhere('status', '=', 'BAKIM');
-            })->count(),
-            'arizali' => EquipmentStock::where(function($query) {
-                $query->where('status', 'like', '%arıza%')
-                      ->orWhere('status', 'like', '%Arıza%')
-                      ->orWhere('status', 'like', '%arızalı%')
-                      ->orWhere('status', 'like', '%Arızalı%')
-                      ->orWhere('status', '=', 'ARIZA')
-                      ->orWhere('status', '=', 'ARIZALI');
-            })->count(),
-            'toplam' => EquipmentStock::where(function($query) {
-                $query->where('status', 'like', '%bakım%')
-                      ->orWhere('status', 'like', '%Bakım%')
-                      ->orWhere('status', 'like', '%arıza%')
-                      ->orWhere('status', 'like', '%Arıza%')
-                      ->orWhere('status', 'like', '%arızalı%')
-                      ->orWhere('status', 'like', '%Arızalı%')
-                      ->orWhere('status', '=', 'Bakım Gerekiyor')
-                      ->orWhere('status', '=', 'bakım gerekiyor')
-                      ->orWhere('status', '=', 'BAKIM')
-                      ->orWhere('status', '=', 'ARIZA')
-                      ->orWhere('status', '=', 'ARIZALI');
-            })->count()
+            'bakim' => \App\Models\Fault::where('type', 'bakım')
+                ->whereIn('status', ['Beklemede', 'İşlemde'])
+                ->count(),
+            'arizali' => \App\Models\Fault::where('type', 'arıza')
+                ->whereIn('status', ['Beklemede', 'İşlemde'])
+                ->count(),
+            'toplam' => \App\Models\Fault::whereIn('status', ['Beklemede', 'İşlemde'])->count()
         ];
 
         return view('admin.equipment.Status', compact('equipmentStocks', 'pageTitle', 'categories', 'stats'));

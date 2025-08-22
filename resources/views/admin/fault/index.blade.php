@@ -11,13 +11,6 @@
 
 <div class="container mt-4">
   <!-- Debug Bilgisi -->
-  @if(config('app.debug'))
-    <div class="alert alert-info">
-      <strong>Debug:</strong> 
-      EquipmentStocks: {{ $equipmentStocks ? $equipmentStocks->count() : 'NULL' }}, 
-      Categories: {{ $categories ? $categories->count() : 'NULL' }}
-    </div>
-  @endif
   <div class="row">
     <div class="col-md-8">
       <div class="card shadow-sm">

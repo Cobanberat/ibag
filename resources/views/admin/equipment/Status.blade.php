@@ -2,7 +2,165 @@
 @section('content')
 
 
-@vite(['resources/css/equipmentStatus.css'])
+<style>
+  .equipment-card {
+    overflow: hidden;
+    border-radius: 1rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.3s, transform 0.3s;
+    background: #fff;
+    opacity: 1;
+    transform: none;
+  }
+  
+  .equipment-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  
+  .equipment-img-box {
+    position: relative;
+    height: 170px;
+    background: #f5f5f5;
+    overflow: hidden;
+  }
+  
+  .equipment-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(.4,0,.2,1), filter 0.4s;
+    filter: brightness(0.92) saturate(1.1);
+  }
+  
+  .equipment-card:hover .equipment-img {
+    transform: scale(1.08);
+    filter: brightness(1) saturate(1.2) blur(1px);
+  }
+  
+  .equipment-img-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg,rgba(0,0,0,0.18) 60%,rgba(0,0,0,0.45) 100%);
+    z-index: 1;
+  }
+  
+  .equipment-title-bar {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    z-index: 2;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.95);
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  .equipment-title-bar .fw-bold {
+    font-size: 1rem;
+    color: #212529;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+    text-align: center;
+    width: 100%;
+  }
+  
+  .equipment-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 1.5em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 2px solid transparent;
+    text-align: center;
+    min-width: 120px;
+    width: 100%;
+  }
+  
+  .equipment-status.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%) !important;
+    color: #212529 !important;
+    border-color: #ffb300;
+  }
+  
+  .equipment-status.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    color: #fff !important;
+    border-color: #c82333;
+  }
+  
+  .equipment-status.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+    color: #fff !important;
+    border-color: #5a6268;
+  }
+  
+  .equipment-placeholder {
+    width: 100%; 
+    height: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 3rem;
+    color: #6c757d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+    border-radius: 0.5rem;
+  }
+  
+  .equipment-card .card-body {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  }
+  
+  .equipment-card .card-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 1rem;
+  }
+  
+  .equipment-card .btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .equipment-card .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  
+  .equipment-card .badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.7em;
+    border-radius: 1rem;
+  }
+  
+  .equipment-card .badge.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+  }
+  
+  .equipment-card .badge.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+  }
+  
+  /* Boş durum mesajı için ortalama */
+  .equipment-empty-state {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    min-height: 300px;
+    width: 100%;
+  }
+</style>
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
       <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
@@ -109,12 +267,12 @@
         <div class="equipment-img-overlay"></div>
         <div class="equipment-title-bar">
             <span class="fw-bold">{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}</span>
-            @if(stripos($stock->status, 'bakım') !== false || $stock->status == 'Bakım Gerekiyor')
-          <span class="equipment-status bg-warning text-dark">Bakım Gerekiyor</span>
-            @elseif(stripos($stock->status, 'arıza') !== false || stripos($stock->status, 'arızalı') !== false)
+            @if($stock->hasActiveMaintenance())
+              <span class="equipment-status bg-warning text-dark">Bakım Gerekiyor</span>
+            @elseif($stock->hasActiveFault())
               <span class="equipment-status bg-danger text-white">Arızalı</span>
             @else
-              <span class="equipment-status bg-secondary text-white">{{ $stock->status }}</span>
+              <span class="equipment-status bg-secondary text-white">{{ $stock->equipment_status }}</span>
             @endif
           </div>
           @if($imageFound)
@@ -148,28 +306,25 @@
           <button class="btn btn-outline-primary btn-sm detay-gor-btn" data-eid="{{ $stock->id }}">
             <i class="fas fa-eye"></i> Detay
           </button>
-          @if(stripos($stock->status, 'arıza') !== false || stripos($stock->status, 'arızalı') !== false)
+          @if($stock->hasActiveFault())
             @if(!$stock->equipment || !$stock->equipment->individual_tracking)
-              <button class="btn btn-success btn-sm ariza-giderildi-btn" data-eid="{{ $stock->id }}">
-                <i class="fas fa-check"></i> Arıza Giderildi
-              </button>
+              @if($stock->faults->where('type', 'arıza')->whereIn('status', ['Beklemede', 'İşlemde'])->count() > 0)
+                <button class="btn btn-success btn-sm ariza-giderildi-btn" data-eid="{{ $stock->id }}" data-equipment="{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}">
+                  <i class="fas fa-check"></i> Arıza Giderildi
+                </button>
+              @endif
+              @if($stock->faults->where('type', 'bakım')->whereIn('status', ['Beklemede', 'İşlemde'])->count() > 0)
+                <button class="btn btn-success btn-sm bakim-giderildi-btn" data-eid="{{ $stock->id }}" data-equipment="{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}">
+                  <i class="fas fa-tools"></i> Bakım Giderildi
+                </button>
+              @endif
             @endif
           @endif
-                     @if(!$stock->equipment || !$stock->equipment->individual_tracking)
-             @if(stripos($stock->status, 'arıza') !== false || stripos($stock->status, 'arızalı') !== false)
-               <button class="btn btn-success btn-sm ariza-giderildi-btn" data-eid="{{ $stock->id }}" data-equipment="{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}">
-                 <i class="fas fa-check"></i> Arıza Giderildi
-               </button>
-             @elseif(stripos($stock->status, 'bakım') !== false)
-               <button class="btn btn-success btn-sm bakim-giderildi-btn" data-eid="{{ $stock->id }}" data-equipment="{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}">
-                 <i class="fas fa-tools"></i> Bakım Giderildi
-               </button>
-             @endif
-           @endif
         </div>
       </div>
     </div>
   @empty
+  <div class="equipment-empty-state">
     <div class="col-12">
       <div class="text-center py-5">
         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
@@ -177,6 +332,7 @@
         <p class="text-muted">Tüm ekipmanlar sorunsuz durumda görünüyor.</p>
       </div>
     </div>
+  </div>
   @endforelse
 </div>
 <!-- Pagination Bar -->
@@ -283,7 +439,7 @@
       <div class="modal-header bg-success bg-opacity-25">
         <h5 class="modal-title" id="bakimGiderildiModalLabel"><i class="fas fa-tools text-success me-2"></i>Bakım Giderildi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
+      </div>  
       <div class="modal-body">
         <form id="bakimGiderildiForm" action="{{ route('admin.fault.resolve', ['id' => 'PLACEHOLDER']) }}" method="POST" enctype="multipart/form-data">
           @csrf
