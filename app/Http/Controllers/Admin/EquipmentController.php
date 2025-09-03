@@ -23,6 +23,13 @@ class EquipmentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // QR kodları oluştur
+        foreach ($equipmentStocks as $stock) {
+            if (!$stock->qr_code) {
+                $stock->generateQrCode();
+            }
+        }
+
         // Kategorileri çek
         $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
         
@@ -84,6 +91,71 @@ class EquipmentController extends Controller
                 'total' => $equipmentStocks->total()
             ]
         ]);
+    }
+
+    /**
+     * Update equipment stock field (inline editing)
+     */
+    public function updateField(Request $request, $id)
+    {
+        $equipmentStock = EquipmentStock::with('equipment')->findOrFail($id);
+        
+        $request->validate([
+            'field' => 'required|string|in:code,brand,model,size,feature,quantity,note,equipment_name',
+            'value' => 'nullable|string|max:1000'
+        ]);
+
+        $field = $request->field;
+        $value = $request->value;
+
+        try {
+            // Individual tracking kontrolü
+            if ($equipmentStock->equipment && $equipmentStock->equipment->individual_tracking && $field === 'quantity') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ayrı takip özelliği olan ekipmanlarda miktar değiştirilemez'
+                ], 400);
+            }
+
+            // Alan tipine göre güncelleme
+            switch($field) {
+                case 'equipment_name':
+                    // Ekipman adını güncelle
+                    if ($equipmentStock->equipment) {
+                        $equipmentStock->equipment->update(['name' => $value]);
+                    }
+                    break;
+                    
+                case 'quantity':
+                    // Miktar güncelleme
+                    $quantity = (int)$value;
+                    if ($quantity < 0) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Miktar 0\'dan küçük olamaz'
+                        ], 400);
+                    }
+                    $equipmentStock->update([$field => $quantity]);
+                    break;
+                    
+                default:
+                    // Diğer alanlar
+                    $equipmentStock->update([$field => $value]);
+                    break;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Alan başarıyla güncellendi'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Inline edit error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Güncelleme sırasında hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

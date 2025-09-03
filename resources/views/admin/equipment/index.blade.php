@@ -90,6 +90,8 @@
                         <tr>
                             <th>Sıra</th>
                             <th>Kod</th>
+                            <th>Resim</th>
+                            <th>QR Kod</th>
                             <th>Ürün Cinsi</th>
                             <th>Marka</th>
                             <th>Model</th>
@@ -108,6 +110,35 @@
                             <tr data-id="{{ $stock->id }}" data-category="{{ $stock->equipment->category->id ?? '' }}">
                                 <td>{{ ($equipmentStocks->currentPage() - 1) * $equipmentStocks->perPage() + $index + 1 }}</td>
                                 <td class="editable-cell" data-field="code" data-id="{{ $stock->id }}">{{ $stock->code ?? '-' }}</td>
+                                <td>
+                                    @if($stock->equipment_image_url)
+                                        <img src="{{ $stock->equipment_image_url }}" alt="Ekipman Resmi" class="img-fluid rounded" style="max-width: 50px; max-height: 50px; object-fit: cover; cursor: pointer;" onclick="showImageModal('{{ $stock->equipment_image_url }}', '{{ $stock->equipment->name ?? 'Ekipman' }}')">
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        // QR kod yoksa otomatik oluştur
+                                        $qrCode = $stock->qr_code;
+                                        if (!$qrCode || strlen($qrCode) < 100) {
+                                            $qrCode = $stock->generateQrCode();
+                                        }
+                                    @endphp
+                                    
+                                    @if($qrCode)
+                                        <div class="d-flex flex-column align-items-center">
+                                            <img src="data:image/svg+xml;base64,{{ $qrCode }}" alt="QR Kod" class="img-fluid" style="max-width: 50px; max-height: 50px; cursor: pointer;" onclick="showQrModal('{{ $qrCode }}', '{{ $stock->code ?? 'QR Kod' }}')">
+                                            <small class="text-muted mt-1">
+                                                <a href="{{ route('admin.equipment.qr-download', $stock->id) }}" class="text-decoration-none" title="QR Kodu İndir">
+                                                    <i class="fas fa-download"></i> İndir
+                                                </a>
+                                            </small>
+                                        </div>
+                                    @else
+                                        <span class="text-muted">QR oluşturulamadı</span>
+                                    @endif
+                                </td>
                                 <td class="editable-cell" data-field="equipment_name" data-id="{{ $stock->id }}">{{ $stock->equipment->name ?? '-' }}</td>
                                 <td class="editable-cell" data-field="brand" data-id="{{ $stock->id }}">{{ $stock->brand ?? '-' }}</td>
                                 <td class="editable-cell" data-field="model" data-id="{{ $stock->id }}">{{ $stock->model ?? '-' }}</td>
@@ -120,7 +151,7 @@
                                                 'adet' => 'Adet',
                                                 'metre' => 'Metre',
                                                 'kilogram' => 'Kilogram',
-                                                'litre' => 'Litre',
+                                                'litre' => 'Litre', 
                                                 'paket' => 'Paket',
                                                 'kutu' => 'Kutu',
                                                 'çift' => 'Çift',
@@ -156,7 +187,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="text-center py-4">
+                                <td colspan="15" class="text-center py-4">
                                     <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz ekipman bulunmuyor</p>
                                 </td>
@@ -179,6 +210,39 @@
             </nav>
         </div>
     </div>
+    <!-- Resim Modalı -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Ekipman Resmi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" alt="Ekipman Resmi" class="img-fluid rounded" style="max-width: 100%; max-height: 500px; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- QR Kod Modalı -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrModalLabel">QR Kod</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalQrCode" src="" alt="QR Kod" class="img-fluid" style="max-width: 300px; max-height: 300px;">
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" onclick="downloadQrCode()">
+                            <i class="fas fa-download"></i> QR Kodu İndir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Detay Modalı -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -190,6 +254,7 @@
                 <div class="modal-body">
                     <p><strong>Sıra:</strong> <span id="detailSno">-</span></p>
                     <p><strong>Kod:</strong> <span id="detailCode">-</span></p>
+                    <p><strong>QR Kod:</strong> <span id="detailQrCode">-</span></p>
                     <p><strong>Resim:</strong></p>
                     <div class="text-center mb-3">
                         <img id="detailImage" src="" alt="Ekipman Resmi" class="img-fluid rounded" style="max-width: 300px; max-height: 200px; object-fit: contain;">

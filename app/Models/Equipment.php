@@ -21,6 +21,20 @@ class Equipment extends Model
         'takım' => 'Takım'
     ];
 
+    // Status sabitleri
+    const STATUS_ACTIVE = 'active';
+    const STATUS_MAINTENANCE = 'maintenance';
+    const STATUS_FAULTY = 'faulty';
+    const STATUS_INACTIVE = 'inactive';
+
+    // Status seçenekleri
+    const STATUS_OPTIONS = [
+        self::STATUS_ACTIVE => 'Aktif',
+        self::STATUS_MAINTENANCE => 'Bakım',
+        self::STATUS_FAULTY => 'Arızalı',
+        self::STATUS_INACTIVE => 'Pasif'
+    ];
+
     public function category()
     {
         return $this->belongsTo(EquipmentCategory::class);
@@ -65,5 +79,41 @@ class Equipment extends Model
     public static function getUnitTypeOptions()
     {
         return self::UNIT_TYPES;
+    }
+
+    // Status etiketini döndür
+    public function getStatusLabelAttribute()
+    {
+        return self::STATUS_OPTIONS[$this->status] ?? 'Bilinmiyor';
+    }
+
+    // Status seçeneklerini döndür
+    public static function getStatusOptions()
+    {
+        return self::STATUS_OPTIONS;
+    }
+
+    // Aktif mi?
+    public function isActive()
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    // Bakım gerekiyor mu?
+    public function needsMaintenance()
+    {
+        return $this->status === self::STATUS_MAINTENANCE;
+    }
+
+    // Arızalı mı?
+    public function isFaulty()
+    {
+        return $this->status === self::STATUS_FAULTY;
+    }
+
+    // Pasif mi?
+    public function isInactive()
+    {
+        return $this->status === self::STATUS_INACTIVE;
     }
 }

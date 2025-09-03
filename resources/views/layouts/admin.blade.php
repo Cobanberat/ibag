@@ -33,6 +33,12 @@
 <!-- SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+<!-- QR Code Generator -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<!-- QR Code Scanner (jsQR) -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
 <!-- JS (Blade dosyasının altına ekle) -->
 
 
@@ -663,7 +669,7 @@
     
     <!-- Arıza Yönetimi JavaScript -->
     @if(request()->routeIs('admin.fault.*'))
-        <script src="{{ asset('js/fault-management.js') }}"></script>
+        @vite('resources/js/fault-management.js')
     @endif
     
     <!-- SweetAlert2 JavaScript -->

@@ -4,7 +4,7 @@
 <div class="container-fluid p-0">
     @include('admin.partials.breadcrumb', ['pageTitle' => 'Yönetim Paneli'])
     <!-- Üst Bar: Kullanıcı Kartı, Yardım, Duyuru, Hava Durumu, Bildirimler -->
-   @vite('resources/css/home.css')
+@vite('resources/css/home.css')
 
     <div class="row g-3 mb-4">
         <!-- Hızlı İşlemler (Sol) -->

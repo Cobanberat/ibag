@@ -584,5 +584,5 @@
     </script>
     
     <!-- Arıza Yönetimi JavaScript -->
-    <script src="{{ asset('js/fault-management.js') }}"></script>
+    @vite('resources/js/fault-management.js')
 @endsection

@@ -319,5 +319,5 @@
   </div>
 </div>
 
-<script src="{{ asset('js/users.js') }}"></script>
+@vite('resources/js/users.js')
 @endsection

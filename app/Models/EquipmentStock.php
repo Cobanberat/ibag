@@ -2,13 +2,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
 
 class EquipmentStock extends Model
 {
     protected $table = 'stock_depo';
     
     protected $fillable = [
-        'equipment_id', 'brand', 'model', 'status', 'code', 'location', 'quantity', 'feature', 'size', 'status_updated_at', 'last_used_at', 'note', 'next_maintenance_date', 'photo_path'
+        'equipment_id', 'brand', 'model', 'status', 'code', 'qr_code', 'location', 'quantity', 'feature', 'size', 'status_updated_at', 'last_used_at', 'note', 'next_maintenance_date', 'photo_path'
     ];
     
     protected $dates = [
@@ -60,6 +62,146 @@ class EquipmentStock extends Model
     public function getStockStatusAttribute()
     {
         return $this->status; // Aktif, Kullanımda, Yok, Sıfır
+    }
+
+    // QR kod oluştur
+    public function generateQrCode()
+    {
+        // Eski QR kodları zorla temizle (27 karakterlik olanlar)
+        if ($this->qr_code && strlen($this->qr_code) < 100) {
+            $this->qr_code = null;
+            $this->save();
+        }
+        
+        // Mevcut QR kod geçerli mi kontrol et
+        if ($this->qr_code && strlen($this->qr_code) > 100) {
+            return $this->qr_code;
+        }
+
+        try {
+            // Basit QR kod içeriği
+            $qrContent = $this->code ?? 'STOCK_' . $this->id;
+            
+            // QR kod oluştur (SVG formatında, imagick gerektirmez)
+            $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+                ->size(200)
+                ->margin(5)
+                ->generate($qrContent);
+
+            // SVG'yi base64'e çevir
+            $base64 = base64_encode($qrCode);
+            
+            $this->qr_code = $base64;
+            $this->save();
+
+            return $this->qr_code;
+        } catch (\Exception $e) {
+            \Log::error("QR kod oluşturma hatası: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // QR kod URL'ini döndür
+    public function getQrCodeUrlAttribute()
+    {
+        if (!$this->qr_code) {
+            $this->generateQrCode();
+        }
+        
+        return 'data:image/png;base64,' . $this->qr_code;
+    }
+
+    // QR kod indirme linki
+    public function getQrCodeDownloadUrlAttribute()
+    {
+        if (!$this->qr_code) {
+            $this->generateQrCode();
+        }
+        
+        return route('admin.equipment.qr-download', $this->id);
+    }
+
+    // View için gerekli accessor'lar
+    public function getRowClassAttribute()
+    {
+        if ($this->quantity <= 0) {
+            return 'table-danger';
+        } elseif ($this->quantity <= ($this->equipment->critical_level ?? 3)) {
+            return 'table-warning';
+        }
+        return '';
+    }
+
+    public function getBarClassAttribute()
+    {
+        if ($this->quantity <= 0) {
+            return 'bg-danger';
+        } elseif ($this->equipment->critical_level && $this->quantity <= $this->equipment->critical_level) {
+            return 'bg-warning';
+        }
+        return 'bg-success';
+    }
+
+    public function getPercentageAttribute()
+    {
+        $criticalLevel = $this->equipment->critical_level ?? 3;
+        $maxQuantity = max($criticalLevel * 2, $this->quantity);
+        return min(100, ($this->quantity / $maxQuantity) * 100);
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        if ($this->quantity <= 0) {
+            return 'empty';
+        } elseif ($this->equipment->critical_level && $this->quantity <= $this->equipment->critical_level) {
+            return 'low';
+        }
+        return 'sufficient';
+    }
+
+    public function getTotalQuantityAttribute()
+    {
+        return $this->quantity;
+    }
+
+    public function getUnitTypeLabelAttribute()
+    {
+        return $this->equipment->unit_type_label ?? 'Adet';
+    }
+
+    public function getCriticalLevelAttribute()
+    {
+        return $this->equipment->critical_level ?? 3;
+    }
+
+    // Eski yapı için uyumluluk accessor'ları
+    public function getNameAttribute()
+    {
+        return $this->equipment->name ?? null;
+    }
+
+    public function getCategoryAttribute()
+    {
+        return $this->equipment->category ?? null;
+    }
+
+    // Ekipman resmi için accessor
+    public function getEquipmentImageAttribute()
+    {
+        if ($this->equipment && $this->equipment->images && $this->equipment->images->count() > 0) {
+            return $this->equipment->images->first();
+        }
+        return null;
+    }
+
+    // Ekipman resim URL'i
+    public function getEquipmentImageUrlAttribute()
+    {
+        $image = $this->equipment_image;
+        if ($image) {
+            return asset('storage/' . $image->path);
+        }
+        return null;
     }
 }
 

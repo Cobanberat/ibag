@@ -29,6 +29,7 @@
                     <div class="align-self-center">
                         <i class="fas fa-sign-out-alt fa-2x"></i>
                     </div>
+                    
                 </div>
             </div>
         </div>

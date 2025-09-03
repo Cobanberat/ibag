@@ -852,10 +852,7 @@ function renderStockTable(stocks) {
                 </td>
                 <td>${stock.category?.name || '-'}</td>
                 <td>
-                    ${stock.equipment && stock.equipment.unit_type ? 
-                        `<span class="badge bg-info">${getUnitTypeLabel(stock.equipment.unit_type)}</span>` : 
-                        '<span class="badge bg-secondary">Adet</span>'
-                    }
+                    <span class="badge bg-info">${stock.unit_type_label || 'Adet'}</span>
                 </td>
                 <td>${totalQuantity}</td>
                 <td>${criticalLevel}</td>
@@ -1475,20 +1472,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Birim türü etiketini döndüren yardımcı fonksiyon
-function getUnitTypeLabel(unitType) {
-    const unitTypes = {
-        'adet': 'Adet',
-        'metre': 'Metre',
-        'kilogram': 'Kilogram',
-        'litre': 'Litre',
-        'paket': 'Paket',
-        'kutu': 'Kutu',
-        'çift': 'Çift',
-        'takım': 'Takım'
-    };
-    return unitTypes[unitType] || 'Adet';
-}
+
 
 // Birim türü değişikliklerini dinleyen yardımcı fonksiyonlar
 function updateEditCriticalLevelHelp() {

@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!noResultsRow) {
                 const tr = document.createElement('tr');
                 tr.className = 'no-results';
-                tr.innerHTML = '<td colspan="12" class="text-center py-4"><i class="fas fa-search fa-2x text-muted mb-2"></i><p class="text-muted">Filtre kriterlerine uygun ekipman bulunamadı</p></td>';
+                tr.innerHTML = '<td colspan="15" class="text-center py-4"><i class="fas fa-search fa-2x text-muted mb-2"></i><p class="text-muted">Filtre kriterlerine uygun ekipman bulunamadı</p></td>';
                 tbody.appendChild(tr);
             }
         } else {
@@ -109,15 +109,36 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteSelectedBtn.addEventListener('click', function() {
             const selectedCheckboxes = document.querySelectorAll('.equipment-checkbox:checked');
             if (selectedCheckboxes.length === 0) {
-                alert('Lütfen silinecek ekipmanları seçin');
+                Swal.fire(
+                    'Uyarı!',
+                    'Lütfen silinecek ekipmanları seçin.',
+                    'warning'
+                );
                 return;
             }
 
-            if (confirm(`${selectedCheckboxes.length} ekipmanı silmek istediğinizden emin misiniz?`)) {
-                const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
-                // AJAX ile silme işlemi yapılabilir
-                console.log('Silinecek ekipmanlar:', ids);
-            }
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: `${selectedCheckboxes.length} ekipmanı silmek istediğinizden emin misiniz?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
+                    // AJAX ile silme işlemi yapılabilir
+                    console.log('Silinecek ekipmanlar:', ids);
+                    
+                    Swal.fire(
+                        'Başarılı!',
+                        `${selectedCheckboxes.length} ekipman silindi.`,
+                        'success'
+                    );
+                }
+            });
         });
     }
 
@@ -148,7 +169,212 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteBtn.innerHTML = `<i class="fas fa-trash"></i> Seçiliyi Sil (${selectedCount})`;
         }
     }
+
+    // Inline düzenleme özelliği
+    initInlineEditing();
 });
+
+// Inline düzenleme fonksiyonları
+function initInlineEditing() {
+    const editableCells = document.querySelectorAll('.editable-cell');
+    
+    editableCells.forEach(cell => {
+        cell.addEventListener('dblclick', function() {
+            startEditing(this);
+        });
+        
+        // Hover efekti
+        cell.addEventListener('mouseenter', function() {
+            if (!this.querySelector('input, select, textarea')) {
+                this.style.backgroundColor = '#f8f9fa';
+                this.style.cursor = 'pointer';
+            }
+        });
+        
+        cell.addEventListener('mouseleave', function() {
+            if (!this.querySelector('input, select, textarea')) {
+                this.style.backgroundColor = '';
+                this.style.cursor = '';
+            }
+        });
+    });
+}
+
+function startEditing(cell) {
+    const field = cell.getAttribute('data-field');
+    const id = cell.getAttribute('data-id');
+    const currentValue = cell.textContent.trim();
+    
+    // Eğer zaten düzenleme modundaysa, çık
+    if (cell.querySelector('input, select, textarea')) {
+        return;
+    }
+    
+    let input;
+    
+    // Alan tipine göre input oluştur
+    switch(field) {
+        case 'code':
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control form-control-sm';
+            input.value = currentValue === '-' ? '' : currentValue;
+            break;
+            
+        case 'brand':
+        case 'model':
+        case 'size':
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control form-control-sm';
+            input.value = currentValue === '-' ? '' : currentValue;
+            break;
+            
+        case 'feature':
+        case 'note':
+            input = document.createElement('textarea');
+            input.className = 'form-control form-control-sm';
+            input.rows = 2;
+            input.value = currentValue === '-' ? '' : currentValue;
+            break;
+            
+        case 'quantity':
+            input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'form-control form-control-sm';
+            input.min = '1';
+            input.value = currentValue === '-' ? '' : currentValue;
+            break;
+            
+        case 'equipment_name':
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control form-control-sm';
+            input.value = currentValue === '-' ? '' : currentValue;
+            break;
+            
+        default:
+            return; // Düzenlenemez alan
+    }
+    
+    // Hücre içeriğini temizle ve input'u ekle
+    cell.innerHTML = '';
+    cell.appendChild(input);
+    input.focus();
+    input.select();
+    
+    // Kaydetme ve iptal etme event'leri
+    input.isSaving = false; // Çift kaydetme önleme flag'i
+    
+    input.addEventListener('blur', function() {
+        if (!this.isSaving) {
+            saveEdit(cell, field, id, this.value);
+        }
+    });
+    
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!this.isSaving) {
+                this.isSaving = true;
+                saveEdit(cell, field, id, this.value);
+            }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit(cell, currentValue);
+        }
+    });
+}
+
+function saveEdit(cell, field, id, newValue) {
+    // AJAX ile güncelleme yap
+    fetch(`/admin/equipment-stock/${id}/update-field`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            field: field,
+            value: newValue
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Başarılı güncelleme
+            cell.innerHTML = newValue || '-';
+            cell.style.backgroundColor = '#d4edda';
+            
+            // 2 saniye sonra normal renge dön
+            setTimeout(() => {
+                cell.style.backgroundColor = '';
+            }, 2000);
+            
+            // Başarı mesajı
+            showToast('Güncelleme başarılı!', 'success');
+        } else {
+            // Hata durumu
+            cell.innerHTML = cell.getAttribute('data-original-value') || '-';
+            showToast('Güncelleme başarısız: ' + (data.message || 'Bilinmeyen hata'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Güncelleme hatası:', error);
+        cell.innerHTML = cell.getAttribute('data-original-value') || '-';
+        showToast('Güncelleme başarısız!', 'error');
+    })
+    .finally(() => {
+        // İşlem tamamlandıktan sonra flag'i sıfırla
+        const input = cell.querySelector('input, select, textarea');
+        if (input) {
+            input.isSaving = false;
+        }
+    });
+}
+
+function cancelEdit(cell, originalValue) {
+    cell.innerHTML = originalValue || '-';
+}
+
+// Toast mesaj gösterme fonksiyonu
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // Toast otomatik kaldırma
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
+}
 
 // Global fonksiyonlar
 window.showDetail = function(id) {
@@ -162,52 +388,141 @@ window.showDetail = function(id) {
                 // Modal içeriğini doldur
                 document.getElementById('detailSno').innerText = stock.id;
                 document.getElementById('detailCode').innerText = stock.code || '-';
+                document.getElementById('detailQrCode').innerText = stock.qr_code ? 'Mevcut' : 'Yok';
                 document.getElementById('detailType').innerText = stock.equipment?.name || '-';
                 document.getElementById('detailBrand').innerText = stock.brand || '-';
                 document.getElementById('detailModel').innerText = stock.model || '-';
                 document.getElementById('detailSize').innerText = stock.size || '-';
                 document.getElementById('detailFeature').innerText = stock.feature || '-';
+                document.getElementById('detailUnitType').innerText = stock.equipment?.unit_type_label || 'Adet';
                 document.getElementById('detailCount').innerText = stock.quantity || 0;
+                document.getElementById('detailTrackingType').innerText = stock.equipment?.individual_tracking ? 'Ayrı Takip' : 'Toplu Takip';
                 document.getElementById('detailStatus').innerText = stock.status || '-';
+                document.getElementById('detailLocation').innerText = stock.location || '-';
                 document.getElementById('detailDate').innerText = stock.created_at ? new Date(stock.created_at).toLocaleDateString('tr-TR') : '-';
                 document.getElementById('detailNote').innerText = stock.note || '-';
+
+                // Ekipman resmini göster
+                const detailImage = document.getElementById('detailImage');
+                if (detailImage && stock.equipment && stock.equipment.images && stock.equipment.images.length > 0) {
+                    const imageUrl = `/storage/${stock.equipment.images[0].path}`;
+                    detailImage.src = imageUrl;
+                    detailImage.style.display = 'block';
+                    console.log('Resim yüklendi:', imageUrl);
+                } else {
+                    if (detailImage) {
+                        detailImage.style.display = 'none';
+                        console.log('Resim bulunamadı');
+                    }
+                }
 
                 // Modal'ı göster
                 new bootstrap.Modal(document.getElementById('detailModal')).show();
             } else {
-                alert('Ekipman detayı yüklenirken hata oluştu');
+                Swal.fire(
+                    'Hata!',
+                    'Ekipman detayı yüklenirken hata oluştu.',
+                    'error'
+                );
             }
         })
         .catch(error => {
             console.error('Detay yükleme hatası:', error);
-            alert('Ekipman detayı yüklenirken hata oluştu');
+            Swal.fire(
+                'Hata!',
+                'Ekipman detayı yüklenirken hata oluştu.',
+                'error'
+            );
         });
 };
 
 window.deleteEquipment = function(id) {
-    if (confirm('Bu ekipmanı silmek istediğinizden emin misiniz?')) {
-        fetch(`/admin/ekipmanlar/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Satırı tablodan kaldır
-                const row = document.querySelector(`tr[data-id="${id}"]`);
-                if (row) {
-                    row.remove();
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu ekipmanı silmek istediğinizden emin misiniz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/ekipmanlar/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
-                alert('Ekipman başarıyla silindi');
-            } else {
-                alert('Ekipman silinirken hata oluştu');
-            }
-        })
-        .catch(error => {
-            console.error('Silme hatası:', error);
-            alert('Ekipman silinirken hata oluştu');
-        });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Satırı tablodan kaldır
+                    const row = document.querySelector(`tr[data-id="${id}"]`);
+                    if (row) {
+                        row.remove();
+                    }
+                    
+                    Swal.fire(
+                        'Silindi!',
+                        'Ekipman başarıyla silindi.',
+                        'success'
+                    );
+                } else {
+                    Swal.fire(
+                        'Hata!',
+                        'Ekipman silinirken hata oluştu.',
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Silme hatası:', error);
+                Swal.fire(
+                    'Hata!',
+                    'Ekipman silinirken hata oluştu.',
+                    'error'
+                );
+            });
+        }
+    });
+};
+
+// Resim modalını açan fonksiyon
+window.showImageModal = function(imageUrl, title) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalLabel');
+    
+    if (modalImage) modalImage.src = imageUrl;
+    if (modalTitle) modalTitle.textContent = title || 'Ekipman Resmi';
+    
+    new bootstrap.Modal(modal).show();
+};
+
+// QR kod modalını açan fonksiyon
+window.showQrModal = function(qrCodeBase64, title) {
+    const modal = document.getElementById('qrModal');
+    const modalQrCode = document.getElementById('modalQrCode');
+    const modalTitle = document.getElementById('qrModalLabel');
+    
+    if (modalQrCode) modalQrCode.src = 'data:image/svg+xml;base64,' + qrCodeBase64;
+    if (modalTitle) modalTitle.textContent = title || 'QR Kod';
+    
+    // QR kod indirme için global değişken
+    window.currentQrCodeBase64 = qrCodeBase64;
+    
+    new bootstrap.Modal(modal).show();
+};
+
+// QR kodu indirme fonksiyonu
+window.downloadQrCode = function() {
+    if (window.currentQrCodeBase64) {
+        const link = document.createElement('a');
+        link.href = 'data:image/png;base64,' + window.currentQrCodeBase64;
+        link.download = 'qr_code.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 };

@@ -38,7 +38,7 @@
             
             <!-- Özellik ve Açıklama -->
             <div class="col-md-6">
-                <label for="feature" class="form-label fw-bold">Özellik</label>
+                <label for="feature" class="form-label fw-bold">Özellik</label> 
                 <textarea class="form-control" id="feature" name="feature" rows="2" placeholder="Ekipman özellikleri..."></textarea>
             </div>
             
@@ -52,7 +52,7 @@
                 <select class="form-select" id="unit_type" name="unit_type" required>
                     <option value="adet">Adet</option>
                     <option value="metre">Metre</option>
-                    <option value="kilogram">Kilogram</option>
+                    <option value="kilogram">Kilogram</option>  
                     <option value="litre">Litre</option>
                     <option value="paket">Paket</option>
                     <option value="kutu">Kutu</option>
@@ -71,8 +71,18 @@
             <!-- Kod ve Konum -->
             <div class="col-md-6">
                 <label for="code" class="form-label fw-bold">Ekipman Kodu</label>
-                <input type="text" class="form-control" id="code" name="code" placeholder="Otomatik oluşturulur veya elle girin">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="code" name="code" placeholder="Otomatik oluşturulur veya elle girin">
+                    <button class="btn btn-outline-primary" type="button" id="generateCodeBtn" title="Kod Oluştur">
+                        <i class="fas fa-magic"></i>
+                    </button>
+                </div>
+                <small class="form-text text-muted">
+                    <strong>Ayrı Takip:</strong> Her ekipmana benzersiz kod<br>
+                    <strong>Çoklu Takip:</strong> Tek kod (otomatik oluşturulur)
+                </small>
             </div>
+            
             <div class="col-md-6">
                 <label for="location" class="form-label fw-bold">Konum</label>
                 <input type="text" class="form-control" id="location" name="location" placeholder="Örn: Depo A, Raf 1">
@@ -223,6 +233,58 @@ document.addEventListener('DOMContentLoaded', function() {
             quantityInput.style.backgroundColor = '';
         }
     });
+    
+    // Kod oluşturma işlemi
+    const codeInput = document.getElementById('code');
+    const generateCodeBtn = document.getElementById('generateCodeBtn');
+    
+    // Ekipman kodu oluştur
+    generateCodeBtn.addEventListener('click', function() {
+        const equipmentName = document.getElementById('name').value;
+        const brand = document.getElementById('brand').value;
+        const model = document.getElementById('model').value;
+        
+        if (!equipmentName) {
+            showAlert('Önce ekipman adını girin!', 'warning');
+            return;
+        }
+        
+        // Benzersiz kod oluştur
+        const timestamp = Date.now().toString().slice(-6); // Son 6 hane
+        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+        const namePrefix = equipmentName.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+        const brandPrefix = brand ? brand.substring(0, 2).toUpperCase().replace(/[^A-Z]/g, '') : '';
+        
+        let generatedCode;
+        if (brandPrefix) {
+            generatedCode = `${namePrefix}-${brandPrefix}-${timestamp}-${random}`;
+        } else {
+            generatedCode = `${namePrefix}-${timestamp}-${random}`;
+        }
+        
+        codeInput.value = generatedCode;
+        showAlert('Ekipman kodu oluşturuldu!', 'success');
+    });
+    
+    // Alert gösterme fonksiyonu
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // 3 saniye sonra otomatik kapat
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
     
     // Fotoğraf boyut kontrolü
     const photoInput = document.getElementById('photo');

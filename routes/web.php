@@ -121,6 +121,10 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::put('/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'update'])->name('admin.equipments.update');
     Route::delete('/ekipmanlar/{id}', [App\Http\Controllers\Admin\EquipmentController::class, 'destroy'])->name('admin.equipments.destroy');
     Route::get('/ekipmanlar/export/csv', [App\Http\Controllers\Admin\EquipmentController::class, 'exportCsv'])->name('admin.equipments.export.csv');
+    Route::get('/ekipmanlar/{id}/qr-download', [App\Http\Controllers\Admin\EquipmentStockController::class, 'downloadQrCode'])->name('admin.equipment.qr-download');
+    
+    // Equipment Stock inline editing
+    Route::post('/equipment-stock/{id}/update-field', [App\Http\Controllers\Admin\EquipmentController::class, 'updateField'])->name('admin.equipment-stock.update-field');
 
     // Profile routes
     Route::get('/profilim', function () {
