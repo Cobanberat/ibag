@@ -45,6 +45,26 @@ function toggleModalMode() {
         if (equipmentSelect) equipmentSelect.required = true;
         if (quantityInput) quantityInput.required = true;
         
+        // Ekipman seçimi değiştiğinde individual tracking kontrolü
+        if (equipmentSelect) {
+            equipmentSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const isIndividualTracking = selectedOption.getAttribute('data-individual-tracking') === 'true';
+                const quantityHelp = document.getElementById('quantityHelp');
+                
+                if (isIndividualTracking) {
+                    quantityInput.value = '1';
+                    quantityInput.readOnly = true;
+                    quantityHelp.textContent = 'Bu ekipman ayrı takip edilir, miktar otomatik 1 olur';
+                    quantityHelp.className = 'form-text text-warning';
+                } else {
+                    quantityInput.readOnly = false;
+                    quantityHelp.textContent = 'Toplu takip ekipmanı, istediğiniz miktarı girebilirsiniz';
+                    quantityHelp.className = 'form-text text-muted';
+                }
+            });
+        }
+        
     } else {
         // Manuel ekipman modu
         console.log('Manuel ekipman modu aktif');
@@ -70,6 +90,26 @@ function toggleModalMode() {
                 field.required = true;
             }
         });
+        
+        // Individual tracking kontrolü
+        const individualTrackingCheckbox = document.getElementById('individualTracking');
+        const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
+        const manualQuantityHelp = document.getElementById('modalCriticalLevelHelp');
+        
+        if (individualTrackingCheckbox && manualQuantityInput) {
+            individualTrackingCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    manualQuantityInput.value = '1';
+                    manualQuantityInput.readOnly = true;
+                    manualQuantityHelp.textContent = 'Ayrı takip aktif: Her ekipman için ayrı stok kaydı oluşturulur';
+                    manualQuantityHelp.className = 'form-text text-warning';
+                } else {
+                    manualQuantityInput.readOnly = false;
+                    manualQuantityHelp.textContent = 'Toplu takip: Aynı özellikteki ekipmanlar tek kayıtta toplanır';
+                    manualQuantityHelp.className = 'form-text text-muted';
+                }
+            });
+        }
     }
 }
 
@@ -288,6 +328,10 @@ function stockIn(stockId) {
                 document.getElementById('samePropertiesOption').style.display = 'block';
                 document.getElementById('operationImageOptions').style.display = 'block';
                 // manualPropertiesSection görünürlüğü toggleManualProperties ile yönetilir
+                
+                // Kod validation'ını aktif et
+                const codeInput = document.getElementById('operationCode');
+                codeInput.addEventListener('input', handleCodeInput);
             } else {
                 const badge = document.getElementById('trackingTypeBadge');
                 if (badge) { badge.textContent = 'Toplu Takip'; badge.className = 'badge bg-secondary'; }
@@ -364,6 +408,10 @@ function stockOut(stockId) {
                 document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
                 document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
                 
+                // Stok çıkışında kod validation'ını aktif et
+                const codeInput = document.getElementById('operationCode');
+                codeInput.addEventListener('input', handleCodeInput);
+                
                 // Etiketi güncelle
                 const operationAmountLabel = document.getElementById('operationAmountLabel');
                 if (operationAmountLabel) {
@@ -405,8 +453,9 @@ function stockOut(stockId) {
 // Stok kodu kontrolü
 function validateStockCode(code) {
     const stockId = document.getElementById('stockId').value;
+    const operationType = document.getElementById('operationType').value;
     return new Promise((resolve) => {
-        fetch(`/admin/stock/validate-code?code=${encodeURIComponent(code)}&equipment_id=${stockId}`, {
+        fetch(`/admin/stock/validate-code?code=${encodeURIComponent(code)}&equipment_id=${stockId}&operation_type=${operationType}`, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -555,7 +604,7 @@ function submitStockOperation() {
     console.log('Stok işlemi gönderiliyor:', { stockId, type, amount, note, code, useSameProperties, useSingleImage });
 
     const formData = new FormData();
-    formData.append('type', type);
+    formData.append('operation_type', type);
     formData.append('amount', parseInt(amount) || 1); // Varsayılan değer
     formData.append('note', note);
     
@@ -734,7 +783,13 @@ function submitEditStock() {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
         return response.json();
+        } else {
+            throw new Error('Beklenmeyen response formatı');
+        }
     })
     .then(data => {
         console.log('Response data:', data);
@@ -774,9 +829,16 @@ function deleteStock(stockId) {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    throw new Error('Beklenmeyen response formatı');
+                }
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // DOM'dan satırı kaldır
                     const row = document.querySelector(`tr[data-id="${stockId}"]`);
                     if (row) {
@@ -967,11 +1029,28 @@ function addStock() {
             return;
         }
         
+        // Seçilen ekipmanın özelliklerini al
+        fetch(`/admin/stock/${equipmentId}/info`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const equipment = data.data;
+        
         // Backend için gerekli alanları ekle
-        formData.set('type', 'in');
+                    formData.set('operation_type', 'in');
         formData.set('amount', quantity);
-        // Özellikleri aynı kullan ve tek resim kullan bayrakları (varsayılan olarak evet)
-        formData.set('use_same_properties', '1');
+                    
+                    // Ayrı takip için özellikleri gönder
+                    if (equipment.individual_tracking) {
+                        formData.set('use_same_properties', '0'); // Manuel özellik kullan
+                        formData.set('brand', equipment.brand || '');
+                        formData.set('model', equipment.model || '');
+                        formData.set('size', equipment.size || '');
+                        formData.set('feature', equipment.feature || '');
+                    } else {
+                        formData.set('use_same_properties', '1'); // Aynı özellikleri kullan
+                    }
+                    
         formData.set('use_single_image', '1');
 
         // Resim işlemi: stockOperation photos[] bekliyor
@@ -990,9 +1069,16 @@ function addStock() {
                 'X-CSRF-TOKEN': getCsrfToken()
             }
         })
-        .then(response => response.json())
+                    .then(response => {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            throw new Error('Beklenmeyen response formatı');
+                        }
+                    })
         .then(data => {
-            if (data.success) {
+                        if (data && data.success) {
                 showToast('Ekipman stoku başarıyla eklendi', 'success');
                 document.getElementById('addProductForm').reset();
                 document.getElementById('quantityOnlyMode').checked = true;
@@ -1006,6 +1092,14 @@ function addStock() {
         .catch(error => {
             console.error('Stok ekleme hatası:', error);
             showToast('Stok eklenirken hata oluştu', 'error');
+                    });
+                } else {
+                    showToast('Ekipman bilgileri alınamadı', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Ekipman bilgisi alma hatası:', error);
+                showToast('Ekipman bilgileri alınamadı', 'error');
         });
         
     } else {
@@ -1033,12 +1127,27 @@ function addStock() {
         method: 'POST',
         body: formData,
         headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        }
-    })
-    .then(response => response.json())
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                // Redirect varsa sayfayı yenile
+                window.location.reload();
+                return;
+            }
+            
+            // Content-Type kontrolü
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                // HTML response alındıysa hata
+                throw new Error('Beklenmeyen response formatı');
+            }
+        })
     .then(data => {
-        if (data.success) {
+            if (data && data.success) {
                 showToast('Yeni ekipman ve stok başarıyla oluşturuldu', 'success');
             document.getElementById('addProductForm').reset();
                 document.getElementById('quantityOnlyMode').checked = true;
@@ -1100,12 +1209,19 @@ function deleteSelectedStocks() {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': getCsrfToken(),
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    throw new Error('Beklenmeyen response formatı');
+                }
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // Loading ekranını kapat
                     Swal.close();
                     

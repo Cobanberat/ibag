@@ -52,24 +52,25 @@
                         <div id="quantityOnlySection">
                             <div class="row">
                                 <div class="col-md-6">
-                        <div class="mb-3">
+                                    <div class="mb-3">
                                         <label class="form-label fw-bold">Ekipman Seç</label>
                                         <select class="form-select border-0" name="equipment_id" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
                                             <option value="">Ekipman Seçiniz</option>
                                             @foreach($categories as $category)
                                                 <optgroup label="{{ $category->name }}">
                                                     @foreach($category->equipments ?? [] as $equipment)
-                                                        <option value="{{ $equipment->id }}">{{ $equipment->name }}</option>
+                                                        <option value="{{ $equipment->id }}" data-individual-tracking="{{ $equipment->individual_tracking ? 'true' : 'false' }}">{{ $equipment->name }}</option>
                                                     @endforeach
                                                 </optgroup>
                                             @endforeach
-                            </select>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold" id="quantityLabel">Miktar</label>
                                         <input type="number" class="form-control" name="quantity" min="1" value="1" required>
+                                        <small class="form-text text-muted" id="quantityHelp">Ayrı takip ekipmanları için miktar otomatik 1 olur</small>
                                     </div>
                                 </div>
                             </div>
@@ -81,13 +82,13 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Ekipman Adı</label>
-                                        <input type="text" class="form-control" name="name" placeholder="Örn: Jeneratör">
+                                        <input type="text" class="form-control" name="name" placeholder="Örn: Jeneratör" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Kategori</label>
-                                        <select class="form-select border-0" name="category_id" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                        <select class="form-select border-0" name="category_id" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
                                             <option value="">Kategori Seçiniz</option>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -110,7 +111,7 @@
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold" id="manualQuantityLabel">Miktar</label>
-                                        <input type="number" class="form-control" name="manual_quantity" min="1" value="1">
+                                        <input type="number" class="form-control" name="manual_quantity" min="1" value="1" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -122,7 +123,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Birim Türü</label>
-                                        <select class="form-select border-0" name="unit_type" id="modalUnitType" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                        <select class="form-select border-0" name="unit_type" id="modalUnitType" required style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
                                             <option value="adet">Adet</option>
                                             <option value="metre">Metre</option>
                                             <option value="kilogram">Kilogram</option>
@@ -137,7 +138,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold" id="modalCriticalLevelLabel">Kritik Seviye</label>
-                                        <input type="number" class="form-control" name="critical_level" id="modalCriticalLevel" min="1" value="3" step="0.01">
+                                        <input type="number" class="form-control" name="critical_level" id="modalCriticalLevel" min="0" value="3" step="0.01">
                                         <small class="form-text text-muted" id="modalCriticalLevelHelp">Birim türüne göre kritik seviye</small>
                                     </div>
                                 </div>
@@ -179,12 +180,12 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                        <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label fw-bold">Durum</label>
-                                    <select class="form-select border-0" name="status" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
-                                        <option value="aktif">Aktif</option>
-                                        <option value="pasif">Pasif</option>
-                                        <option value="bakımda">Bakımda</option>
+                                    <select class="form-select border-0" name="stock_status" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
+                                        <option value="Aktif">Aktif</option>
+                                        <option value="Pasif">Pasif</option>
+                                        <option value="Bakımda">Bakımda</option>
                                     </select>
                                 </div>
                             </div>
@@ -298,7 +299,6 @@
                             <th>Miktar</th>
                             <th>Kritik Seviye</th>
                             <th>Stok Durumu</th>
-                            <th>Durum</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
@@ -322,14 +322,15 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if($stock->status_badge === 'empty')
+                                    @if($stock->stock_status === 'Tükendi')
                                         <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>
-                                    @elseif($stock->status_badge === 'low')
+                                    @elseif($stock->stock_status === 'Az')
                                         <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>
                                     @else
                                         <span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>
                                     @endif
                                 </td>
+                                
                                 <td class="category-actions">
                                     <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="editStock({{ $stock->id }})">
                                         <i class="fas fa-edit"></i>

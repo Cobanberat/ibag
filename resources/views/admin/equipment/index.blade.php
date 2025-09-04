@@ -20,6 +20,9 @@
             <button class="btn btn-outline-primary ms-2 shadow-sm" id="exportCsvBtn">
                 <i class="fas fa-file-csv"></i> CSV Aktar
             </button>
+            <button class="btn btn-outline-success ms-2 shadow-sm" id="importExcelBtn">
+                <i class="fas fa-file-excel"></i> Excel İçe Aktar
+            </button>
             <button class="btn btn-outline-danger ms-2 shadow-sm" id="deleteSelectedBtn" disabled>
                 <i class="fas fa-trash"></i> Seçiliyi Sil
             </button>
@@ -243,6 +246,85 @@
             </div>
         </div>
     </div>
+    <!-- Excel Import Modalı -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importExcelModalLabel">
+                        <i class="fas fa-file-excel text-success me-2"></i>Excel ile Ekipman İçe Aktar
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Önemli:</strong> Excel dosyası belirli formatta olmalıdır. 
+                        <a href="#" id="downloadTemplateBtn" class="text-decoration-none">
+                            <i class="fas fa-download me-1"></i>Şablon dosyasını indirin
+                        </a>
+                    </div>
+                    
+                    <form id="importExcelForm" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="excelFile" class="form-label">Excel Dosyası Seçin</label>
+                            <input type="file" class="form-control" id="excelFile" name="excel_file" accept=".xlsx,.xls" required>
+                            <div class="form-text">Sadece .xlsx ve .xls dosyaları kabul edilir.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="skipDuplicates" name="skip_duplicates" checked>
+                                <label class="form-check-label" for="skipDuplicates">
+                                    Mükerrer kayıtları atla (aynı kod)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="createCategories" name="create_categories" checked>
+                                <label class="form-check-label" for="createCategories">
+                                    Eksik kategorileri otomatik oluştur
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div id="importProgress" class="d-none">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="text-center">
+                            <span id="importStatus">İşlem başlatılıyor...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="importPreview" class="d-none">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-eye me-2"></i>Önizleme - Eklenecek Ekipmanlar</h6>
+                            <div id="previewContent"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="importResults" class="d-none">
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle me-2"></i>İçe Aktarım Tamamlandı</h6>
+                            <div id="importSummary"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-success" id="startImportBtn">
+                        <i class="fas fa-upload me-2"></i>İçe Aktar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Detay Modalı -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

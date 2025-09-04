@@ -39,6 +39,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
     Route::post('/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
     Route::post('/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
+    Route::get('/stock/excel-template', [App\Http\Controllers\Admin\EquipmentStockController::class, 'downloadExcelTemplate'])->name('admin.stock.excel-template');
+    Route::post('/stock/preview-excel', [App\Http\Controllers\Admin\EquipmentStockController::class, 'previewExcel'])->name('admin.stock.preview-excel');
+    Route::post('/stock/import-excel', [App\Http\Controllers\Admin\EquipmentStockController::class, 'importExcel'])->name('admin.stock.import-excel');
     Route::get('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
     Route::put('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
     Route::delete('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');

@@ -9,6 +9,11 @@ use App\Models\EquipmentImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class EquipmentStockController extends Controller
 {
@@ -38,23 +43,8 @@ class EquipmentStockController extends Controller
      */
     private function generateQrCode($equipmentStock)
     {
-        // QR kod içeriği: ekipman bilgileri
-        $qrContent = json_encode([
-            'id' => $equipmentStock->id,
-            'equipment_name' => $equipmentStock->equipment->name ?? 'Bilinmeyen',
-            'code' => $equipmentStock->code,
-            'brand' => $equipmentStock->brand,
-            'model' => $equipmentStock->model,
-            'type' => 'equipment_stock'
-        ]);
-
-        // QR kod oluştur ve base64 olarak kaydet
-        $qrCode = QrCode::format('png')
-            ->size(300)
-            ->margin(10)
-            ->generate($qrContent);
-
-        return base64_encode($qrCode);
+        // QR kod oluşturma geçici olarak devre dışı
+        return '';
     }
 
     /**
@@ -64,10 +54,23 @@ class EquipmentStockController extends Controller
     {
         $pageTitle = 'Stok Yönetimi';
         
-        // Ekipman stoklarını, ilgili ekipman bilgisiyle birlikte sayfalayarak çekiyoruz
-        // Individual tracking kontrolü: Ayrı takip özelliği olan ekipmanlar için her kayıt ayrı gösterilir
-        $stocks = EquipmentStock::with(['equipment.category'])
-            ->orderBy('id', 'asc')
+        // Equipment tablosundaki verileri listele, stock_depo'dan miktar bilgisini al
+        $stocks = Equipment::with(['category'])
+            ->selectRaw('
+                equipments.id,
+                equipments.name,
+                equipments.category_id,
+                equipments.unit_type,
+                equipments.critical_level,
+                equipments.individual_tracking,
+                equipments.status,
+                equipments.created_at,
+                equipments.updated_at,
+                COALESCE(SUM(stock_depo.quantity), 0) as total_quantity
+            ')
+            ->leftJoin('stock_depo', 'equipments.id', '=', 'stock_depo.equipment_id')
+            ->groupBy('equipments.id', 'equipments.name', 'equipments.category_id', 'equipments.unit_type', 'equipments.critical_level', 'equipments.individual_tracking', 'equipments.status', 'equipments.created_at', 'equipments.updated_at')
+            ->orderBy('equipments.name', 'asc')
             ->paginate(15)
             ->withQueryString();
 
@@ -140,60 +143,58 @@ class EquipmentStockController extends Controller
      */
     public function getStockData(Request $request)
     {
-        $query = EquipmentStock::with(['equipment.category']);
+        $query = Equipment::with(['category'])
+            ->selectRaw('
+                equipments.id,
+                equipments.name,
+                equipments.category_id,
+                equipments.unit_type,
+                equipments.critical_level,
+                equipments.individual_tracking,
+                equipments.status,
+                equipments.created_at,
+                equipments.updated_at,
+                COALESCE(SUM(stock_depo.quantity), 0) as total_quantity
+            ')
+            ->leftJoin('stock_depo', 'equipments.id', '=', 'stock_depo.equipment_id');
 
         // Search filter
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->whereHas('equipment', function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            })->orWhere('code', 'like', "%{$search}%")
-              ->orWhere('brand', 'like', "%{$search}%")
-              ->orWhere('model', 'like', "%{$search}%");
+            $query->where('equipments.name', 'like', "%{$search}%");
         }
 
         // Category filter
         if ($request->has('category') && $request->category !== '') {
-            $query->whereHas('equipment', function($q) use ($request) {
-                $q->where('category_id', $request->category);
-            });
+            $query->where('equipments.category_id', $request->category);
         }
 
         // Status filter
         if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
+            $query->where('equipments.status', $request->status);
         }
 
-        $stocks = $query->orderBy('id', 'asc')->paginate(15);
+        $stocks = $query->groupBy('equipments.id', 'equipments.name', 'equipments.category_id', 'equipments.unit_type', 'equipments.critical_level', 'equipments.individual_tracking', 'equipments.status', 'equipments.created_at', 'equipments.updated_at')
+            ->orderBy('equipments.name', 'asc')
+            ->paginate(15);
 
         // Her stok için accessor'ları hesapla
         $stocks->getCollection()->transform(function ($stock) {
             // Ekipman ismi ve kategori bilgilerini ekle
-            $stock->name = $stock->equipment->name ?? null;
-            $stock->category = $stock->equipment->category ?? null;
+            $stock->name = $stock->name;
+            $stock->category = $stock->category;
             
-            // Diğer accessor'ları da hesapla
+            // Equipment modelindeki accessor'ları kullan
             $stock->row_class = $stock->getRowClassAttribute();
             $stock->bar_class = $stock->getBarClassAttribute();
             $stock->percentage = $stock->getPercentageAttribute();
             $stock->status_badge = $stock->getStatusBadgeAttribute();
-            $stock->total_quantity = $stock->getTotalQuantityAttribute();
+            $stock->stock_status = $stock->getStockStatusAttribute();
             $stock->unit_type_label = $stock->getUnitTypeLabelAttribute();
             $stock->critical_level = $stock->getCriticalLevelAttribute();
             
             return $stock;
         });
-
-        // Debug: İlk stok verisini kontrol et
-        if ($stocks->count() > 0) {
-            $firstStock = $stocks->first();
-            \Log::info('First stock data:', [
-                'id' => $firstStock->id,
-                'name' => $firstStock->name,
-                'category' => $firstStock->category ? $firstStock->category->name : 'null',
-                'equipment_name' => $firstStock->equipment ? $firstStock->equipment->name : 'null'
-            ]);
-        }
 
         return response()->json([
             'success' => true,
@@ -233,7 +234,7 @@ class EquipmentStockController extends Controller
             'quantity' => 'required|integer|min:1',
             'unit_type' => 'required|string',
             'critical_level' => 'nullable|numeric|min:0',
-            'code' => 'nullable|string|max:255|unique:stock_depo,code',
+            'code' => 'nullable|string|max:255',
             'qr_code' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'stock_status' => 'nullable|string|max:255',
@@ -247,7 +248,7 @@ class EquipmentStockController extends Controller
         $equipment = Equipment::create([
             'name' => $request->name,
             'category_id' => $request->category_id,
-            'critical_level' => $request->critical_level,
+            'critical_level' => $request->critical_level ?: 3, // Default 3
             'unit_type' => $request->unit_type,
             'individual_tracking' => $request->individual_tracking ? true : false,
             'status' => Equipment::STATUS_ACTIVE
@@ -294,6 +295,15 @@ class EquipmentStockController extends Controller
                 'equipment_id' => $equipment->id,
                 'path' => $photoPath,
                 'is_primary' => true
+            ]);
+        }
+
+        // AJAX isteği mi kontrol et
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Ekipman başarıyla eklendi!',
+                'equipment_id' => $equipment->id
             ]);
         }
 
@@ -419,6 +429,68 @@ class EquipmentStockController extends Controller
     public function validateCode(Request $request)
     {
         $code = $request->get('code');
+        $equipmentId = $request->get('equipment_id');
+        $operationType = $request->get('operation_type', 'in'); // Stok girişi/çıkışı
+        
+        if (!$code || trim($code) === '') {
+            return response()->json([
+                'valid' => true,
+                'message' => 'Kod boş bırakılabilir'
+            ]);
+        }
+        
+        // Stok çıkışında: Kodun mevcut olup olmadığını kontrol et
+        if ($operationType === 'out') {
+            if ($equipmentId) {
+                $equipment = Equipment::find($equipmentId);
+                if ($equipment && $equipment->individual_tracking) {
+                    // Ayrı takip: Bu ekipman için bu kod var mı?
+                    $exists = EquipmentStock::where('equipment_id', $equipmentId)
+                        ->where('code', $code)
+                        ->exists();
+                    
+                    return response()->json([
+                        'valid' => $exists,
+                        'message' => $exists ? 'Kod bulundu' : 'Bu kod bu ekipman için bulunamadı'
+                    ]);
+                } else {
+                    // Toplu takip: Bu kod var mı?
+                    $exists = EquipmentStock::where('code', $code)->exists();
+                    
+                    return response()->json([
+                        'valid' => $exists,
+                        'message' => $exists ? 'Kod bulundu' : 'Bu kod bulunamadı'
+                    ]);
+                }
+            }
+        }
+        
+        // Stok girişinde: Kod format ve unique kontrolü
+        // Kod format kontrolü (en az 3 karakter, alfanumerik)
+        if (strlen($code) < 3 || !preg_match('/^[A-Za-z0-9\-_]+$/', $code)) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Kod en az 3 karakter olmalı ve sadece harf, rakam, tire, alt çizgi içermeli'
+            ]);
+        }
+        
+        // Ayrı takip ekipmanları için aynı kod kullanılabilir (sadece aynı ekipman için)
+        if ($equipmentId) {
+            $equipment = Equipment::find($equipmentId);
+            if ($equipment && $equipment->individual_tracking) {
+                // Aynı ekipman için aynı kod kontrolü
+                $exists = EquipmentStock::where('equipment_id', $equipmentId)
+                    ->where('code', $code)
+                    ->exists();
+                
+                return response()->json([
+                    'valid' => !$exists,
+                    'message' => $exists ? 'Bu kod bu ekipman için zaten kullanılıyor' : 'Kod kullanılabilir'
+                ]);
+            }
+        }
+        
+        // Toplu takip ekipmanları için global unique kontrol
         $exists = EquipmentStock::where('code', $code)->exists();
         
         return response()->json([
@@ -458,11 +530,11 @@ class EquipmentStockController extends Controller
      */
     public function getEquipmentInfo($id)
     {
-        $stock = EquipmentStock::with(['equipment.category'])->findOrFail($id);
+        $equipment = Equipment::with(['category'])->findOrFail($id);
         
         return response()->json([
             'success' => true,
-            'data' => $stock
+            'data' => $equipment
         ]);
     }
 
@@ -487,35 +559,502 @@ class EquipmentStockController extends Controller
      */
     public function stockOperation(Request $request, $id)
     {
+        \Log::info('Stock operation request:', [
+            'id' => $id,
+            'operation_type' => $request->operation_type,
+            'amount' => $request->amount,
+            'all_data' => $request->all()
+        ]);
+        
+        // Validation öncesi kontrol
+        if (!$request->operation_type) {
+            \Log::error('operation_type is null or empty');
+            return response()->json([
+                'success' => false,
+                'message' => 'İşlem türü belirtilmedi'
+            ], 400);
+        }
+        
         $request->validate([
             'operation_type' => 'required|in:in,out',
             'amount' => 'required|integer|min:1',
-            'note' => 'nullable|string'
+            'note' => 'nullable|string',
+            'code' => 'nullable|string|max:255',
+            'brand' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'size' => 'nullable|string|max:255',
+            'feature' => 'nullable|string',
+            'use_same_properties' => 'nullable|boolean',
+            'use_single_image' => 'nullable|boolean',
+            'photos' => 'nullable|array',
+            'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $stock = EquipmentStock::findOrFail($id);
+        $equipment = Equipment::findOrFail($id);
         $operationType = $request->operation_type;
         $amount = $request->amount;
 
-        if ($operationType === 'out' && $stock->quantity < $amount) {
+        if ($operationType === 'in') {
+            if ($equipment->individual_tracking) {
+                // Ayrı takip: Her ekipman için ayrı kayıt oluştur
+                // Önce mevcut stok kaydından özellikleri kopyala
+                $existingStock = EquipmentStock::where('equipment_id', $equipment->id)->first();
+                
+                $brand = $request->brand ?: ($existingStock ? $existingStock->brand : null);
+                $model = $request->model ?: ($existingStock ? $existingStock->model : null);
+                $size = $request->size ?: ($existingStock ? $existingStock->size : null);
+                $feature = $request->feature ?: ($existingStock ? $existingStock->feature : null);
+                
+                for ($i = 0; $i < $amount; $i++) {
+                    $code = $request->code ?: $this->generateRandomCode();
+                    
+                    $equipmentStock = EquipmentStock::create([
+                        'equipment_id' => $equipment->id,
+                        'code' => $code,
+                        'brand' => $brand,
+                        'model' => $model,
+                        'size' => $size,
+                        'feature' => $feature,
+                        'quantity' => 1, // Ayrı takipte her zaman 1
+                        'status' => 'Aktif',
+                        'note' => $request->note
+                    ]);
+                    
+                    // QR kod oluştur
+                    $qrCode = $this->generateQrCode($equipmentStock);
+                    $equipmentStock->update(['qr_code' => $qrCode]);
+                }
+            } else {
+                // Toplu takip: Sadece equipment_id'ye göre mevcut stok kaydını bul
+                $existingStock = EquipmentStock::where('equipment_id', $equipment->id)->first();
+                
+                if ($existingStock) {
+                    // Mevcut stok varsa miktarı artır
+                    $existingStock->quantity += $amount;
+                    $existingStock->save();
+                } else {
+                    // Yeni stok kaydı oluştur
+                    $code = $request->code ?: $this->generateRandomCode();
+                    
+                    $equipmentStock = EquipmentStock::create([
+                        'equipment_id' => $equipment->id,
+                        'code' => $code,
+                        'brand' => $request->brand ?: null,
+                        'model' => $request->model ?: null,
+                        'size' => $request->size ?: null,
+                        'feature' => $request->feature ?: null,
+                        'quantity' => $amount,
+                        'status' => 'Aktif',
+                        'note' => $request->note
+                    ]);
+                    
+                    // QR kod oluştur
+                    $qrCode = $this->generateQrCode($equipmentStock);
+                    $equipmentStock->update(['qr_code' => $qrCode]);
+                }
+            }
+        } else {
+            // Stok çıkışı
+            if ($equipment->individual_tracking) {
+                // Ayrı takip: Belirtilen miktar kadar kayıt sil
+                $stocksToDelete = EquipmentStock::where('equipment_id', $equipment->id)
+                    ->limit($amount)
+                    ->get();
+                
+                if ($stocksToDelete->count() < $amount) {
             return response()->json([
                 'success' => false,
                 'message' => 'Yetersiz stok miktarı'
             ]);
         }
 
-        if ($operationType === 'in') {
-            $stock->quantity += $amount;
+                foreach ($stocksToDelete as $stock) {
+                    $stock->delete();
+                }
         } else {
-            $stock->quantity -= $amount;
-        }
-
+                // Toplu takip: Sadece equipment_id'ye göre stok kaydını bul
+                $stock = EquipmentStock::where('equipment_id', $equipment->id)->first();
+                
+                if (!$stock) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Stok bulunamadı'
+                    ]);
+                }
+                
+                if ($stock->quantity < $amount) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Yetersiz stok miktarı'
+                    ]);
+                }
+                
+                $stock->quantity -= $amount;
         $stock->save();
 
-        return response()->json([
+                // Miktar 0 olursa stok kaydını sil
+                if ($stock->quantity <= 0) {
+                    $stock->delete();
+                }
+            }
+        }
+
+        $response = [
             'success' => true,
-            'message' => 'Stok işlemi başarıyla gerçekleştirildi',
-            'new_quantity' => $stock->quantity
+            'message' => 'Stok işlemi başarıyla gerçekleştirildi'
+        ];
+        
+        \Log::info('Stock operation response:', $response);
+        
+        return response()->json($response);
+    }
+
+    /**
+     * Excel şablonu indir
+     */
+    public function downloadExcelTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Başlık satırı
+        $headers = [
+            'A1' => 'Kategori Adı',
+            'B1' => 'Ekipman Adı',
+            'C1' => 'Kod',
+            'D1' => 'Marka',
+            'E1' => 'Model',
+            'F1' => 'Beden',
+            'G1' => 'Özellik',
+            'H1' => 'Birim Türü',
+            'I1' => 'Miktar',
+            'J1' => 'Takip Türü',
+            'K1' => 'Durum',
+            'L1' => 'Not'
+        ];
+
+        // Başlıkları yaz
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
+
+        // Örnek veriler
+        $sampleData = [
+            ['Elektronik', 'Laptop', 'LAP-001', 'Dell', 'Inspiron 15', '15.6"', '8GB RAM, 256GB SSD', 'adet', '1', 'Ayrı Takip', 'Aktif', 'Ofis kullanımı için'],
+            ['Elektronik', 'Mouse', 'MOU-001', 'Logitech', 'M100', 'Standart', 'USB kablolu', 'adet', '5', 'Toplu Takip', 'Aktif', 'Genel kullanım'],
+            ['İnşaat', 'Çekiç', 'CEK-001', 'Bosch', 'GPH 12-30', '500g', 'Profesyonel', 'adet', '3', 'Toplu Takip', 'Aktif', 'İnşaat işleri'],
+            ['Ofis', 'Kalem', 'KAL-001', 'Pilot', 'G2', '0.7mm', 'Mavi mürekkep', 'adet', '50', 'Toplu Takip', 'Aktif', 'Ofis malzemesi']
+        ];
+
+        // Örnek verileri yaz
+        $row = 2;
+        foreach ($sampleData as $data) {
+            $col = 'A';
+            foreach ($data as $value) {
+                $sheet->setCellValue($col . $row, $value);
+                $col++;
+            }
+            $row++;
+        }
+
+        // Stil ayarları
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+        ];
+
+        // Başlık satırını stil
+        $sheet->getStyle('A1:L1')->applyFromArray($headerStyle);
+
+        // Sütun genişlikleri
+        $columnWidths = [
+            'A' => 15, 'B' => 20, 'C' => 12, 'D' => 15, 'E' => 15, 'F' => 10,
+            'G' => 25, 'H' => 12, 'I' => 8, 'J' => 12, 'K' => 10, 'L' => 20
+        ];
+
+        foreach ($columnWidths as $col => $width) {
+            $sheet->getColumnDimension($col)->setWidth($width);
+        }
+
+        // Açıklama satırları
+        $sheet->setCellValue('A' . ($row + 2), 'AÇIKLAMALAR:');
+        $sheet->setCellValue('A' . ($row + 3), '• Kategori Adı: Ekipmanın ait olduğu kategori (yoksa otomatik oluşturulur)');
+        $sheet->setCellValue('A' . ($row + 4), '• Takip Türü: "Ayrı Takip" veya "Toplu Takip"');
+        $sheet->setCellValue('A' . ($row + 5), '• Birim Türü: adet, metre, kilogram, litre, paket, kutu, çift, takım');
+        $sheet->setCellValue('A' . ($row + 6), '• Durum: Aktif, Pasif, Arızalı, Bakımda');
+        $sheet->setCellValue('A' . ($row + 7), '• Kod: Boş bırakılırsa otomatik oluşturulur');
+
+        // Açıklama stil
+        $sheet->getStyle('A' . ($row + 2) . ':L' . ($row + 7))->getFont()->setBold(true);
+        $sheet->getStyle('A' . ($row + 2) . ':L' . ($row + 7))->getFill()
+            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F2F2F2');
+
+        $writer = new Xlsx($spreadsheet);
+        
+        $filename = 'ekipman_import_sablonu_' . date('Y-m-d_H-i-s') . '.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
         ]);
+    }
+
+    /**
+     * Excel dosyasını önizle
+     */
+    public function previewExcel(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240'
+        ]);
+
+        try {
+            $file = $request->file('excel_file');
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $highestRow = $worksheet->getHighestRow();
+            
+            $previewData = [];
+            $errors = [];
+            
+            // İlk satır başlık, 2. satırdan başla
+            for ($row = 2; $row <= min($highestRow, 11); $row++) { // İlk 10 satırı önizle
+                $categoryName = trim($worksheet->getCell('A' . $row)->getValue() ?? '');
+                $equipmentName = trim($worksheet->getCell('B' . $row)->getValue() ?? '');
+                $code = trim($worksheet->getCell('C' . $row)->getValue() ?? '');
+                $brand = trim($worksheet->getCell('D' . $row)->getValue() ?? '');
+                $model = trim($worksheet->getCell('E' . $row)->getValue() ?? '');
+                $size = trim($worksheet->getCell('F' . $row)->getValue() ?? '');
+                $feature = trim($worksheet->getCell('G' . $row)->getValue() ?? '');
+                $unitType = trim($worksheet->getCell('H' . $row)->getValue() ?? '');
+                $quantity = trim($worksheet->getCell('I' . $row)->getValue() ?? '');
+                $trackingType = trim($worksheet->getCell('J' . $row)->getValue() ?? '');
+                $status = trim($worksheet->getCell('K' . $row)->getValue() ?? '');
+                $note = trim($worksheet->getCell('L' . $row)->getValue() ?? '');
+                
+                // Boş satırları atla
+                if (empty($categoryName) && empty($equipmentName)) {
+                    continue;
+                }
+                
+                // Açıklama satırlarını atla (AÇIKLAMALAR: ile başlayan)
+                if (strpos($categoryName, 'AÇIKLAMALAR') === 0 || 
+                    strpos($categoryName, '•') === 0 ||
+                    strpos($equipmentName, 'AÇIKLAMALAR') === 0 ||
+                    strpos($equipmentName, '•') === 0) {
+                    continue;
+                }
+                
+                // Validasyon - sadece gerçekten gerekli alanları kontrol et
+                $rowErrors = [];
+                if (empty($categoryName)) $rowErrors[] = 'Kategori adı gerekli';
+                if (empty($equipmentName)) $rowErrors[] = 'Ekipman adı gerekli';
+                
+                $previewData[] = [
+                    'row' => $row,
+                    'category_name' => $categoryName,
+                    'equipment_name' => $equipmentName,
+                    'code' => $code ?: 'Otomatik oluşturulacak',
+                    'brand' => $brand,
+                    'model' => $model,
+                    'size' => $size,
+                    'feature' => $feature,
+                    'unit_type' => $unitType ?: 'adet',
+                    'quantity' => $quantity ?: '1',
+                    'tracking_type' => $trackingType ?: 'Toplu Takip',
+                    'status' => $status ?: 'Aktif',
+                    'note' => $note,
+                    'errors' => $rowErrors
+                ];
+                
+                if (!empty($rowErrors)) {
+                    $errors[] = "Satır {$row}: " . implode(', ', $rowErrors);
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'preview' => $previewData,
+                'total_rows' => $highestRow - 1, // Başlık satırını çıkar
+                'errors' => $errors
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Excel dosyası okunamadı: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Excel dosyasını içe aktar
+     */
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240'
+        ]);
+
+        try {
+            $file = $request->file('excel_file');
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $highestRow = $worksheet->getHighestRow();
+            
+            $summary = [
+                'success' => 0,
+                'skipped' => 0,
+                'errors' => 0,
+                'categories_created' => 0
+            ];
+            $errors = [];
+            $skipDuplicates = $request->boolean('skip_duplicates', true);
+            $createCategories = $request->boolean('create_categories', true);
+            
+            // İlk satır başlık, 2. satırdan başla
+            for ($row = 2; $row <= $highestRow; $row++) {
+                $categoryName = trim($worksheet->getCell('A' . $row)->getValue() ?? '');
+                $equipmentName = trim($worksheet->getCell('B' . $row)->getValue() ?? '');
+                $code = trim($worksheet->getCell('C' . $row)->getValue() ?? '');
+                $brand = trim($worksheet->getCell('D' . $row)->getValue() ?? '');
+                $model = trim($worksheet->getCell('E' . $row)->getValue() ?? '');
+                $size = trim($worksheet->getCell('F' . $row)->getValue() ?? '');
+                $feature = trim($worksheet->getCell('G' . $row)->getValue() ?? '');
+                $unitType = trim($worksheet->getCell('H' . $row)->getValue() ?? '');
+                $quantity = trim($worksheet->getCell('I' . $row)->getValue() ?? '');
+                $trackingType = trim($worksheet->getCell('J' . $row)->getValue() ?? '');
+                $status = trim($worksheet->getCell('K' . $row)->getValue() ?? '');
+                $note = trim($worksheet->getCell('L' . $row)->getValue() ?? '');
+                
+                // Boş satırları atla
+                if (empty($categoryName) && empty($equipmentName)) {
+                    continue;
+                }
+                
+                // Açıklama satırlarını atla
+                if (strpos($categoryName, 'AÇIKLAMALAR') === 0 || 
+                    strpos($categoryName, '•') === 0 ||
+                    strpos($equipmentName, 'AÇIKLAMALAR') === 0 ||
+                    strpos($equipmentName, '•') === 0) {
+                    continue;
+                }
+                
+                try {
+                    // Kategori kontrolü ve oluşturma
+                    $category = EquipmentCategory::where('name', $categoryName)->first();
+                    if (!$category && $createCategories) {
+                        $category = EquipmentCategory::create([
+                            'name' => $categoryName,
+                            'description' => 'Excel import ile oluşturuldu'
+                        ]);
+                        $summary['categories_created']++;
+                    } elseif (!$category) {
+                        $errors[] = "Satır {$row}: Kategori '{$categoryName}' bulunamadı";
+                        $summary['errors']++;
+                        continue;
+                    }
+                    
+                    // Ekipman kontrolü ve oluşturma
+                    $equipment = Equipment::where('name', $equipmentName)
+                        ->where('category_id', $category->id)
+                        ->first();
+                    
+                    if (!$equipment) {
+                        $equipment = Equipment::create([
+                            'name' => $equipmentName,
+                            'category_id' => $category->id,
+                            'unit_type' => strtolower($unitType ?: 'adet'),
+                            'individual_tracking' => $trackingType === 'Ayrı Takip'
+                        ]);
+                    }
+                    
+                    // Takip türüne göre işlem
+                    if ($trackingType === 'Ayrı Takip') {
+                        // Ayrı takip: Her ekipman için ayrı stok kaydı
+                        if (empty($code)) {
+                            $code = $this->generateRandomCode();
+                        }
+                        
+                        // Mükerrer kod kontrolü
+                        $existingStock = EquipmentStock::where('code', $code)->first();
+                        if ($existingStock && $skipDuplicates) {
+                            $summary['skipped']++;
+                            continue;
+                        } elseif ($existingStock) {
+                            $errors[] = "Satır {$row}: Kod '{$code}' zaten mevcut";
+                            $summary['errors']++;
+                            continue;
+                        }
+                        
+                        // Yeni stok kaydı oluştur
+                        EquipmentStock::create([
+                            'equipment_id' => $equipment->id,
+                            'code' => $code,
+                            'brand' => $brand,
+                            'model' => $model,
+                            'size' => $size,
+                            'feature' => $feature,
+                            'quantity' => 1, // Ayrı takip için her zaman 1
+                            'status' => $status ?: 'Aktif',
+                            'note' => $note
+                        ]);
+                        
+                    } else {
+                        // Toplu takip: Aynı ekipman için miktarı artır
+                        $existingStock = EquipmentStock::where('equipment_id', $equipment->id)
+                            ->where('brand', $brand)
+                            ->where('model', $model)
+                            ->where('size', $size)
+                            ->where('feature', $feature)
+                            ->first();
+                        
+                        if ($existingStock) {
+                            // Mevcut stok varsa miktarı artır
+                            $existingStock->quantity += is_numeric($quantity) ? (int)$quantity : 1;
+                            $existingStock->save();
+                        } else {
+                            // Yeni stok kaydı oluştur
+                            $code = $code ?: $this->generateRandomCode();
+                            
+                            EquipmentStock::create([
+                                'equipment_id' => $equipment->id,
+                                'code' => $code,
+                                'brand' => $brand,
+                                'model' => $model,
+                                'size' => $size,
+                                'feature' => $feature,
+                                'quantity' => is_numeric($quantity) ? (int)$quantity : 1,
+                                'status' => $status ?: 'Aktif',
+                                'note' => $note
+                            ]);
+                        }
+                    }
+                    
+                    $summary['success']++;
+                    
+                } catch (\Exception $e) {
+                    $errors[] = "Satır {$row}: " . $e->getMessage();
+                    $summary['errors']++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Import işlemi tamamlandı',
+                'summary' => $summary,
+                'errors' => $errors
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import işlemi başarısız: ' . $e->getMessage()
+            ]);
+        }
     }
 }

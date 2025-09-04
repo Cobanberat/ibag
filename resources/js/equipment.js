@@ -526,3 +526,267 @@ window.downloadQrCode = function() {
         document.body.removeChild(link);
     }
 };
+
+// Excel Import fonksiyonları
+document.addEventListener('DOMContentLoaded', function() {
+    const importExcelBtn = document.getElementById('importExcelBtn');
+    const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+    const startImportBtn = document.getElementById('startImportBtn');
+    const importExcelModal = document.getElementById('importExcelModal');
+    const importExcelForm = document.getElementById('importExcelForm');
+    const importProgress = document.getElementById('importProgress');
+    const importResults = document.getElementById('importResults');
+    const importPreview = document.getElementById('importPreview');
+    const previewContent = document.getElementById('previewContent');
+    const excelFileInput = document.getElementById('excelFile');
+
+    // Excel import butonuna tıklama
+    if (importExcelBtn) {
+        importExcelBtn.addEventListener('click', function() {
+            // Modal'ı sıfırla
+            resetImportModal();
+            new bootstrap.Modal(importExcelModal).show();
+        });
+    }
+
+    // Şablon indirme butonuna tıklama
+    if (downloadTemplateBtn) {
+        downloadTemplateBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Doğrudan link ile indir
+            const link = document.createElement('a');
+            link.href = '/admin/stock/excel-template';
+            link.download = 'ekipman_import_sablonu.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    // Import başlatma butonuna tıklama
+    if (startImportBtn) {
+        startImportBtn.addEventListener('click', function() {
+            const fileInput = document.getElementById('excelFile');
+            if (!fileInput.files.length) {
+                alert('Lütfen bir Excel dosyası seçin.');
+                return;
+            }
+
+            startImport();
+        });
+    }
+
+    // Dosya seçildiğinde önizleme yap
+    if (excelFileInput) {
+        excelFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                previewExcelFile();
+            }
+        });
+    }
+
+    // Modal'ı sıfırlama fonksiyonu
+    function resetImportModal() {
+        if (importExcelForm) importExcelForm.reset();
+        if (importProgress) importProgress.classList.add('d-none');
+        if (importResults) importResults.classList.add('d-none');
+        if (importPreview) importPreview.classList.add('d-none');
+        if (startImportBtn) startImportBtn.disabled = false;
+    }
+
+    // Excel dosyasını önizleme fonksiyonu
+    function previewExcelFile() {
+        const formData = new FormData();
+        formData.append('excel_file', excelFileInput.files[0]);
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+        // UI'yi güncelle
+        if (importPreview) importPreview.classList.remove('d-none');
+        if (importResults) importResults.classList.add('d-none');
+        if (previewContent) previewContent.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Dosya okunuyor...</div>';
+
+        fetch('/admin/stock/preview-excel', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showPreview(data);
+            } else {
+                throw new Error(data.message || 'Önizleme oluşturulamadı');
+            }
+        })
+        .catch(error => {
+            console.error('Preview error:', error);
+            if (previewContent) {
+                previewContent.innerHTML = `<div class="alert alert-danger">Hata: ${error.message}</div>`;
+            }
+        });
+    }
+
+    // Önizleme gösterme fonksiyonu
+    function showPreview(data) {
+        if (!previewContent) return;
+
+        let html = `
+            <div class="mb-3">
+                <strong>Toplam Satır:</strong> ${data.total_rows} 
+                ${data.errors && data.errors.length > 0 ? `<span class="text-danger">(${data.errors.length} hata)</span>` : ''}
+            </div>
+        `;
+
+        if (data.errors && data.errors.length > 0) {
+            html += `
+                <div class="alert alert-warning mb-3">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Uyarılar:</h6>
+                    <ul class="mb-0">
+                        ${data.errors.map(error => `<li>${error}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        if (data.preview && data.preview.length > 0) {
+            html += `
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Satır</th>
+                                <th>Kategori</th>
+                                <th>Ekipman</th>
+                                <th>Kod</th>
+                                <th>Marka</th>
+                                <th>Model</th>
+                                <th>Miktar</th>
+                                <th>Takip</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.preview.map(item => `
+                                <tr class="${item.errors.length > 0 ? 'table-warning' : ''}">
+                                    <td>${item.row}</td>
+                                    <td>${item.category_name}</td>
+                                    <td>${item.equipment_name}</td>
+                                    <td>${item.code}</td>
+                                    <td>${item.brand}</td>
+                                    <td>${item.model}</td>
+                                    <td>${item.quantity}</td>
+                                    <td><span class="badge ${item.tracking_type === 'Ayrı Takip' ? 'bg-info' : 'bg-secondary'}">${item.tracking_type}</span></td>
+                                    <td>${item.status}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            html += '<div class="alert alert-info">Önizlenecek veri bulunamadı.</div>';
+        }
+
+        previewContent.innerHTML = html;
+    }
+
+    // Import başlatma fonksiyonu
+    function startImport() {
+        const formData = new FormData(importExcelForm);
+        
+        // UI'yi güncelle
+        if (importProgress) importProgress.classList.remove('d-none');
+        if (importResults) importResults.classList.add('d-none');
+        if (startImportBtn) startImportBtn.disabled = true;
+
+        // Progress bar'ı başlat
+        updateProgress(0, 'Dosya yükleniyor...');
+
+        // AJAX ile dosyayı gönder
+        fetch('/admin/stock/import-excel', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateProgress(100, 'İşlem tamamlandı!');
+                showImportResults(data);
+            } else {
+                throw new Error(data.message || 'Import işlemi başarısız');
+            }
+        })
+        .catch(error => {
+            console.error('Import error:', error);
+            updateProgress(0, 'Hata: ' + error.message);
+            alert('Import işlemi başarısız: ' + error.message);
+        })
+        .finally(() => {
+            if (startImportBtn) startImportBtn.disabled = false;
+        });
+    }
+
+    // Progress güncelleme fonksiyonu
+    function updateProgress(percent, status) {
+        const progressBar = document.querySelector('#importProgress .progress-bar');
+        const statusText = document.getElementById('importStatus');
+        
+        if (progressBar) {
+            progressBar.style.width = percent + '%';
+            progressBar.setAttribute('aria-valuenow', percent);
+        }
+        
+        if (statusText) {
+            statusText.textContent = status;
+        }
+    }
+
+    // Import sonuçlarını gösterme fonksiyonu
+    function showImportResults(data) {
+        const importResults = document.getElementById('importResults');
+        const importSummary = document.getElementById('importSummary');
+        
+        if (importResults) importResults.classList.remove('d-none');
+        
+        if (importSummary && data.summary) {
+            importSummary.innerHTML = `
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success">${data.summary.success || 0}</h4>
+                            <small>Başarılı</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-warning">${data.summary.skipped || 0}</h4>
+                            <small>Atlandı</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-danger">${data.summary.errors || 0}</h4>
+                            <small>Hata</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info">${data.summary.categories_created || 0}</h4>
+                            <small>Yeni Kategori</small>
+                        </div>
+                    </div>
+                </div>
+                ${data.errors && data.errors.length > 0 ? `
+                    <div class="mt-3">
+                        <h6>Hatalar:</h6>
+                        <ul class="list-unstyled">
+                            ${data.errors.map(error => `<li class="text-danger">• ${error}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            `;
+        }
+    }
+});
