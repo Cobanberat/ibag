@@ -32,6 +32,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     
     // Stock routes
     Route::get('/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
+    Route::post('/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'store'])->name('admin.stock.store');
     Route::get('/stock/data', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStockData'])->name('admin.stock.data');
     Route::get('/stock/statistics', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStatistics'])->name('admin.stock.statistics');
     Route::get('/stock/validate-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateCode'])->name('admin.stock.validate-code');
@@ -45,6 +46,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
     Route::put('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
     Route::delete('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
+    Route::post('/stock/{id}/repair', [App\Http\Controllers\Admin\EquipmentStockController::class, 'repair'])->name('admin.stock.repair');
+    Route::post('/stock/{id}/complete-maintenance', [App\Http\Controllers\Admin\EquipmentStockController::class, 'completeMaintenance'])->name('admin.stock.complete-maintenance');
 
     // Stok ekleme formunu göster
     Route::get('/Ekle', function () {
@@ -52,8 +55,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         return view('admin.stock.create', compact('categories'));
     })->name('stock.create');
 
-    // Stok ekleme işlemi
-    Route::post('/stock', [EquipmentStockController::class, 'store'])->name('stock.store');
+    // Stok ekleme işlemi - admin.stock.store route'u yukarıda tanımlı
 
     // Category routes
     Route::get('/kategori', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.kategori');

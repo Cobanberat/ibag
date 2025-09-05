@@ -239,16 +239,16 @@ function loadStockData(page = 1) {
 
     // Loading indicator göster
     const tbody = document.getElementById('stockTableBody');
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="8" class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Yükleniyor...</span>
-                </div>
-                <p class="mt-2 text-muted">Veriler yükleniyor...</p>
-            </td>
-        </tr>
-    `;
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+                </td>
+            </tr>
+        `;
 
     fetch(`/admin/stock/data?search=${encodeURIComponent(searchValue)}&category=${encodeURIComponent(categoryValue)}&page=${page}`, {
         method: 'GET',
@@ -850,7 +850,7 @@ function deleteStock(stockId) {
                     if (tbody && tbody.children.length === 0) {
                         tbody.innerHTML = `
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="9" class="text-center py-4">
                                     <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz stok bulunmuyor</p>
                                 </td>
@@ -878,7 +878,7 @@ function renderStockTable(stocks) {
     if (stocks.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-4">
+                <td colspan="9" class="text-center py-4">
                     <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
                     <p class="text-muted">Stok bulunamadı</p>
                 </td>
@@ -918,6 +918,12 @@ function renderStockTable(stocks) {
                 </td>
                 <td>${totalQuantity}</td>
                 <td>${criticalLevel}</td>
+                <td>
+                    ${stock.individual_tracking ? 
+                        '<span class="badge bg-primary"><i class="fas fa-user"></i> Ayrı Takip</span>' : 
+                        '<span class="badge bg-secondary"><i class="fas fa-layer-group"></i> Toplu Takip</span>'
+                    }
+                </td>
                 <td>
                     <div class="progress" style="height: 10px;">
                         <div class="progress-bar ${barClass}" style="width: ${percentage}%"></div>
@@ -1061,12 +1067,14 @@ function addStock() {
             formData.append('photos[]', photoFile);
         }
         
-    // Stok girişi işlemi
+            // Stok girişi işlemi
         fetch(`/admin/stock/${equipmentId}/operation`, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': getCsrfToken()
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
         })
                     .then(response => {
@@ -1127,7 +1135,9 @@ function addStock() {
         method: 'POST',
         body: formData,
         headers: {
-                'X-CSRF-TOKEN': getCsrfToken()
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
         })
         .then(response => {
@@ -1248,7 +1258,7 @@ function deleteSelectedStocks() {
                     if (tbody && tbody.children.length === 0) {
                         tbody.innerHTML = `
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="9" class="text-center py-4">
                                     <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz stok bulunmuyor</p>
                                 </td>

@@ -224,6 +224,7 @@ class EquipmentStockController extends Controller
      */
     public function store(Request $request)
     {
+        
         $request->validate([
             'category_id' => 'required|exists:equipment_categories,id',
             'name' => 'required|string|max:255',
@@ -237,7 +238,6 @@ class EquipmentStockController extends Controller
             'code' => 'nullable|string|max:255',
             'qr_code' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
-            'stock_status' => 'nullable|string|max:255',
             'next_maintenance_date' => 'nullable|date',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'note' => 'nullable|string',
@@ -273,7 +273,7 @@ class EquipmentStockController extends Controller
             'model' => $request->model,
             'size' => $request->size,
             'feature' => $request->feature,
-            'status' => $request->stock_status ?: 'Aktif',
+            'status' => 'Aktif',
             'code' => $code,
             'qr_code' => $request->qr_code,
             'location' => $request->location,
@@ -282,6 +282,8 @@ class EquipmentStockController extends Controller
             'next_maintenance_date' => $request->next_maintenance_date,
             'photo_path' => $photoPath
         ]);
+
+        // Arızalı ve bakımda ekipmanları sadece stok tablosuna kaydet, faults tablosuna kaydetme
 
         // Eğer QR kod girilmemişse otomatik oluştur
         if (!$request->qr_code) {
@@ -299,7 +301,7 @@ class EquipmentStockController extends Controller
         }
 
         // AJAX isteği mi kontrol et
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
                 'message' => 'Ekipman başarıyla eklendi!',
@@ -308,6 +310,84 @@ class EquipmentStockController extends Controller
         }
 
         return redirect()->route('admin.equipments')->with('success', 'Ekipman başarıyla eklendi!');
+    }
+
+    /**
+     * Repair equipment (fix fault)
+     */
+    public function repair($id)
+    {
+        try {
+            $equipmentStock = EquipmentStock::findOrFail($id);
+            
+            // Ekipman durumunu aktif yap
+            $equipmentStock->status = 'Aktif';
+            $equipmentStock->save();
+            
+            // Aktif arıza kaydını çözüldü olarak işaretle
+            $fault = \App\Models\Fault::where('equipment_stock_id', $id)
+                ->where('type', 'arıza')
+                ->whereIn('status', ['Beklemede', 'İşlemde'])
+                ->first();
+                
+            if ($fault) {
+                $fault->status = 'Çözüldü';
+                $fault->resolved_date = now()->toDateString();
+                $fault->resolved_by = auth()->id();
+                $fault->resolution_note = 'Ekipman tamir edildi';
+                $fault->save();
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Ekipman başarıyla tamir edildi!'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hata: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Complete maintenance
+     */
+    public function completeMaintenance($id)
+    {
+        try {
+            $equipmentStock = EquipmentStock::findOrFail($id);
+            
+            // Ekipman durumunu aktif yap
+            $equipmentStock->status = 'Aktif';
+            $equipmentStock->save();
+            
+            // Aktif bakım kaydını çözüldü olarak işaretle
+            $fault = \App\Models\Fault::where('equipment_stock_id', $id)
+                ->where('type', 'bakım')
+                ->whereIn('status', ['Beklemede', 'İşlemde'])
+                ->first();
+                
+            if ($fault) {
+                $fault->status = 'Çözüldü';
+                $fault->resolved_date = now()->toDateString();
+                $fault->resolved_by = auth()->id();
+                $fault->resolution_note = 'Bakım tamamlandı';
+                $fault->save();
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Bakım başarıyla tamamlandı!'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hata: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

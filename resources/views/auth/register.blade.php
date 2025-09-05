@@ -9,7 +9,7 @@
     <meta name="keywords" content="ibag, ekipman, yönetim, sistem, kayıt">
 
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/favicon.ico" />
+    <link rel="shortcut icon" href="{{ asset('images/ibag-logo.svg') }}" type="image/svg+xml" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -192,7 +192,7 @@
         .brand-logo {
             width: 60px;
             height: 60px;
-            background: rgba(255, 255, 255, 0.2);
+            background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -311,7 +311,7 @@
         <div class="register-card">
             <div class="register-header">
                 <div class="brand-logo">
-                    <i class="fas fa-user-plus"></i>
+                    <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 50px; height: 50px;">
                 </div>
                 <h1>İBAG</h1>
                 <p>Hesap Oluştur</p>

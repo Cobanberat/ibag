@@ -23,8 +23,9 @@
             @endforeach
         </select>
         <button class="btn btn-sm btn-outline-secondary" id="clearFiltersBtn"><i class="fas fa-times"></i> Temizle</button>
-        <button class="btn btn-add-product d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
-            <i class="fas fa-plus"></i> Yeni Ekipman
+        <button class="btn btn-add-equipment d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <i class="fas fa-plus"></i>
+            <span>Yeni Ekipman Ekle</span>
         </button>
     </div>
     <!-- Ürün Ekle Modal -->
@@ -171,25 +172,6 @@
                             </div>
                         </div>
 
-                        <!-- Ortak Alanlar -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Konum</label>
-                                    <input type="text" class="form-control" name="location" placeholder="Örn: Depo A, Raf 1">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Durum</label>
-                                    <select class="form-select border-0" name="stock_status" style="background:#fff; border-radius:0.5em; border:1.5px solid #e3e6ea;">
-                                        <option value="Aktif">Aktif</option>
-                                        <option value="Pasif">Pasif</option>
-                                        <option value="Bakımda">Bakımda</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Resim Seçenekleri -->
                         <div class="mb-3">
@@ -298,6 +280,7 @@
                             <th>Birim Türü</th>
                             <th>Miktar</th>
                             <th>Kritik Seviye</th>
+                            <th>Takip Türü</th>
                             <th>Stok Durumu</th>
                             <th>İşlemler</th>
                         </tr>
@@ -308,7 +291,6 @@
                                 <td><input type="checkbox" class="stock-checkbox" value="{{ $stock->id }}"></td>
                                 <td>
                                     <span class="fw-bold">{{ $stock->name ?? '-' }}</span>
-                                    <br><small class="text-muted">{{ $stock->code ?? '-' }}</small>
                                 </td>
                                 <td>{{ $stock->category->name ?? '-' }}</td>
                                 <td>
@@ -317,12 +299,23 @@
                                 <td>{{ $stock->total_quantity }}</td>
                                 <td>{{ $stock->critical_level }}</td>
                                 <td>
+                                    @if($stock->individual_tracking)
+                                        <span class="badge bg-primary"><i class="fas fa-user"></i> Ayrı Takip</span>
+                                    @else
+                                        <span class="badge bg-secondary"><i class="fas fa-layer-group"></i> Toplu Takip</span>
+                                    @endif
+                                </td>
+                                <td>
                                     <div class="progress" style="height: 10px;">
                                         <div class="progress-bar {{ $stock->bar_class }}" style="width: {{ $stock->percentage }}%"></div>
                                     </div>
                                 </td>
                                 <td>
-                                    @if($stock->stock_status === 'Tükendi')
+                                    @if($stock->status === 'Arızalı')
+                                        <span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Arızalı</span>
+                                    @elseif($stock->status === 'Bakımda')
+                                        <span class="badge bg-warning"><i class="fas fa-tools"></i> Bakımda</span>
+                                    @elseif($stock->stock_status === 'Tükendi')
                                         <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>
                                     @elseif($stock->stock_status === 'Az')
                                         <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>
@@ -332,15 +325,31 @@
                                 </td>
                                 
                                 <td class="category-actions">
-                                    <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="editStock({{ $stock->id }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockIn({{ $stock->id }})">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                    <button class="btn btn-outline-warning btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockOut({{ $stock->id }})">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
+                                    @if($stock->status === 'Arızalı')
+                                        <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="viewFault({{ $stock->id }})" title="Arıza Detayı">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="repairEquipment({{ $stock->id }})" title="Tamir Et">
+                                            <i class="fas fa-wrench"></i>
+                                        </button>
+                                    @elseif($stock->status === 'Bakımda')
+                                        <button class="btn btn-outline-warning btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="viewMaintenance({{ $stock->id }})" title="Bakım Detayı">
+                                            <i class="fas fa-tools"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="completeMaintenance({{ $stock->id }})" title="Bakımı Tamamla">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    @else
+                                        <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="editStock({{ $stock->id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockIn({{ $stock->id }})">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockOut({{ $stock->id }})">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    @endif
                                     <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="deleteStock({{ $stock->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -588,5 +597,105 @@
 <!-- KALDIRILDI: Ayrı düzenleme modalı (tek modal mimarisi için) -->
 
 @endsection
+
+<style>
+.btn-add-equipment {
+    background: linear-gradient(135deg, #3b7ddd 0%, #2f64b1 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 125, 221, 0.3);
+}
+
+.btn-add-equipment:hover {
+    background: linear-gradient(135deg, #2f64b1 0%, #1e4a8c 100%);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 125, 221, 0.4);
+}
+
+.btn-add-equipment:active {
+    transform: translateY(0);
+}
+
+.btn-add-equipment:focus {
+    box-shadow: 0 0 0 0.2rem rgba(59, 125, 221, 0.25);
+    outline: none;
+}
+
+.btn-add-equipment i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+</style>
+
+<script>
+
+// Arıza detayını görüntüle
+function viewFault(stockId) {
+    window.location.href = `/admin/fault/status?stock_id=${stockId}`;
+}
+
+// Ekipmanı tamir et
+function repairEquipment(stockId) {
+    if (confirm('Bu ekipmanı tamir edildi olarak işaretlemek istediğinizden emin misiniz?')) {
+        // AJAX ile tamir işlemi
+        fetch(`/admin/stock/${stockId}/repair`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu');
+        });
+    }
+}
+
+// Bakım detayını görüntüle
+function viewMaintenance(stockId) {
+    window.location.href = `/admin/fault/status?stock_id=${stockId}&type=bakım`;
+}
+
+// Bakımı tamamla
+function completeMaintenance(stockId) {
+    if (confirm('Bu ekipmanın bakımını tamamlandı olarak işaretlemek istediğinizden emin misiniz?')) {
+        // AJAX ile bakım tamamlama işlemi
+        fetch(`/admin/stock/${stockId}/complete-maintenance`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu');
+        });
+    }
+}
+</script>
 
 @vite('resources/js/stock.js')

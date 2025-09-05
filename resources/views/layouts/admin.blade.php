@@ -12,7 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/favicon.ico" />
+    <link rel="shortcut icon" href="{{ asset('images/ibag-logo.svg') }}" type="image/svg+xml" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.0.7/datatables.min.css" />
     <link rel="stylesheet"
@@ -62,6 +62,7 @@
     <nav id="sidebar" class="sidebar js-sidebar">
         <div class="sidebar-content js-simplebar">
             <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">
+                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 40px; height: 40px; margin-right: 10px;">
                 <span class="align-middle">İBAG Panel</span>
             </a>
 
