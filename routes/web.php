@@ -38,6 +38,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/stock/validate-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateCode'])->name('admin.stock.validate-code');
     Route::get('/stock/validate-reference-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateReferenceCode'])->name('admin.stock.validate-reference-code');
     Route::get('/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
+    Route::get('/stock/{id}/codes', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentCodes'])->name('admin.stock.codes');
     Route::post('/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
     Route::post('/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
     Route::get('/stock/excel-template', [App\Http\Controllers\Admin\EquipmentStockController::class, 'downloadExcelTemplate'])->name('admin.stock.excel-template');
@@ -82,9 +83,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     });
 
     // Status Check routes
-    Route::get('/durumKontrol', [App\Http\Controllers\Admin\StatusCheckController::class, 'index'])->name('admin.statusCheck');
-    Route::get('/durumKontrol/detail', [App\Http\Controllers\Admin\StatusCheckController::class, 'getDetail'])->name('admin.statusCheck.detail');
-    Route::post('/durumKontrol/update-status', [App\Http\Controllers\Admin\StatusCheckController::class, 'updateStatus'])->name('admin.statusCheck.updateStatus'); 
+    // Route::get('/durumKontrol', [App\Http\Controllers\Admin\StatusCheckController::class, 'index'])->name('admin.statusCheck');
+    // Route::get('/durumKontrol/detail', [App\Http\Controllers\Admin\StatusCheckController::class, 'getDetail'])->name('admin.statusCheck.detail');
+    // Route::post('/durumKontrol/update-status', [App\Http\Controllers\Admin\StatusCheckController::class, 'updateStatus'])->name('admin.statusCheck.updateStatus'); 
 
     // Requests routes
     Route::get('/Talep', function () {
@@ -92,9 +93,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     })->name('requests.index');
 
     // Fault Status routes
-    Route::get('/ArizaDurumu', function () {
-        return view('admin.fault.Status');
-    })->name('fault.status');
+ 
 
     // Reporting routes
     Route::get('/raporlama', function () {
@@ -118,6 +117,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/finish/{id}', [AssignmentController::class, 'finish'])->name('assignments.finish');
     Route::get('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'create'])->name('admin.zimmetAl');
     Route::post('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'store'])->name('admin.zimmetAl.store');
+    Route::get('/assignment-item/{id}/photos', [App\Http\Controllers\Admin\AssignmentController::class, 'itemPhotos'])->name('admin.assignmentItem.photos');
 
     // Equipment routes
     Route::get('/ekipmanlar', [App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipments');

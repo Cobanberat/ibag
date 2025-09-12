@@ -52,6 +52,11 @@
             border-radius: 0.5em;
         }
 
+        .priority-yüksek { background: #dc3545; color: white; }
+        .priority-normal { background: #28a745; color: white; }
+        .priority-acil { background: #dc3545; color: white; }
+        
+        /* Fallback for different priority values */
         .priority-high { background: #dc3545; color: white; }
         .priority-medium { background: #ffc107; color: black; }
         .priority-low { background: #28a745; color: white; }
@@ -237,7 +242,7 @@
                                                 @endif
                                                 <div>
                                                     <strong>{{ $fault->equipmentStock->equipment->name ?? 'Bilinmeyen' }}</strong>
-                                                    <br><small class="text-muted">{{ $fault->equipmentStock->equipment->code ?? 'Kod yok' }}</small>
+                                                    <br><small class="text-muted">{{ $fault->equipmentStock->code ?? 'Kod yok' }}</small>
                                                 </div>
                                             </div>
                                         </td>
@@ -266,9 +271,6 @@
                                                 </button>
                                                 <button class="btn btn-success btn-sm" onclick="showResolveModal({{ $fault->id }})" title="Çöz">
                                                     <i class="fas fa-check"></i>
-                                                </button>
-                                                <button class="btn btn-warning btn-sm" onclick="showUpdateStatusModal({{ $fault->id }})" title="Durum Güncelle">
-                                                    <i class="fas fa-edit"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -325,7 +327,7 @@
                                                 @endif
                                                 <div>
                                                     <strong>{{ $item->equipment->name ?? 'Bilinmeyen' }}</strong>
-                                                    <br><small class="text-muted">{{ $item->equipment->code ?? 'Kod yok' }}</small>
+                                                    <br><small class="text-muted">{{ $item->code ?? 'Kod yok' }}</small>
                                                 </div>
                                             </div>
                                         </td>
@@ -399,7 +401,7 @@
                                                 @endif
                                                 <div>
                                                     <strong>{{ $item->equipment->name ?? 'Bilinmeyen' }}</strong>
-                                                    <br><small class="text-muted">{{ $item->equipment->code ?? 'Kod yok' }}</small>
+                                                    <br><small class="text-muted">{{ $item->code ?? 'Kod yok' }}</small>
                                                 </div>
                                             </div>
                                         </td>
@@ -478,7 +480,7 @@
                                                 @endif
                                                 <div>
                                                     <strong>{{ $fault->equipmentStock->equipment->name ?? 'Bilinmeyen' }}</strong>
-                                                    <br><small class="text-muted">{{ $fault->equipmentStock->equipment->code ?? 'Kod yok' }}</small>
+                                                    <br><small class="text-muted">{{ $fault->equipmentStock->code ?? 'Kod yok' }}</small>
                                                 </div>
                                             </div>
                                         </td>

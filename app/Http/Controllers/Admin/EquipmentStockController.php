@@ -619,6 +619,31 @@ class EquipmentStockController extends Controller
     }
 
     /**
+     * Get existing codes for an equipment (individual tracking)
+     */
+    public function getEquipmentCodes($id)
+    {
+        $equipment = Equipment::findOrFail($id);
+        if (!$equipment->individual_tracking) {
+            return response()->json([
+                'success' => true,
+                'data' => []
+            ]);
+        }
+
+        $codes = EquipmentStock::where('equipment_id', $equipment->id)
+            ->whereNotNull('code')
+            ->pluck('code')
+            ->filter() // remove null/empty
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $codes
+        ]);
+    }
+
+    /**
      * Bulk delete stocks
      */
     public function bulkDestroy(Request $request)
@@ -993,8 +1018,37 @@ class EquipmentStockController extends Controller
                 'categories_created' => 0
             ];
             $errors = [];
+            $skippedRows = [];
+            $duplicateRows = [];
+            $autoAssign = $request->boolean('auto_assign_codes', false);
             $skipDuplicates = $request->boolean('skip_duplicates', true);
             $createCategories = $request->boolean('create_categories', true);
+            
+            // --- PRE-SCAN: Detect code duplicates (for individual tracking) ---
+            for ($row = 2; $row <= $highestRow; $row++) {
+                $categoryName = trim($worksheet->getCell('A' . $row)->getValue() ?? '');
+                $equipmentName = trim($worksheet->getCell('B' . $row)->getValue() ?? '');
+                $code = trim($worksheet->getCell('C' . $row)->getValue() ?? '');
+                $trackingType = trim($worksheet->getCell('J' . $row)->getValue() ?? '');
+
+                if (empty($categoryName) && empty($equipmentName)) continue;
+                if (strpos($categoryName, 'AÇIKLAMALAR') === 0 || strpos($categoryName, '•') === 0 || strpos($equipmentName, 'AÇIKLAMALAR') === 0 || strpos($equipmentName, '•') === 0) continue;
+
+                if ($trackingType === 'Ayrı Takip' && $code !== '') {
+                    $exists = EquipmentStock::where('code', $code)->exists();
+                    if ($exists) {
+                        $duplicateRows[] = "Satır {$row}: Kod '{$code}' zaten mevcut (Ayrı Takip)";
+                    }
+                }
+            }
+            if (!$autoAssign && count($duplicateRows) > 0) {
+                return response()->json([
+                    'success' => false,
+                    'need_confirmation' => true,
+                    'message' => 'Aynı koda sahip kayıtlar bulundu. Otomatik kod atansın mı?',
+                    'duplicates' => $duplicateRows,
+                ]);
+            }
             
             // İlk satır başlık, 2. satırdan başla
             for ($row = 2; $row <= $highestRow; $row++) {
@@ -1062,13 +1116,18 @@ class EquipmentStockController extends Controller
                         
                         // Mükerrer kod kontrolü
                         $existingStock = EquipmentStock::where('code', $code)->first();
-                        if ($existingStock && $skipDuplicates) {
-                            $summary['skipped']++;
-                            continue;
-                        } elseif ($existingStock) {
-                            $errors[] = "Satır {$row}: Kod '{$code}' zaten mevcut";
-                            $summary['errors']++;
-                            continue;
+                        if ($existingStock) {
+                            if ($autoAssign) {
+                                $code = $this->generateRandomCode();
+                            } else if ($skipDuplicates) {
+                                $summary['skipped']++;
+                                $skippedRows[] = "Satır {$row}: Kod '{$code}' zaten mevcut (skip_duplicates açık).";
+                                continue;
+                            } else {
+                                $errors[] = "Satır {$row}: Kod '{$code}' zaten mevcut";
+                                $summary['errors']++;
+                                continue;
+                            }
                         }
                         
                         // Yeni stok kaydı oluştur
@@ -1127,7 +1186,8 @@ class EquipmentStockController extends Controller
                 'success' => true,
                 'message' => 'Import işlemi tamamlandı',
                 'summary' => $summary,
-                'errors' => $errors
+                'errors' => $errors,
+                'skipped_rows' => $skippedRows
             ]);
             
         } catch (\Exception $e) {

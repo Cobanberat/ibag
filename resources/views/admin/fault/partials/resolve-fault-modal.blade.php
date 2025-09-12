@@ -47,7 +47,7 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-3" id="maintenance_date_section" style="display: none;">
                         <label for="next_maintenance_date" class="form-label">Sonraki Bakım Tarihi</label>
                         <input type="date" class="form-control" id="next_maintenance_date" name="next_maintenance_date">
                         <small class="text-muted">Ekipman için bir sonraki bakım tarihini belirtin</small>

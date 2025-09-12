@@ -8,22 +8,9 @@ $(document).ready(function () {
     }
 
     function refreshOptions() {
-        let selectedIds = [];
+        // Tekrar seçimlere izin ver: bilinçli olarak hiçbir seçeneği devre dışı bırakma
         $('.equipment-select').each(function () {
-            const val = $(this).val();
-            if (val) selectedIds.push(val);
-        });
-
-        $('.equipment-select').each(function () {
-            const currentVal = $(this).val();
-            $(this).find('option').each(function () {
-                if ($(this).val() === "") return;
-                if (selectedIds.includes($(this).val()) && $(this).val() != currentVal) {
-                    $(this).attr('disabled', true);
-                } else {
-                    $(this).attr('disabled', false);
-                }
-            });
+            $(this).find('option').prop('disabled', false);
         });
     }
 

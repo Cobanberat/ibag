@@ -151,12 +151,10 @@
                                             enctype="multipart/form-data" id="returnForm{{ $assignment->id }}">
                                             @csrf
                                             @method('PUT')
-
                                             <div class="alert alert-info">
                                                 <i class="fas fa-info-circle me-2"></i>
                                                 <strong>Bilgi:</strong> Her ekipman için teslim fotoğrafı yüklemek zorunludur.
                                             </div>
-
                                             <div class="row g-3">
                                             @foreach ($assignment->items as $key => $item)
                                                     <div class="col-md-6">
@@ -339,32 +337,50 @@
                                         <div class="row g-3">
                                             @foreach ($assignment->items as $item)
                                                 <div class="col-md-4 text-center">
-                                                    <div class="border rounded p-2 h-100">
-                                                    @if ($item->photo_path)
-                                                        <img src="{{ asset('storage/' . $item->photo_path) }}"
-                                                            alt="Ekipman"
-                                                                class="img-fluid rounded mb-2 border border-secondary p-1" style="max-height: 120px; object-fit: cover;">
-                                                        @else
-                                                            <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center mb-2"
-                                                                style="height:120px;">
-                                                                <i class="fas fa-image fa-2x"></i>
-                                                            </div>
-                                                        @endif
-                                                        <div class="small">
+                                                    <div class="border rounded p-2 h-100 d-flex flex-column justify-content-between">
+                                                        <div class="small mb-2">
                                                             <strong class="d-block">{{ $item->equipment?->name ?? 'Bilinmiyor' }}</strong>
                                                             @if($item->equipment && $item->equipment->individual_tracking)
                                                                 <span class="badge bg-info">Ayrı Takip</span>
                                                                 <br><small class="text-muted">
-                                                                    Durum: {{ $item->returned_quantity > 0 ? 'Sağlam' : 'Hasarlı/Kayıp' }}
+                                                                    Durum: {{ ($item->returned_quantity ?? 0) > 0 ? 'Sağlam' : 'Hasarlı/Kayıp' }}
                                                                 </small>
-                                                    @else
+                                                            @else
                                                                 <span class="badge bg-secondary">Toplu Takip</span>
                                                                 <br><small class="text-muted">
                                                                     Alınan: {{ $item->quantity ?? 0 }} adet<br>
                                                                     Geri dönen: {{ $item->returned_quantity ?? 0 }} adet<br>
                                                                     Kullanılan: {{ ($item->quantity ?? 0) - ($item->returned_quantity ?? 0) }} adet
                                                                 </small>
-                                                    @endif
+                                                            @endif
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <button type="button" class="btn btn-outline-primary btn-sm btn-toggle-photos" 
+                                                                data-target="#photos-{{ $assignment->id }}-{{ $item->id }}">
+                                                                <i class="fas fa-images me-1"></i>Fotoğrafları Gör
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div id="photos-{{ $assignment->id }}-{{ $item->id }}" class="p-2 border rounded" style="display:none;">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6 text-center">
+                                                                <h6 class="fw-bold mb-2"><i class="fas fa-download me-1"></i>Alınırken</h6>
+                                                                @if (!empty($item->photo_path))
+                                                                    <img src="{{ asset('storage/' . $item->photo_path) }}" alt="Alınırken Fotoğraf" class="img-fluid rounded border" style="max-height: 300px; object-fit: contain;">
+                                                                @else
+                                                                    <div class="alert alert-warning small mb-0">Alınırken fotoğraf bulunmuyor.</div>
+                                                                @endif
+                                                            </div>
+                                                            <div class="col-md-6 text-center">
+                                                                <h6 class="fw-bold mb-2"><i class="fas fa-upload me-1"></i>Teslim Ederken</h6>
+                                                                @if (!empty($item->return_photo_path))
+                                                                    <img src="{{ asset('storage/' . $item->return_photo_path) }}" alt="Teslim Fotoğrafı" class="img-fluid rounded border" style="max-height: 300px; object-fit: contain;">
+                                                                @else
+                                                                    <div class="alert alert-warning small mb-0">Teslim fotoğrafı bulunmuyor.</div>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -388,6 +404,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Kaldırıldı: Modal yapı. Yerine inline aç/kapa paneli kullanılıyor. -->
 
     <style>
         .hover-card {
@@ -595,6 +613,20 @@
                     this.classList.remove('is-invalid');
                 }
             });
+        });
+    </script>
+    <script>
+        // Toggle inline photos panel
+        document.addEventListener('click', function(e){
+            const btn = e.target.closest('.btn-toggle-photos');
+            if (!btn) return;
+            e.preventDefault();
+            const selector = btn.getAttribute('data-target');
+            if (!selector) return;
+            const panel = document.querySelector(selector);
+            if (!panel) return;
+            const isHidden = panel.style.display === 'none' || getComputedStyle(panel).display === 'none';
+            panel.style.display = isHidden ? 'block' : 'none';
         });
     </script>
 @endsection

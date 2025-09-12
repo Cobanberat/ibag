@@ -711,7 +711,49 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            if (data.need_confirmation) {
+                // Aynı kodlu kayıtlar bulundu → kullanıcıdan onay al
+                const list = Array.isArray(data.duplicates) ? data.duplicates.map(x => `• ${x}`).join('\n') : '';
+                Swal.fire({
+                    title: 'Aynı kodlar bulundu',
+                    html: `<div class="text-start"><p>Bu koda sahip kayıtlar bulundu. Otomatik yeni kod atansın mı?</p><pre style="white-space:pre-wrap">${list}</pre></div>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Evet, otomatik ata',
+                    cancelButtonText: 'Hayır, atla'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formData.set('auto_assign_codes', '1');
+                    } else {
+                        formData.set('auto_assign_codes', '0');
+                    }
+                    // Onay sonrası importu tekrar başlat
+                    fetch('/admin/stock/import-excel', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.success) {
+                            updateProgress(100, 'İşlem tamamlandı!');
+                            showImportResults(d);
+                        } else {
+                            throw new Error(d.message || 'Import işlemi başarısız');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Import error:', err);
+                        updateProgress(0, 'Hata: ' + err.message);
+                        alert('Import işlemi başarısız: ' + err.message);
+                    })
+                    .finally(() => {
+                        if (startImportBtn) startImportBtn.disabled = false;
+                    });
+                });
+            } else if (data.success) {
                 updateProgress(100, 'İşlem tamamlandı!');
                 showImportResults(data);
             } else {
@@ -778,11 +820,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
+                ${Array.isArray(data.skipped_rows) && data.skipped_rows.length > 0 ? `
+                    <div class="mt-3">
+                        <h6><i class=\"fas fa-forward text-warning me-1\"></i>Atlananlar (sebebiyle):</h6>
+                        <ul class="list-unstyled mb-0">
+                            ${data.skipped_rows.map(msg => `<li class=\"text-warning\">• ${msg}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
                 ${data.errors && data.errors.length > 0 ? `
                     <div class="mt-3">
-                        <h6>Hatalar:</h6>
-                        <ul class="list-unstyled">
-                            ${data.errors.map(error => `<li class="text-danger">• ${error}</li>`).join('')}
+                        <h6><i class=\"fas fa-times-circle text-danger me-1\"></i>Hatalar:</h6>
+                        <ul class="list-unstyled mb-0">
+                            ${data.errors.map(error => `<li class=\"text-danger\">• ${error}</li>`).join('')}
                         </ul>
                     </div>
                 ` : ''}

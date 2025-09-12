@@ -17,9 +17,21 @@ class FaultController extends Controller
     {
         $pageTitle = 'Arıza Bildirimi';
         
-        // Sadece kullanılabilir ekipmanları getir (arızalı veya bakım gerektiren olmayanlar)
-        $equipmentStocks = EquipmentStock::with(['equipment.category'])
+        // Sadece tek takip ekipmanlarını getir (individual_tracking = true)
+        // Aynı takip numarasına sahip ekipmanları filtrele (sadece ilkini al)
+        $uniqueCodeIds = EquipmentStock::selectRaw('code, MIN(id) as min_id')
+            ->whereNotNull('code')
+            ->where('code', '!=', '')
             ->whereNotIn('status', ['Arızalı', 'Bakım Gerekiyor', 'Kullanımda'])
+            ->whereHas('equipment', function($query) {
+                $query->where('individual_tracking', true);
+            })
+            ->groupBy('code')
+            ->pluck('min_id');
+        
+        // Sadece bu ID'lere sahip ekipmanları getir
+        $equipmentStocks = EquipmentStock::with(['equipment.category'])
+            ->whereIn('id', $uniqueCodeIds)
             ->orderBy('updated_at', 'desc')
             ->get();
             
@@ -107,7 +119,7 @@ class FaultController extends Controller
         $request->validate([
             'equipment_stock_id' => 'required|exists:stock_depo,id',
             'type' => 'required|in:arıza,bakım,diğer',
-            'priority' => 'required|in:Yüksek,Orta,Düşük',
+            'priority' => 'required|in:normal,yüksek,acil',
             'description' => 'required|string|min:10',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'reported_date' => 'required|date'
@@ -142,10 +154,23 @@ class FaultController extends Controller
                 $equipmentStock->save();
             }
 
-            return redirect()->route('admin.fault.status')->with('success', 'Arıza bildirimi başarıyla oluşturuldu.');
+            $message = $request->type === 'bakım' ? 'Bakım bildirimi başarıyla oluşturuldu.' : 'Arıza bildirimi başarıyla oluşturuldu.';
+            return redirect()->route('admin.fault.status')->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('Arıza bildirimi oluşturulurken hata: ' . $e->getMessage());
-            return back()->with('error', 'Arıza bildirimi oluşturulurken hata oluştu.');
+            $logMessage = $request->type === 'bakım' ? 'Bakım bildirimi oluşturulurken hata: ' : 'Arıza bildirimi oluşturulurken hata: ';
+            $errorMessage = $request->type === 'bakım' ? 'Bakım bildirimi oluşturulurken hata oluştu.' : 'Arıza bildirimi oluşturulurken hata oluştu.';
+            
+            // Detaylı hata logu
+            Log::error($logMessage . $e->getMessage());
+            Log::error('Request data: ' . json_encode($request->all()));
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            // Geliştirme ortamında detaylı hata mesajı göster
+            if (config('app.debug')) {
+                $errorMessage .= ' Hata detayı: ' . $e->getMessage();
+            }
+            
+            return back()->with('error', $errorMessage);
         }
     }
 
@@ -153,7 +178,7 @@ class FaultController extends Controller
     {
         $request->validate([
             'equipment_stock_id' => 'required|exists:stock_depo,id',
-            'type' => 'required|in:arıza,bakım',
+            'type' => 'required|in:arıza,bakım,diğer',
             'resolution_note' => 'required|string|min:10',
             'resolved_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'resolution_cost' => 'nullable|numeric|min:0',
@@ -168,32 +193,30 @@ class FaultController extends Controller
             $equipmentStock->status = 'Aktif';
             $equipmentStock->save();
             
-            // Eğer arıza kaydı varsa güncelle
-            if ($request->type === 'arıza') {
-                $fault = Fault::where('equipment_stock_id', $request->equipment_stock_id)
-                    ->whereIn('status', ['Beklemede', 'İşlemde'])
-                    ->first();
-                    
-                if ($fault) {
-                    $fault->status = 'Çözüldü';
-                    $fault->resolution_note = $request->resolution_note;
-                    $fault->resolved_date = now();
-                    $fault->resolved_by = Auth::id();
-                    $fault->resolution_cost = $request->resolution_cost;
-                    $fault->resolution_time = $request->resolution_time;
-                    
-                    // Çözüm fotoğrafı yükleme
-                    if ($request->hasFile('resolved_photo')) {
-                        $photoPath = $request->file('resolved_photo')->store('faults/resolved', 'public');
-                        $fault->resolved_photo_path = $photoPath;
-                    }
-                    
-                    $fault->save();
+            // Fault kaydını güncelle
+            $fault = Fault::where('equipment_stock_id', $request->equipment_stock_id)
+                ->whereIn('status', ['Beklemede', 'İşlemde'])
+                ->first();
+                
+            if ($fault) {
+                $fault->status = 'Çözüldü';
+                $fault->resolution_note = $request->resolution_note;
+                $fault->resolved_date = now();
+                $fault->resolved_by = Auth::id();
+                $fault->resolution_cost = $request->resolution_cost;
+                $fault->resolution_time = $request->resolution_time;
+                
+                // Çözüm fotoğrafı yükleme
+                if ($request->hasFile('resolved_photo')) {
+                    $photoPath = $request->file('resolved_photo')->store('faults/resolved', 'public');
+                    $fault->resolved_photo_path = $photoPath;
                 }
+                
+                $fault->save();
             }
             
-            // Sonraki bakım tarihini kaydet
-            if ($request->next_maintenance_date) {
+            // Sonraki bakım tarihini sadece bakım tipinde kaydet
+            if ($request->type === 'bakım' && $request->next_maintenance_date) {
                 $equipmentStock->next_maintenance_date = $request->next_maintenance_date;
                 $equipmentStock->save();
             }

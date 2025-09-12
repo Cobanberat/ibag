@@ -115,29 +115,17 @@ function toggleModalMode() {
 
 // Resim seçeneklerini kontrol etme fonksiyonu
 function toggleImageOptions() {
-    const useSingleImage = document.getElementById('useSingleImage');
     const imageSection = document.getElementById('imageSection');
-    
-    if (useSingleImage && imageSection) {
-        if (useSingleImage.checked) {
-            imageSection.style.display = 'block';
-        } else {
-            imageSection.style.display = 'none';
-        }
+    if (imageSection) {
+        imageSection.style.display = 'block';
     }
 }
 
 // Stok işlemi resim seçeneklerini kontrol etme fonksiyonu
 function toggleOperationImageOptions() {
-    const useSingleImage = document.getElementById('operationUseSingleImage');
     const imageSection = document.getElementById('operationImageSection');
-    
-    if (useSingleImage && imageSection) {
-        if (useSingleImage.checked) {
-            imageSection.style.display = 'block';
-        } else {
-            imageSection.style.display = 'none';
-        }
+    if (imageSection) {
+        imageSection.style.display = 'block';
     }
 }
 
@@ -166,7 +154,6 @@ function toggleManualProperties() {
 function updateImageOptions() {
     const quantityInput = document.querySelector('input[name="quantity"]');
     const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
-    const useSingleImage = document.getElementById('useSingleImage');
     const imageSection = document.getElementById('imageSection');
     const individualTracking = document.getElementById('individualTracking');
     
@@ -215,15 +202,8 @@ function updateImageOptions() {
         }
     }
     
-    if (useSingleImage && imageSection) {
-        if (quantity > 1) {
-            imageSection.style.display = 'block';
-            useSingleImage.disabled = false;
-        } else {
-            imageSection.style.display = 'block';
-            useSingleImage.checked = true;
-            useSingleImage.disabled = true;
-        }
+    if (imageSection) {
+        imageSection.style.display = 'block';
     }
 }
 
@@ -306,11 +286,28 @@ function stockIn(stockId) {
     document.getElementById('manualPropertiesSection').style.display = 'none';
     document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
     
+    // Açılışta kod seçimi alanlarını sıfırla
+    (function resetExistingCodeUI() {
+        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
+        const selectEl = document.getElementById('existingCodesSelect');
+        const label = document.getElementById('existingCodesLabel');
+        const help = document.getElementById('existingCodesHelp');
+        const refInput = document.getElementById('referenceCode');
+        const refMsg = document.getElementById('referenceCodeValidationMessage');
+        if (selectWrapper) selectWrapper.style.display = 'none';
+        if (selectEl) selectEl.innerHTML = '';
+        if (label) label.textContent = 'Mevcut Kod Seç';
+        if (help) help.textContent = 'Mevcut tekil ürünlerden birini seçtiğinizde ilgili kod otomatik doldurulur';
+        if (refInput) refInput.value = '';
+        if (refMsg) { refMsg.textContent = ''; refMsg.className = 'form-text'; }
+    })();
+
     // Individual tracking kontrolü - ekipman bilgisini al
     fetch(`/admin/stock/${stockId}/info`)
         .then(response => response.json())
         .then(data => {
             const isIndividual = !!(data && data.data && (data.data.individual_tracking === true || data.data.individual_tracking === 1 || data.data.individual_tracking === '1'));
+            const equipmentName = (data && data.data && data.data.name) ? data.data.name : '';
             if (data.success && isIndividual) {
                 const badge = document.getElementById('trackingTypeBadge');
                 if (badge) { badge.textContent = 'Ayrı Takip'; badge.className = 'badge bg-info'; }
@@ -327,8 +324,52 @@ function stockIn(stockId) {
                 // Ayrı takipte özellik seçenekleri açık
                 document.getElementById('samePropertiesOption').style.display = 'block';
                 document.getElementById('operationImageOptions').style.display = 'block';
-                // manualPropertiesSection görünürlüğü toggleManualProperties ile yönetilir
+                // Referans kod alanını görünür hale getirmek için toggle
+                const useSameProps = document.getElementById('useSameProperties');
+                if (useSameProps && !useSameProps.checked) {
+                    useSameProps.checked = true;
+                }
+                toggleManualProperties();
                 
+                // Mevcut kodları çek ve otomatik doldurma/seçim sağla
+                fetch(`/admin/stock/${stockId}/codes`)
+                    .then(r => r.json())
+                    .then(codeData => {
+                        const referenceInput = document.getElementById('referenceCode');
+                        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
+                        const selectEl = document.getElementById('existingCodesSelect');
+                        const label = document.getElementById('existingCodesLabel');
+                        const help = document.getElementById('existingCodesHelp');
+                        if (!codeData || !codeData.success) return;
+                        const codes = Array.isArray(codeData.data) ? codeData.data : [];
+                        if (codes.length === 1) {
+                            // Tek kod varsa otomatik yerleştir
+                            if (referenceInput) {
+                                referenceInput.value = codes[0];
+                                // validasyon mesajını pozitif göster
+                                const vm = document.getElementById('referenceCodeValidationMessage');
+                                if (vm) { vm.textContent = '✓ Kod otomatik dolduruldu'; vm.className = 'form-text text-success'; }
+                            }
+                            if (selectWrapper) selectWrapper.style.display = 'none';
+                        } else if (codes.length > 1) {
+                            // Çok kod varsa seçim sun
+                            if (selectWrapper && selectEl) {
+                                if (label) label.textContent = 'Mevcut Kod Seç (Giriş)';
+                                if (help) help.textContent = 'Seçilen kodun özellikleri referans alınır';
+                                selectEl.innerHTML = '<option value="">Kod seçiniz</option>' + codes.map(c => `<option value="${c}">${c} - ${equipmentName}</option>`).join('');
+                                selectWrapper.style.display = 'block';
+                                selectEl.onchange = function() {
+                                    if (referenceInput) {
+                                        referenceInput.value = this.value || '';
+                                        const vm = document.getElementById('referenceCodeValidationMessage');
+                                        if (vm) { vm.textContent = this.value ? '✓ Kod seçildi' : ''; vm.className = this.value ? 'form-text text-success' : 'form-text'; }
+                                    }
+                                };
+                            }
+                        }
+                    })
+                    .catch(() => {});
+
                 // Kod validation'ını aktif et
                 const codeInput = document.getElementById('operationCode');
                 codeInput.addEventListener('input', handleCodeInput);
@@ -338,6 +379,21 @@ function stockIn(stockId) {
                 // Toplu tracking: Miktar girişi (kaç adet eklenecek)
                 document.getElementById('operationAmount').disabled = false;
                 document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+                // Max miktar sınırı uygula
+                const amountInput = document.getElementById('operationAmount');
+                if (amountInput) {
+                    amountInput.setAttribute('max', '10000');
+                    amountInput.oninput = function() {
+                        let val = parseInt(this.value || '');
+                        if (isNaN(val)) return;
+                        if (val > 10000) {
+                            this.value = 10000;
+                            showToast('En fazla 10000 girilebilir', 'warning');
+                        } else if (val < 1) {
+                            this.value = 1;
+                        }
+                    };
+                }
                 
                 // Etiketi güncelle
                 const operationAmountLabel = document.getElementById('operationAmountLabel');
@@ -355,6 +411,21 @@ function stockIn(stockId) {
             // Hata durumunda varsayılan olarak miktar girişi göster
             document.getElementById('operationAmount').disabled = false;
             document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
+            // Max miktar sınırı uygula (fallback)
+            const amountInput = document.getElementById('operationAmount');
+            if (amountInput) {
+                amountInput.setAttribute('max', '10000');
+                amountInput.oninput = function() {
+                    let val = parseInt(this.value || '');
+                    if (isNaN(val)) return;
+                    if (val > 10000) {
+                        this.value = 10000;
+                        showToast('En fazla 10000 girilebilir', 'warning');
+                    } else if (val < 1) {
+                        this.value = 1;
+                    }
+                };
+            }
             
             // Etiketi geri al
             const operationAmountLabel = document.getElementById('operationAmountLabel');
@@ -396,11 +467,26 @@ function stockOut(stockId) {
     document.getElementById('manualPropertiesSection').style.display = 'none';
     document.getElementById('operationImageOptions').style.display = 'none';
     
+    // Açılışta kod seçimi alanlarını sıfırla
+    (function resetExistingCodeUI() {
+        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
+        const selectEl = document.getElementById('existingCodesSelect');
+        const label = document.getElementById('existingCodesLabel');
+        const help = document.getElementById('existingCodesHelp');
+        const opCode = document.getElementById('operationCode');
+        if (selectWrapper) selectWrapper.style.display = 'none';
+        if (selectEl) selectEl.innerHTML = '';
+        if (label) label.textContent = 'Mevcut Kod Seç';
+        if (help) help.textContent = 'Mevcut tekil ürünlerden birini seçtiğinizde ilgili kod otomatik doldurulur';
+        if (opCode) opCode.value = '';
+    })();
+
     // Individual tracking kontrolü - ekipman bilgisini al
     fetch(`/admin/stock/${stockId}/info`)
         .then(response => response.json())
         .then(data => {
             const isIndividual = !!(data && data.data && (data.data.individual_tracking === true || data.data.individual_tracking === 1 || data.data.individual_tracking === '1'));
+            const equipmentName = (data && data.data && data.data.name) ? data.data.name : '';
             if (data.success && isIndividual) {
                 const badge = document.getElementById('trackingTypeBadge');
                 if (badge) { badge.textContent = 'Ayrı Takip'; badge.className = 'badge bg-info'; }
@@ -417,6 +503,34 @@ function stockOut(stockId) {
                 if (operationAmountLabel) {
                     operationAmountLabel.textContent = 'Çıkış Adedi';
                 }
+
+                // Mevcut kodları çek: 1 ise otomatik operationCode'a yaz, birden fazla ise select göster
+                fetch(`/admin/stock/${stockId}/codes`)
+                    .then(r => r.json())
+                    .then(codeData => {
+                        const codeInput = document.getElementById('operationCode');
+                        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
+                        const selectEl = document.getElementById('existingCodesSelect');
+                        const label = document.getElementById('existingCodesLabel');
+                        const help = document.getElementById('existingCodesHelp');
+                        if (!codeData || !codeData.success) return;
+                        const codes = Array.isArray(codeData.data) ? codeData.data : [];
+                        if (codes.length === 1) {
+                            if (codeInput) codeInput.value = codes[0];
+                            if (selectWrapper) selectWrapper.style.display = 'none';
+                        } else if (codes.length > 1) {
+                            if (selectWrapper && selectEl) {
+                                if (label) label.textContent = 'Mevcut Kod Seç (Çıkış)';
+                                if (help) help.textContent = 'Seçilen kod stoktan düşülecek ürünü belirtir';
+                                selectEl.innerHTML = '<option value="">Kod seçiniz</option>' + codes.map(c => `<option value="${c}">${c} - ${equipmentName}</option>`).join('');
+                                selectWrapper.style.display = 'block';
+                                selectEl.onchange = function() {
+                                    if (codeInput) codeInput.value = this.value || '';
+                                };
+                            }
+                        }
+                    })
+                    .catch(() => {});
             } else {
                 const badge = document.getElementById('trackingTypeBadge');
                 if (badge) { badge.textContent = 'Toplu Takip'; badge.className = 'badge bg-secondary'; }
@@ -553,7 +667,7 @@ function submitStockOperation() {
     const note = document.getElementById('operationNote').value;
     const code = document.getElementById('operationCode').value;
     const useSameProperties = document.getElementById('useSameProperties')?.checked || false;
-    const useSingleImage = document.getElementById('operationUseSingleImage')?.checked || false;
+    const useSingleImage = false;
     const photoFiles = document.getElementById('operationPhoto')?.files;
     const individualTracking = document.getElementById('individualTracking')?.checked || false;
     const referenceCode = document.getElementById('referenceCode')?.value || '';
@@ -572,9 +686,17 @@ function submitStockOperation() {
     }
 
     // Stok çıkışında amount kontrolü (individual tracking için gizli olabilir)
-    if (type === 'in' && (!amount || amount <= 0)) {
-        showToast('Lütfen geçerli bir miktar girin', 'error');
-        return;
+    if (type === 'in') {
+        const numericAmount = parseInt(amount);
+        if (!numericAmount || numericAmount <= 0) {
+            showToast('Lütfen geçerli bir miktar girin', 'error');
+            return;
+        }
+        // Üst sınır kontrolü (İstek atmadan engelle)
+        if (numericAmount > 10000) {
+            showToast('En fazla 10000 girilebilir', 'error');
+            return;
+        }
     }
 
     // Stok çıkışında doğrulama
@@ -711,9 +833,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function editStock(stockId) {
     // Mevcut verileri al
     const row = document.querySelector(`tr[data-id="${stockId}"]`);
-    const name = row.querySelector('td:nth-child(2) .fw-bold').textContent;
-    const code = row.querySelector('td:nth-child(2) small').textContent;
-    const criticalLevel = row.querySelector('td:nth-child(5)').textContent;
+    const name = row.querySelector('td:nth-child(2) .fw-bold')?.textContent || '';
+    const code = row.querySelector('td:nth-child(2) small')?.textContent || '';
+    const criticalLevel = row.querySelector('td:nth-child(6)')?.textContent || '';
 
     // Tek modal içinde düzenleme bölümü
     const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
@@ -823,19 +945,22 @@ function deleteStock(stockId) {
         cancelButtonText: 'İptal'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/admin/stock/${stockId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const attemptDelete = (url) => fetch(url, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrf } });
+            // Önce ekipman endpointini dene, 404 ise stok endpointine düş
+            attemptDelete(`/admin/ekipmanlar/${stockId}`)
+            .then(res => {
+                if (res.status === 404) {
+                    return attemptDelete(`/admin/stock/${stockId}`);
                 }
+                return res;
             })
             .then(response => {
                 const contentType = response.headers.get('content-type');
                 if (contentType && contentType.includes('application/json')) {
                     return response.json();
-                } else {
-                    throw new Error('Beklenmeyen response formatı');
                 }
+                return { success: response.ok };
             })
             .then(data => {
                 if (data && data.success) {
@@ -860,7 +985,7 @@ function deleteStock(stockId) {
                     
                     showToast(data.message, 'success');
                 } else {
-                    showToast(data.message, 'error');
+                    showToast((data && data.message) || 'Silme işlemi başarısız', 'error');
                 }
             })
             .catch(error => {
@@ -1008,7 +1133,7 @@ function updatePagination(pagination) {
 // Stok ekleme
 function addStock() {
     const quantityOnlyMode = document.getElementById('quantityOnlyMode').checked;
-    const useSingleImage = document.getElementById('useSingleImage').checked;
+    const useSingleImage = false;
     const individualTracking = document.getElementById('individualTracking').checked;
     const formData = new FormData(document.getElementById('addProductForm'));
     
@@ -1053,6 +1178,11 @@ function addStock() {
                         formData.set('model', equipment.model || '');
                         formData.set('size', equipment.size || '');
                         formData.set('feature', equipment.feature || '');
+                        // Kod seçimi önceliği: kullanıcı kod seçtiyse onu kullan
+                        const chosenCode = document.getElementById('addExistingCodesSelect')?.value || '';
+                        if (chosenCode) {
+                            formData.set('code', chosenCode);
+                        }
                     } else {
                         formData.set('use_same_properties', '1'); // Aynı özellikleri kullan
                     }
@@ -1505,12 +1635,43 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Checkbox bulunamadı!');
     }
 
-    // Resim seçenekleri
-    const useSingleImage = document.getElementById('useSingleImage');
-    if (useSingleImage) {
-        useSingleImage.addEventListener('change', toggleImageOptions);
-        toggleImageOptions();
+    // Ekle modalında ekipman seçimi: tekil takip ise mevcut kodları ekipman adı ile birlikte getir
+    const equipmentSelectInAdd = document.querySelector('select[name="equipment_id"]');
+    if (equipmentSelectInAdd) {
+        equipmentSelectInAdd.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const equipmentId = this.value;
+            const isIndividual = selectedOption && selectedOption.getAttribute('data-individual-tracking') === 'true';
+            const wrapper = document.getElementById('addExistingCodesSelectWrapper');
+            const selectEl = document.getElementById('addExistingCodesSelect');
+            if (wrapper) wrapper.style.display = 'none';
+            if (selectEl) selectEl.innerHTML = '';
+            if (!equipmentId || !isIndividual) return;
+
+            Promise.all([
+                fetch(`/admin/stock/${equipmentId}/codes`).then(r => r.json()),
+                fetch(`/admin/stock/${equipmentId}/info`).then(r => r.json())
+            ]).then(([codesRes, infoRes]) => {
+                if (!codesRes || !codesRes.success) return;
+                const codes = Array.isArray(codesRes.data) ? codesRes.data : [];
+                const eqName = infoRes && infoRes.success && infoRes.data ? (infoRes.data.name || '') : '';
+                if (wrapper && selectEl) {
+                    if (codes.length === 1) {
+                        // Tek kod varsa otomatik seç
+                        selectEl.innerHTML = `<option value="${codes[0]}">${codes[0]} - ${eqName}</option>`;
+                        wrapper.style.display = 'block';
+                        selectEl.value = codes[0];
+                    } else if (codes.length > 1) {
+                        selectEl.innerHTML = '<option value="">Kod seçiniz</option>' + codes.map(c => `<option value="${c}">${c} - ${eqName}</option>`).join('');
+                        wrapper.style.display = 'block';
+                    }
+                }
+            }).catch(() => {});
+        });
     }
+
+    // Resim seçenekleri: tek resim toggle kaldırıldı, bölüm her zaman görünür
+    toggleImageOptions();
 
     // Miktar değişikliklerini dinle
     const quantityInput = document.querySelector('input[name="quantity"]');
@@ -1531,12 +1692,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateImageOptions();
     }
 
-    // Stok işlemi resim seçenekleri
-    const operationUseSingleImage = document.getElementById('operationUseSingleImage');
-    if (operationUseSingleImage) {
-        operationUseSingleImage.addEventListener('change', toggleOperationImageOptions);
-        toggleOperationImageOptions();
-    }
+    // Stok işlemi resim seçenekleri: tek resim toggle kaldırıldı
+    toggleOperationImageOptions();
 
     // Kod input değişikliğini dinle
     const operationCode = document.getElementById('operationCode');

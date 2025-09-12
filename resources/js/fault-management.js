@@ -3,6 +3,7 @@ let currentFaultId = null;
 
 // Arıza detayını göster
 function showFaultDetail(faultId) {
+    console.log('showFaultDetail called with ID:', faultId);
     currentFaultId = faultId;
     
     // AJAX ile arıza detayını getir
@@ -66,54 +67,120 @@ function showFaultDetail(faultId) {
 
 // Arıza çözme modalını göster
 function showResolveModal(faultId) {
+    console.log('showResolveModal called with ID:', faultId);
     currentFaultId = faultId;
     
     // Form action URL'ini güncelle
     const form = document.getElementById('resolveFaultForm');
-    form.action = form.action.replace(':id', faultId);
+    if (form) {
+        form.action = form.action.replace(':id', faultId);
+    }
     
     // Fault ID'yi hidden input'a ekle
-    document.getElementById('resolveFaultId').value = faultId;
+    const hiddenInput = document.getElementById('resolveFaultId');
+    if (hiddenInput) {
+        hiddenInput.value = faultId;
+    }
+    
+    // Fault tipini al ve sonraki bakım tarihi alanını göster/gizle
+    fetch(`/admin/fault/${faultId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const faultType = data.fault.type;
+                const maintenanceSection = document.getElementById('maintenance_date_section');
+                
+                if (maintenanceSection) {
+                    if (faultType === 'bakım') {
+                        maintenanceSection.style.display = 'block';
+                    } else {
+                        maintenanceSection.style.display = 'none';
+                        // Bakım değilse alanı temizle
+                        const nextMaintenanceInput = document.getElementById('next_maintenance_date');
+                        if (nextMaintenanceInput) {
+                            nextMaintenanceInput.value = '';
+                        }
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fault type fetch error:', error);
+        });
     
     // Modalı göster
-    const modal = new bootstrap.Modal(document.getElementById('resolveFaultModal'));
-    modal.show();
+    const modalElement = document.getElementById('resolveFaultModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('resolveFaultModal element not found');
+    }
 }
 
 // Durum güncelleme modalını göster
 function showUpdateStatusModal(faultId) {
+    console.log('showUpdateStatusModal called with ID:', faultId);
     currentFaultId = faultId;
     
     // Form action URL'ini güncelle
     const form = document.getElementById('updateStatusForm');
-    form.action = form.action.replace(':id', faultId);
+    if (form) {
+        form.action = form.action.replace(':id', faultId);
+    }
     
     // Fault ID'yi hidden input'a ekle
-    document.getElementById('updateStatusFaultId').value = faultId;
+    const hiddenInput = document.getElementById('updateStatusFaultId');
+    if (hiddenInput) {
+        hiddenInput.value = faultId;
+    }
     
     // Modalı göster
-    const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
-    modal.show();
+    const modalElement = document.getElementById('updateStatusModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('updateStatusModal element not found');
+    }
 }
 
 // Bakım tamamlandı modalını göster
 function showMaintenanceCompleteModal(equipmentId) {
+    console.log('showMaintenanceCompleteModal called with ID:', equipmentId);
     // Equipment ID'yi hidden input'a ekle
-    document.getElementById('maintenanceEquipmentId').value = equipmentId;
+    const hiddenInput = document.getElementById('maintenanceEquipmentId');
+    if (hiddenInput) {
+        hiddenInput.value = equipmentId;
+    }
     
     // Modalı göster
-    const modal = new bootstrap.Modal(document.getElementById('maintenanceCompleteModal'));
-    modal.show();
+    const modalElement = document.getElementById('maintenanceCompleteModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('maintenanceCompleteModal element not found');
+    }
 }
 
 // Arıza giderildi modalını göster
 function showFaultFixedModal(equipmentId) {
+    console.log('showFaultFixedModal called with ID:', equipmentId);
     // Equipment ID'yi hidden input'a ekle
-    document.getElementById('faultFixedEquipmentId').value = equipmentId;
+    const hiddenInput = document.getElementById('faultFixedEquipmentId');
+    if (hiddenInput) {
+        hiddenInput.value = equipmentId;
+    }
     
     // Modalı göster
-    const modal = new bootstrap.Modal(document.getElementById('faultFixedModal'));
-    modal.show();
+    const modalElement = document.getElementById('faultFixedModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('faultFixedModal element not found');
+    }
 }
 
 // Çözülen arıza detayını göster
@@ -313,3 +380,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Expose functions to global scope for inline onclick handlers
+// This is necessary because Vite scopes modules by default
+// and inline attributes like onclick="showFaultDetail(...)" expect globals
+window.showFaultDetail = showFaultDetail;
+window.showResolveModal = showResolveModal;
+window.showUpdateStatusModal = showUpdateStatusModal;
+window.showMaintenanceCompleteModal = showMaintenanceCompleteModal;
+window.showFaultFixedModal = showFaultFixedModal;
+window.showResolvedFaultDetail = showResolvedFaultDetail;

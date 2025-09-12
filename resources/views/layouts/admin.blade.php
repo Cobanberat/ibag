@@ -133,12 +133,12 @@
                     </a>
                 </li>
 
-                <li class="sidebar-item{{ request()->routeIs('admin.statusCheck') ? ' active' : '' }}">
+                {{-- <li class="sidebar-item{{ request()->routeIs('admin.statusCheck') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.statusCheck') }}">
                         <i class="align-middle" data-feather="activity"></i>
                         <span class="align-middle">Durum Kontrolü</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <li class="sidebar-header">Destek & Takip</li>
 
@@ -151,8 +151,8 @@
 
              
 
-                <li class="sidebar-item{{ request()->routeIs('fault.status') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('fault.status') }}">
+                <li class="sidebar-item{{ request()->routeIs('admin.fault.status') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.fault.status') }}">
                         <i class="align-middle" data-feather="check-square"></i>
                         <span class="align-middle">Arıza Durumu</span>
                     </a>

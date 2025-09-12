@@ -246,6 +246,8 @@
           @php
             $imagePath = null;
             $imageFound = false;
+            $needsMaintenance = $stock->hasActiveMaintenance();
+            $hasFault = $stock->hasActiveFault();
             
             if($stock->equipment && $stock->equipment->images && $stock->equipment->images->count() > 0) {
                 $imagePath = 'storage/' . $stock->equipment->images->first()->path;
@@ -261,15 +263,21 @@
             <img src="{{ asset($imagePath) }}" class="equipment-img" alt="{{ $stock->equipment->name ?? 'Ekipman' }}" onerror="this.style.display='none';this.parentNode.querySelector('.equipment-placeholder').style.display='flex';">
           @else
             <div class="equipment-placeholder" style="display:flex;">
-              <i class="fas fa-cogs"></i>
+              @if($needsMaintenance)
+                <i class="fas fa-tools text-warning"></i>
+              @elseif($hasFault)
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+              @else
+                <i class="fas fa-cogs text-secondary"></i>
+              @endif
             </div>
           @endif
         <div class="equipment-img-overlay"></div>
         <div class="equipment-title-bar">
             <span class="fw-bold">{{ $stock->equipment->name ?? 'Bilinmeyen Ekipman' }}</span>
-            @if($stock->hasActiveMaintenance())
+            @if($needsMaintenance)
               <span class="equipment-status bg-warning text-dark">Bakım Gerekiyor</span>
-            @elseif($stock->hasActiveFault())
+            @elseif($hasFault)
               <span class="equipment-status bg-danger text-white">Arızalı</span>
             @else
               <span class="equipment-status bg-secondary text-white">{{ $stock->equipment_status }}</span>
@@ -277,7 +285,13 @@
           </div>
           @if($imageFound)
             <div class="equipment-placeholder" style="display:none;">
-              <i class="fas fa-cogs"></i>
+              @if($needsMaintenance)
+                <i class="fas fa-tools text-warning"></i>
+              @elseif($hasFault)
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+              @else
+                <i class="fas fa-cogs text-secondary"></i>
+              @endif
             </div>
           @endif
         </div>

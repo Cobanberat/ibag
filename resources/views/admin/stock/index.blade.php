@@ -66,6 +66,12 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                    <!-- Seçilen ekipmanın mevcut kodları (tekil takip için) -->
+                                    <div id="addExistingCodesSelectWrapper" style="display:none;" class="mb-3">
+                                        <label class="form-label fw-bold">Mevcut Kod Seç (Ekipman)</label>
+                                        <select class="form-select" id="addExistingCodesSelect"></select>
+                                        <small class="form-text text-muted">Kod seçenekleri ekipman adı ile birlikte listelenir</small>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -172,18 +178,7 @@
                             </div>
                         </div>
 
-
-                        <!-- Resim Seçenekleri -->
-                        <div class="mb-3">
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="useSingleImage" checked>
-                                <label class="form-check-label fw-bold" for="useSingleImage">
-                                    <i class="fas fa-image me-2"></i>Tek resim kullan
-                                </label>
-                            </div>
-                            <small class="text-muted">Aktifse tüm ekipmanlar için aynı resim kullanılır</small>
-                        </div>
-                        
+                        <!-- Resim Seçimi -->
                         <div id="imageSection">
                         <div class="mb-3">
                                 <label class="form-label fw-bold">Ekipman Fotoğrafı</label>
@@ -437,6 +432,13 @@
                     <h6 id="operationTitle" class="text-primary"></h6>
                 </div>
                 
+                <!-- Tekil takip: mevcut kodlardan seçim (varsa) -->
+                <div id="existingCodesSelectWrapper" style="display:none;" class="mb-3">
+                    <label class="form-label fw-bold" id="existingCodesLabel">Mevcut Kod Seç</label>
+                    <select class="form-select" id="existingCodesSelect"></select>
+                    <small class="form-text text-muted" id="existingCodesHelp">Mevcut tekil ürünlerden birini seçtiğinizde ilgili kod otomatik doldurulur</small>
+                </div>
+                
                 <!-- Aynı Özellik Seçeneği (Sadece Stok Girişi) -->
                 <div id="samePropertiesOption" style="display: none;">
                     <div class="mb-3">
@@ -528,18 +530,8 @@
                     <textarea class="form-control" id="operationNote" rows="3" placeholder="İşlem hakkında not..."></textarea>
                 </div>
 
-                <!-- Resim Seçenekleri (Sadece Stok Girişi) -->
+                <!-- Resim Seçimi (Sadece Stok Girişi) -->
                 <div id="operationImageOptions" style="display: none;">
-                    <div class="mb-3">
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="operationUseSingleImage" checked>
-                            <label class="form-check-label fw-bold" for="operationUseSingleImage">
-                                <i class="fas fa-image me-2"></i>Tek resim kullan
-                            </label>
-                        </div>
-                        <small class="text-muted">Aktifse tüm ekipmanlar için aynı resim kullanılır</small>
-                    </div>
-                    
                     <div id="operationImageSection">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Ekipman Fotoğrafı</label>
