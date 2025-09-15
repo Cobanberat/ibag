@@ -210,16 +210,21 @@ class EquipmentController extends Controller
     }
 
     /**
-     * Delete equipment stock
+     * Delete equipment and all its stocks
      */
     public function destroy($id)
     {
-        $equipmentStock = EquipmentStock::findOrFail($id);
-        $equipmentStock->delete();
+        $equipment = Equipment::findOrFail($id);
+        
+        // İlişkili tüm stok kayıtlarını sil
+        $equipment->stocks()->delete();
+        
+        // Ekipmanı sil
+        $equipment->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Ekipman başarıyla silindi'
+            'message' => 'Ekipman ve tüm stok kayıtları başarıyla silindi'
         ]);
     }
 

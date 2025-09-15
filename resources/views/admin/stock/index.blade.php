@@ -22,6 +22,11 @@
                 <option value="{{ $category->id }}">{{ $category->name }}</option>
             @endforeach
         </select>
+        <select class="form-select form-select-sm" id="filterTracking" style="width: 180px;">
+            <option value="">Tüm Takip Türleri</option>
+            <option value="1">Ayrı Takip</option>
+            <option value="0">Toplu Takip</option>
+        </select>
         <button class="btn btn-sm btn-outline-secondary" id="clearFiltersBtn"><i class="fas fa-times"></i> Temizle</button>
         <button class="btn btn-add-equipment d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
             <i class="fas fa-plus"></i>
@@ -277,6 +282,7 @@
                             <th>Kritik Seviye</th>
                             <th>Takip Türü</th>
                             <th>Stok Durumu</th>
+                            <th></th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
@@ -335,6 +341,9 @@
                                             <i class="fas fa-check"></i>
                                         </button>
                                     @else
+                                        <button class="btn btn-outline-info btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="toggleStockDetails({{ $stock->id }})" title="Detayları Göster/Gizle">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
                                         <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="editStock({{ $stock->id }})">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -348,6 +357,45 @@
                                     <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="deleteStock({{ $stock->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                </td>
+                            </tr>
+                            <!-- Detay satırı (gizli) -->
+                            <tr class="stock-detail-row" id="detailRow{{ $stock->id }}" style="display: none;">
+                                <td colspan="10" class="p-0">
+                                    <div class="bg-light p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0 text-primary">
+                                                <i class="fas fa-barcode me-2"></i>{{ $stock->name }} - Stok Kodları
+                                            </h6>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleStockDetails({{ $stock->id }})">
+                                                <i class="fas fa-times"></i> Kapat
+                                            </button>
+                                        </div>
+                                        <div id="stockCodes{{ $stock->id }}" class="stock-codes-container">
+                                            <div class="text-center py-3">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Yükleniyor...</span>
+                                                </div>
+                                                <p class="text-muted mt-2 mb-0">Kodlar yükleniyor...</p>
+                                            </div>
+                                        </div>
+                                        <!-- Carousel Controls -->
+                                        <div id="carouselControls{{ $stock->id }}" style="display: none;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <button class="btn btn-sm btn-outline-primary carousel-btn" onclick="previousPage({{ $stock->id }})" id="prevBtn{{ $stock->id }}" disabled>
+                                                    <i class="fas fa-chevron-left"></i> Önceki
+                                                </button>
+                                                <span class="text-muted small page-info" id="pageInfo{{ $stock->id }}">1 / 1</span>
+                                                <button class="btn btn-sm btn-outline-primary carousel-btn" onclick="nextPage({{ $stock->id }})" id="nextBtn{{ $stock->id }}" disabled>
+                                                    Sonraki <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Dots indicator -->
+                                            <div class="text-center" id="dots{{ $stock->id }}">
+                                                <!-- Dots will be generated by JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -623,9 +671,305 @@
     margin-right: 8px;
     font-size: 1.1rem;
 }
+
+/* Carousel dots styling */
+.dot {
+    height: 8px;
+    width: 8px;
+    margin: 0 4px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform: scale(1);
+}
+
+.dot.active {
+    background-color: #007bff;
+    transform: scale(1.2);
+}
+
+.dot:hover {
+    background-color: #666;
+    transform: scale(1.1);
+}
+
+/* Carousel transition effects */
+.stock-codes-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.stock-codes-slide {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.stock-codes-slide.slide-out-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.stock-codes-slide.slide-out-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.stock-codes-slide.slide-in-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.stock-codes-slide.slide-in-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Button hover effects */
+.carousel-btn {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.carousel-btn:active {
+    transform: translateY(0);
+}
+
+.carousel-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Page info animation */
+.page-info {
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+/* Card hover effects */
+.stock-code-card {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.stock-code-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* İşlemler butonları arası boşluk */
+.category-actions .btn {
+    margin-bottom: 4px;
+    margin-right: 2px;
+}
+
+.category-actions .btn:last-child {
+    margin-right: 0;
+}
+
+/* İşlemler sütunu genişlik ayarı */
+.category-actions {
+    white-space: nowrap;
+    min-width: 200px;
+}
 </style>
 
 <script>
+
+// Stok detaylarını göster/gizle (fallback)
+function toggleStockDetails(stockId) {
+    const detailRow = document.getElementById(`detailRow${stockId}`);
+    const codesContainer = document.getElementById(`stockCodes${stockId}`);
+    
+    if (detailRow.style.display === 'none') {
+        // Detay satırını göster
+        detailRow.style.display = 'table-row';
+        
+        // Eğer kodlar daha önce yüklenmemişse, yükle
+        if (codesContainer.innerHTML.includes('Yükleniyor')) {
+            loadStockCodes(stockId);
+        }
+    } else {
+        // Detay satırını gizle
+        detailRow.style.display = 'none';
+    }
+}
+
+// Stok kodlarını yükle (fallback)
+function loadStockCodes(equipmentId) {
+    const codesContainer = document.getElementById(`stockCodes${equipmentId}`);
+    const carouselControls = document.getElementById(`carouselControls${equipmentId}`);
+    
+    fetch(`/admin/stock/${equipmentId}/detailed-codes`, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.codes && data.codes.length > 0) {
+            // Carousel state'i sakla
+            window.stockCarouselData = window.stockCarouselData || {};
+            window.stockCarouselData[equipmentId] = {
+                codes: data.codes,
+                currentPage: 0,
+                itemsPerPage: 4,
+                totalPages: Math.ceil(data.codes.length / 4)
+            };
+            
+            // İlk sayfayı göster
+            showStockCodesPage(equipmentId);
+            
+            // Carousel kontrollerini göster
+            carouselControls.style.display = 'block';
+        } else {
+            codesContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Bu ekipman için henüz stok kodu bulunmuyor</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading stock codes:', error);
+        codesContainer.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <p class="text-danger mb-0">Kodlar yüklenirken hata oluştu</p>
+            </div>
+        `;
+    });
+}
+
+// Stok kodlarının belirli bir sayfasını göster
+function showStockCodesPage(equipmentId, direction = 'none') {
+    const data = window.stockCarouselData[equipmentId];
+    if (!data) return;
+    
+    const codesContainer = document.getElementById(`stockCodes${equipmentId}`);
+    const pageInfo = document.getElementById(`pageInfo${equipmentId}`);
+    const prevBtn = document.getElementById(`prevBtn${equipmentId}`);
+    const nextBtn = document.getElementById(`nextBtn${equipmentId}`);
+    const dotsContainer = document.getElementById(`dots${equipmentId}`);
+    
+    const startIndex = data.currentPage * data.itemsPerPage;
+    const endIndex = Math.min(startIndex + data.itemsPerPage, data.codes.length);
+    const pageCodes = data.codes.slice(startIndex, endIndex);
+    
+    // HTML oluştur
+    let html = '<div class="row g-2 stock-codes-slide">';
+    pageCodes.forEach((code, index) => {
+        html += `
+            <div class="col-md-3 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 stock-code-card" style="animation-delay: ${index * 0.1}s;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0 text-primary">${code.code || 'Kod Yok'}</h6>
+                            <span class="badge bg-info">${code.quantity || 0} adet</span>
+                        </div>
+                        <div class="small text-muted">
+                            <div><strong>Marka:</strong> ${code.brand || '-'}</div>
+                            <div><strong>Model:</strong> ${code.model || '-'}</div>
+                            <div><strong>Beden:</strong> ${code.size || '-'}</div>
+                            ${code.feature ? `<div><strong>Özellik:</strong> ${code.feature}</div>` : ''}
+                            ${code.note ? `<div><strong>Not:</strong> ${code.note}</div>` : ''}
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                ${new Date(code.created_at).toLocaleDateString('tr-TR')}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    // Animasyon efekti
+    if (direction !== 'none') {
+        const currentSlide = codesContainer.querySelector('.stock-codes-slide');
+        if (currentSlide) {
+            // Mevcut slide'ı çıkış animasyonu ile gizle
+            currentSlide.classList.add(direction === 'next' ? 'slide-out-left' : 'slide-out-right');
+            
+            setTimeout(() => {
+                codesContainer.innerHTML = html;
+                const newSlide = codesContainer.querySelector('.stock-codes-slide');
+                if (newSlide) {
+                    // Yeni slide'ı giriş animasyonu ile göster
+                    newSlide.classList.add(direction === 'next' ? 'slide-in-right' : 'slide-in-left');
+                    setTimeout(() => {
+                        newSlide.classList.remove('slide-in-left', 'slide-in-right');
+                    }, 50);
+                }
+            }, 250);
+        } else {
+            codesContainer.innerHTML = html;
+        }
+    } else {
+        codesContainer.innerHTML = html;
+    }
+    
+    // Sayfa bilgisini güncelle (animasyonlu)
+    pageInfo.style.opacity = '0';
+    setTimeout(() => {
+        pageInfo.textContent = `${data.currentPage + 1} / ${data.totalPages}`;
+        pageInfo.style.opacity = '1';
+    }, 100);
+    
+    // Butonları güncelle
+    prevBtn.disabled = data.currentPage === 0;
+    nextBtn.disabled = data.currentPage === data.totalPages - 1;
+    
+    // Dots oluştur (animasyonlu)
+    let dotsHtml = '';
+    for (let i = 0; i < data.totalPages; i++) {
+        const isActive = i === data.currentPage ? 'active' : '';
+        dotsHtml += `<span class="dot ${isActive}" onclick="goToPage(${equipmentId}, ${i})"></span>`;
+    }
+    dotsContainer.innerHTML = dotsHtml;
+}
+
+// Önceki sayfa
+function previousPage(equipmentId) {
+    const data = window.stockCarouselData[equipmentId];
+    if (data && data.currentPage > 0) {
+        data.currentPage--;
+        showStockCodesPage(equipmentId, 'prev');
+    }
+}
+
+// Sonraki sayfa
+function nextPage(equipmentId) {
+    const data = window.stockCarouselData[equipmentId];
+    if (data && data.currentPage < data.totalPages - 1) {
+        data.currentPage++;
+        showStockCodesPage(equipmentId, 'next');
+    }
+}
+
+// Belirli bir sayfaya git
+function goToPage(equipmentId, page) {
+    const data = window.stockCarouselData[equipmentId];
+    if (data && page >= 0 && page < data.totalPages) {
+        const direction = page > data.currentPage ? 'next' : 'prev';
+        data.currentPage = page;
+        showStockCodesPage(equipmentId, direction);
+    }
+}
 
 // Arıza detayını görüntüle
 function viewFault(stockId) {

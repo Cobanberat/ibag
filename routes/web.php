@@ -26,9 +26,8 @@ Route::middleware('auth')->group(function () {
 // Tüm admin route'ları auth middleware ile korunuyor
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     
-    Route::get('/', function () {
-        return view('admin.home.index');
-    })->name('admin.dashboard');
+    Route::get('/', [App\Http\Controllers\Admin\HomeController::class, 'index'])->name('admin.dashboard');
+    Route::get('/stats', [App\Http\Controllers\Admin\HomeController::class, 'getStats'])->name('admin.stats');
     
     // Stock routes
     Route::get('/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
@@ -39,6 +38,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/stock/validate-reference-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateReferenceCode'])->name('admin.stock.validate-reference-code');
     Route::get('/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
     Route::get('/stock/{id}/codes', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentCodes'])->name('admin.stock.codes');
+    Route::get('/stock/{id}/detailed-codes', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getDetailedStockCodes'])->name('admin.stock.detailed-codes');
     Route::post('/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
     Route::post('/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
     Route::get('/stock/excel-template', [App\Http\Controllers\Admin\EquipmentStockController::class, 'downloadExcelTemplate'])->name('admin.stock.excel-template');

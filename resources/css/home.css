@@ -1,139 +1,318 @@
-.kpi-card,
-.quick-action-card {
-    transition: transform .2s cubic-bezier(.4, 2, .6, 1.2), box-shadow .2s;
+/* Admin Home Dashboard Styles */
+
+/* KPI Cards */
+.kpi-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
 }
 
-.kpi-card:hover,
-.quick-action-card:hover {
-    transform: scale(1.04) translateY(-4px);
-    box-shadow: 0 8px 32px #6366f155;
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+}
+
+.kpi-card .card-body {
+    position: relative;
     z-index: 2;
 }
 
-#clock {
-    font-variant-numeric: tabular-nums;
+/* Counter Animation */
+.counter {
+    font-weight: 700;
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
+/* Quick Action Buttons */
 .quick-action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     text-decoration: none;
-    min-width: 110px;
-    transition: transform .18s cubic-bezier(.4, 2, .6, 1.2), box-shadow .18s;
+    color: inherit;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    padding: 1rem;
+    min-width: 120px;
+    text-align: center;
+    background: white;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .quick-action-btn:hover {
-    transform: scale(1.08) translateY(-4px);
-    z-index: 2;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border-color: #007bff;
+    color: inherit;
     text-decoration: none;
 }
 
 .quick-action-icon {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    color: #fff;
-    margin-bottom: 8px;
-    box-shadow: 0 4px 16px #6366f133;
-    transition: box-shadow .18s;
+    margin: 0 auto 0.5rem;
+    font-size: 1.5rem;
+    color: white;
+    transition: all 0.3s ease;
 }
 
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #43e97b 100%);
-}
-
-.bg-gradient-danger {
-    background: linear-gradient(135deg, #f43f5e 0%, #fbbf24 100%);
-}
-
-.bg-gradient-success {
-    background: linear-gradient(135deg, #43e97b 0%, #6366f1 100%);
-}
-
-.bg-gradient-info {
-    background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
-}
-
-.bg-gradient-warning {
-    background: linear-gradient(135deg, #fbbf24 0%, #f43f5e 100%);
-}
-
-.bg-gradient-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #6366f1 100%);
+.quick-action-btn:hover .quick-action-icon {
+    transform: scale(1.1);
 }
 
 .quick-action-label {
-    font-size: .97rem;
-    color: #222;
-    font-weight: 500;
-    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
 }
 
-.card.rounded-4 {
-    border-radius: 1.25rem !important;
+/* Gradient Backgrounds */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.card-header.rounded-top-4 {
-    border-top-left-radius: 1.25rem !important;
-    border-top-right-radius: 1.25rem !important;
+.bg-gradient-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38d9a9 100%);
 }
 
-.table-row-hover:hover {
-    background: #f3f4f6 !important;
-    transition: background .18s;
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
 }
 
-.badge.bg-danger.bg-gradient {
-    background: linear-gradient(90deg, #f43f5e 0%, #fbbf24 100%) !important;
-    color: #fff !important;
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
 }
 
-.badge.bg-warning.bg-gradient {
-    background: linear-gradient(90deg, #fbbf24 0%, #f43f5e 100%) !important;
-    color: #222 !important;
+.bg-gradient-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 }
 
-.fs-7 {
-    font-size: 0.93rem;
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
 }
 
-.tedarik-card {
-    min-width: 420px;
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
+/* Table Styles */
+.table-lg th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: none;
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem;
 }
 
-.tedarik-table th,
-.tedarik-table td {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-    font-size: 1.08rem;
-}
-
-.tedarik-table {
-    min-width: 400px;
-}
-
-.tedarik-table th,
-.tedarik-table td {
-    padding: 0.18em 0.35em !important;
-    font-size: 0.89em;
-    height: 24px;
+.table-lg td {
+    padding: 1rem;
     vertical-align: middle;
+    border-color: #f1f3f4;
 }
 
-.tedarik-table thead th {
-    background: #f3f6fa;
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,0.05);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
 }
 
-.tedarik-table tbody tr {
-    transition: background 0.12s;
+/* Badge Styles */
+.badge {
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
 }
 
-.tedarik-table tbody tr:hover {
-    background: #f1f5fb;
+/* Card Headers */
+.card-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-bottom: 2px solid #e9ecef;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 700;
+}
+
+/* Empty State */
+.text-center.py-4 {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    margin: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .quick-action-btn {
+        min-width: 100px;
+        padding: 0.75rem;
+    }
+    
+    .quick-action-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .counter {
+        font-size: 2rem;
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-3px) scale(1.01);
+    }
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kpi-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.quick-action-btn {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+/* Tooltip Styles */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+.tooltip-inner {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Snackbar Styles */
+#snackbar {
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Status Indicators */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-online {
+    background: #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.status-offline {
+    background: #dc3545;
+}
+
+.status-warning {
+    background: #ffc107;
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Text Gradients */
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Card Shadows */
+.card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }

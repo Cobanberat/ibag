@@ -143,6 +143,14 @@ class EquipmentStockController extends Controller
      */
     public function getStockData(Request $request)
     {
+        // Debug için log ekle (geçici)
+        // \Log::info('Stock data request:', [
+        //     'search' => $request->search,
+        //     'category' => $request->category,
+        //     'tracking' => $request->tracking,
+        //     'status' => $request->status
+        // ]);
+        
         $query = Equipment::with(['category'])
             ->selectRaw('
                 equipments.id,
@@ -159,18 +167,23 @@ class EquipmentStockController extends Controller
             ->leftJoin('stock_depo', 'equipments.id', '=', 'stock_depo.equipment_id');
 
         // Search filter
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where('equipments.name', 'like', "%{$search}%");
         }
 
         // Category filter
-        if ($request->has('category') && $request->category !== '') {
+        if ($request->filled('category')) {
             $query->where('equipments.category_id', $request->category);
         }
 
+        // Tracking filter
+        if ($request->filled('tracking')) {
+            $query->where('equipments.individual_tracking', $request->tracking);
+        }
+
         // Status filter
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->filled('status')) {
             $query->where('equipments.status', $request->status);
         }
 
@@ -178,11 +191,20 @@ class EquipmentStockController extends Controller
             ->orderBy('equipments.name', 'asc')
             ->paginate(15);
 
+        // Debug için sonuç sayısını logla (geçici)
+        // \Log::info('Stock data result:', [
+        //     'total' => $stocks->total(),
+        //     'count' => count($stocks->items())
+        // ]);
+
         // Her stok için accessor'ları hesapla
         $stocks->getCollection()->transform(function ($stock) {
             // Ekipman ismi ve kategori bilgilerini ekle
             $stock->name = $stock->name;
             $stock->category = $stock->category;
+            
+            // Individual tracking değerini boolean'a çevir
+            $stock->individual_tracking = (bool) $stock->individual_tracking;
             
             // Equipment modelindeki accessor'ları kullan
             $stock->row_class = $stock->getRowClassAttribute();
@@ -640,6 +662,24 @@ class EquipmentStockController extends Controller
         return response()->json([
             'success' => true,
             'data' => $codes
+        ]);
+    }
+
+    /**
+     * Get detailed stock codes for equipment
+     */
+    public function getDetailedStockCodes($id)
+    {
+        $equipment = Equipment::findOrFail($id);
+        
+        $stocks = EquipmentStock::where('equipment_id', $equipment->id)
+            ->select('id', 'code', 'brand', 'model', 'size', 'feature', 'quantity', 'note', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'codes' => $stocks
         ]);
     }
 
