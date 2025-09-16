@@ -22,46 +22,68 @@ class UserController extends Controller
         return view('admin.users.index', compact('users', 'stats'));
     }
 
+    public function create()
+    {
+        $pageTitle = 'Yeni Kullanıcı Ekle';
+        $roles = User::ROLE_OPTIONS;
+        
+        return view('admin.users.create', compact('pageTitle', 'roles'));
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'username' => 'nullable|string|max:255|unique:users',
-            'role' => 'required|in:user,admin',
+            'role' => 'required|in:admin,ekip_yetkilisi,üye',
             'password' => 'required|string|min:8|confirmed',
+            'status' => 'nullable|in:active,inactive',
+            'avatar_color' => 'nullable|string|max:7',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasyon hatası',
-                'errors' => $validator->errors()
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasyon hatası',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            return back()->withErrors($validator)->withInput();
         }
 
         try {
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
-            $user->username = $request->username;
+            $user->username = $request->username ?: $request->email;
             $user->role = $request->role;
             $user->password = Hash::make($request->password);
-            $user->status = 'active';
-            $user->avatar_color = $this->generateAvatarColor();
+            $user->status = $request->status ?: 'active';
+            $user->avatar_color = $request->avatar_color ?: '#0d6efd';
             $user->save();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Kullanıcı başarıyla oluşturuldu.',
-                'user' => $user
-            ]);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kullanıcı başarıyla oluşturuldu.',
+                    'user' => $user
+                ]);
+            }
+            
+            return redirect()->route('admin.users')->with('success', 'Kullanıcı başarıyla oluşturuldu.');
         } catch (\Exception $e) {
             Log::error('Kullanıcı oluşturulurken hata: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Kullanıcı oluşturulurken hata oluştu: ' . $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kullanıcı oluşturulurken hata oluştu: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return back()->with('error', 'Kullanıcı oluşturulurken hata oluştu: ' . $e->getMessage())->withInput();
         }
     }
 

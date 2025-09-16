@@ -1,23 +1,52 @@
 @extends('layouts.admin')
 @section('content')
 @vite(['resources/css/profile.css'])
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+        <li class="breadcrumb-item">
+            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
+                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 24px; height: 24px; margin-right: 8px;">
+                <i class="fa fa-home me-1"></i> Ana Sayfa
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-user-circle me-1"></i> Profilim
+        </li>
+    </ol>
+</nav>
+
 <div class="profile-bg-effect"></div>
 <div class="container-fluid profile-container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
+            <!-- Sayfa Başlığı -->
+            <div class="page-header mb-4 text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 48px; height: 48px; margin-right: 15px;">
+                    <h2 class="mb-0 text-primary">
+                        <i class="fas fa-user-circle me-2"></i>Profil Yönetimi
+                    </h2>
+                </div>
+                <p class="text-muted">Hesap bilgilerinizi görüntüleyin ve düzenleyin</p>
+            </div>
+            
             <div class="profile-card shadow-lg">
                 <div class="row">
                     <!-- Sol taraf - Profil resmi ve bilgiler -->
                     <div class="col-md-4 text-center">
                         <div class="profile-photo-wrap position-relative mx-auto mb-4">
-                            <img src="https://ui-avatars.com/api/?name=Admin+User&background=0d6efd&color=fff&size=160" class="profile-photo" alt="Profil Fotoğrafı">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=0d6efd&color=fff&size=160" class="profile-photo" alt="Profil Fotoğrafı">
                             <button class="btn btn-photo-edit" id="changePhotoBtn" title="Fotoğrafı Değiştir"><i class="fas fa-camera"></i></button>
                         </div>
                         <div class="profile-info">
-                            <h3 class="profile-name mb-2">Admin User</h3>
-                            <div class="profile-role mb-3"><span class="badge bg-gradient-primary">Yönetici</span></div>
+                            <h3 class="profile-name mb-2">{{ auth()->user()->name ?? 'Kullanıcı' }}</h3>
+                            <div class="profile-role mb-3">
+                                <span class="badge bg-gradient-primary">{{ auth()->user()->role_label ?? 'Rol' }}</span>
+                            </div>
                             <div class="profile-meta mb-3">
-                                <div><i class="fas fa-calendar-alt me-2"></i> Kayıt: 2024-01-01</div>
+                                <div><i class="fas fa-calendar-alt me-2"></i> Kayıt: {{ auth()->user()->created_at ? auth()->user()->created_at->format('d.m.Y') : 'Bilinmiyor' }}</div>
                                 <div><i class="fas fa-circle text-success me-2"></i> Durum: Aktif</div>
                             </div>
                         </div>
@@ -26,12 +55,12 @@
                             <div class="stat-box mb-3">
                                 <div class="stat-icon bg-gradient-blue"><i class="fas fa-sign-in-alt"></i></div>
                                 <div class="stat-label">Son Giriş</div>
-                                <div class="stat-value">2024-06-01</div>
+                                <div class="stat-value">{{ auth()->user()->last_login_at ? auth()->user()->last_login_at->format('d.m.Y H:i') : 'Bilinmiyor' }}</div>
                             </div>
                             <div class="stat-box mb-3">
                                 <div class="stat-icon bg-gradient-green"><i class="fas fa-tasks"></i></div>
                                 <div class="stat-label">Toplam İşlem</div>
-                                <div class="stat-value">42</div>
+                                <div class="stat-value">{{ \App\Models\Assignment::where('user_id', auth()->id())->count() }}</div>
                             </div>
                             <div class="stat-box">
                                 <div class="stat-icon bg-gradient-orange"><i class="fas fa-clock"></i></div>
@@ -50,11 +79,11 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="profileName" class="form-label">Ad Soyad</label>
-                                        <input type="text" class="form-control profile-input" id="profileName" value="Admin User">
+                                        <input type="text" class="form-control profile-input" id="profileName" value="{{ auth()->user()->name ?? '' }}">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="profileEmail" class="form-label">E-posta</label>
-                                        <input type="email" class="form-control profile-input" id="profileEmail" value="admin@example.com">
+                                        <input type="email" class="form-control profile-input" id="profileEmail" value="{{ auth()->user()->email ?? '' }}">
                                     </div>
                                 </div>
                                 

@@ -22,7 +22,7 @@
                         <div class="quick-action-icon bg-gradient-warning"><i class="fa fa-boxes-stacked"></i></div>
                         <div class="quick-action-label">Stok Kontrol</div>
                     </a>
-                    <a href="/admin/deliver" class="quick-action-btn" data-bs-toggle="tooltip" title="Zimmet işlemleri">
+                    <a href="/admin/gidenGelen" class="quick-action-btn" data-bs-toggle="tooltip" title="Zimmet işlemleri">
                         <div class="quick-action-icon bg-gradient-success"><i class="fa fa-hand-holding"></i></div>
                         <div class="quick-action-label">Zimmet Yönetimi</div>
                     </a>
@@ -52,7 +52,7 @@
             <div class="card border-0 shadow h-100 kpi-card text-white position-relative" style="background:linear-gradient(135deg,#43e97b 0%,#6366f1 100%);">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <div class="display-6 mb-2"><i class="fa fa-box"></i></div>
-                    <div class="h3 mb-0 counter" data-count="{{ $stats['total_equipment'] }}">0</div>
+                    <div class="h1 mb-0 counter text-white" data-count="{{ $stats['total_equipment'] }}">0</div>
                     <div class="small">Toplam Ekipman</div>
                 </div>
                 <span class="position-absolute top-0 end-0 m-2 badge bg-light text-primary">+{{ $stats['today_equipment'] }} bugün</span>
@@ -62,7 +62,7 @@
             <div class="card border-0 shadow h-100 kpi-card text-white position-relative" style="background:linear-gradient(135deg,#6366f1 0%,#43e97b 100%);">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <div class="display-6 mb-2"><i class="fa fa-users"></i></div>
-                    <div class="h3 mb-0 counter" data-count="{{ $stats['active_users'] }}">0</div>
+                    <div class="h1 mb-0 counter text-white" data-count="{{ $stats['active_users'] }}">0</div>
                     <div class="small">Aktif Kullanıcı</div>
                 </div>
                 <span class="position-absolute top-0 end-0 m-2 badge bg-light text-primary">+{{ $stats['today_users'] }} yeni</span>
@@ -72,7 +72,7 @@
             <div class="card border-0 shadow h-100 kpi-card text-white position-relative" style="background:linear-gradient(135deg,#fbbf24 0%,#f43f5e 100%);">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <div class="display-6 mb-2"><i class="fa fa-exclamation-triangle"></i></div>
-                    <div class="h3 mb-0 counter" data-count="{{ $stats['pending_faults'] }}">0</div>
+                    <div class="h1 mb-0 counter text-white" data-count="{{ $stats['pending_faults'] }}">0</div>
                     <div class="small">Bekleyen Arıza</div>
                 </div>
                 <span class="position-absolute top-0 end-0 m-2 badge bg-light text-danger">{{ $stats['critical_faults'] }} kritik</span>
@@ -82,7 +82,7 @@
             <div class="card border-0 shadow h-100 kpi-card text-white position-relative" style="background:linear-gradient(135deg,#6366f1 0%,#fbbf24 100%);">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <div class="display-6 mb-2"><i class="fa fa-boxes-stacked"></i></div>
-                    <div class="h3 mb-0 counter" data-count="{{ $stats['critical_stocks'] }}">0</div>
+                    <div class="h1 mb-0 counter text-white" data-count="{{ $stats['critical_stocks'] }}">0</div>
                     <div class="small">Kritik Stok</div>
                 </div>
                 <span class="position-absolute top-0 end-0 m-2 badge bg-light text-danger">Dikkat!</span>

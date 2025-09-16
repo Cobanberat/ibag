@@ -24,6 +24,12 @@ class Assignment extends Model
         return $this->hasMany(AssignmentItem::class, 'assignment_id')->with('equipment');
     }
 
+    // Assignment ile EquipmentStock ilişkisi (eğer varsa)
+    public function equipmentStock()
+    {
+        return $this->hasOne(EquipmentStock::class, 'assignment_id');
+    }
+
     // Eğer gerekliyse tek ekipman ilişkisi (item üzerinden zaten erişebilirsin)
    
 

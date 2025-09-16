@@ -3,12 +3,29 @@
 <!-- Gerekli kütüphaneler ve stiller -->
 @vite('resources/css/users.css')
 
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+        <li class="breadcrumb-item">
+            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
+                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 24px; height: 24px; margin-right: 8px;">
+                <i class="fa fa-home me-1"></i> Ana Sayfa
+            </a>
+        </li>
+        <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Kullanıcılar</li>
+    </ol>
+</nav>
+
 <div class="container-fluid">
   <!-- Ultra modern başlık -->
   <div class="users-header w-100 position-relative mb-4" style="background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2.5em 2em 2em 2em;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;">
     <h2 style=" color:white; font-size:2.7rem;font-weight:900;letter-spacing:-1px;line-height:1.1;">👤 Kullanıcılar Yönetimi</h2>
     <p style="font-size:1.2rem;font-weight:500;opacity:.98;">Sistemdeki tüm kullanıcıları görüntüleyin, yönetin ve analiz edin.</p>
     <div class="position-absolute top-0 end-0 mt-3 me-3 d-flex gap-2">
+      <a href="{{ route('admin.users.create') }}" class="btn btn-light btn-sm d-flex align-items-center" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;font-weight:600;">
+        <i class="fas fa-user-plus me-1"></i> Yeni Kullanıcı
+      </a>
       <button class="btn btn-sm" style="background:transparent;border:none;box-shadow:none;" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle" style="color:#fff;font-size:1.3em;"></i></button>
     </div>
   </div>

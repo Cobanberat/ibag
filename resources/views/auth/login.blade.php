@@ -90,6 +90,21 @@
             z-index: 1;
         }
 
+        .security-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .security-badge i {
+            margin-right: 0.5rem;
+        }
+
         .login-body {
             padding: 2rem 1.5rem;
         }
@@ -306,13 +321,30 @@
                 </div>
                 <h1>İBAG</h1>
                 <p>Ekipman Yönetim Sistemi</p>
+                <div class="security-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenli Giriş
+                </div>
             </div>
 
             <div class="login-body">
                 @if ($errors->any())
                     <div class="error-message">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        Giriş bilgilerinizi kontrol ediniz.
+                        @if ($errors->has('email'))
+                            E-posta adresi geçersiz.
+                        @elseif ($errors->has('password'))
+                            Şifre hatalı.
+                        @else
+                            Giriş bilgilerinizi kontrol ediniz.
+                        @endif
+                    </div>
+                @endif
+
+                @if (session('status'))
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {{ session('status') }}
                     </div>
                 @endif
 
@@ -333,17 +365,29 @@
                         </div>
 
                     <div class="form-floating">
-                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" 
-                               name="password" placeholder="Şifre" required autocomplete="current-password">
+                        <div class="input-group">
+                            <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" 
+                                   name="password" placeholder="Şifre" required autocomplete="current-password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
                         <label for="password">
                             <i class="fas fa-lock me-2"></i>Şifre
                         </label>
-                                @error('password')
+                        @error('password')
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>
                         @enderror
-                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="remember">
+                            Beni Hatırla
+                        </label>
+                    </div>
 
                     <button type="submit" class="btn btn-login">
                         <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
@@ -352,12 +396,52 @@
                 </div>
 
             <div class="login-footer">
-                <p class="mb-2">Hesabınız yok mu? <a href="{{ route('register') }}">Kayıt Ol</a></p>
-                <small class="text-muted">© 2024 İBAG. Tüm hakları saklıdır.</small>
+                <p class="mb-2 text-muted">Sisteme erişim için yöneticinizle iletişime geçin</p>
+                <small class="text-muted">© {{ date('Y') }} İBAG. Tüm hakları saklıdır.</small>
         </div>
     </div>
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Şifre göster/gizle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Form validasyonu
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                e.preventDefault();
+                alert('Lütfen tüm alanları doldurun.');
+                return false;
+            }
+            
+            // Loading state
+            const submitBtn = document.querySelector('.btn-login');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Giriş yapılıyor...';
+            submitBtn.disabled = true;
+        });
+
+        // Auto focus on email field
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email').focus();
+        });
+    </script>
 </body>
 </html> 

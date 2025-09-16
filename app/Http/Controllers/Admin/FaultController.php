@@ -40,6 +40,31 @@ class FaultController extends Controller
         return view('admin.fault.index', compact('pageTitle', 'equipmentStocks', 'categories'));
     }
 
+    public function create()
+    {
+        $pageTitle = 'Yeni Arıza Bildirimi';
+        
+        // Sadece tek takip ekipmanlarını getir (individual_tracking = true)
+        $uniqueCodeIds = EquipmentStock::selectRaw('code, MIN(id) as min_id')
+            ->whereNotNull('code')
+            ->where('code', '!=', '')
+            ->whereNotIn('status', ['Arızalı', 'Bakım Gerekiyor', 'Kullanımda'])
+            ->whereHas('equipment', function($query) {
+                $query->where('individual_tracking', true);
+            })
+            ->groupBy('code')
+            ->pluck('min_id');
+        
+        $equipmentStocks = EquipmentStock::with(['equipment.category'])
+            ->whereIn('id', $uniqueCodeIds)
+            ->orderBy('updated_at', 'desc')
+            ->get();
+            
+        $categories = EquipmentCategory::orderBy('name')->get();
+        
+        return view('admin.fault.create', compact('pageTitle', 'equipmentStocks', 'categories'));
+    }
+
     public function status()
     {
         $pageTitle = 'Arıza Yönetimi';

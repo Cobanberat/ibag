@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add hover effects
     addHoverEffects();
+    
 });
 
 // Counter Animation Function
@@ -201,6 +202,7 @@ function refreshPageData() {
     window.location.reload();
 }
 
+
 // Export Functions to Global Scope
 window.showSnackbar = showSnackbar;
 window.refreshPageData = refreshPageData;
@@ -209,11 +211,6 @@ window.refreshStats = refreshStats;
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeTableInteractions();
-    
-    // Sayfa yüklendiğinde hoş geldin mesajı
-    setTimeout(() => {
-        showSnackbar('Dashboard başarıyla yüklendi!', 'success');
-    }, 1000);
 });
 
 // Error Handling

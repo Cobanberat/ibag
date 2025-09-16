@@ -22,11 +22,16 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('home');
+            
+            // Kullanıcının son giriş zamanını güncelle
+            Auth::user()->update(['last_login_at' => now()]);
+            
+            // Admin dashboard'a yönlendir
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'Giriş bilgileri hatalı.',
         ]);
     }
 } 

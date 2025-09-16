@@ -1,5 +1,20 @@
 @extends('layouts.admin')
 @section('content')
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+        <li class="breadcrumb-item">
+            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
+                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 24px; height: 24px; margin-right: 8px;">
+                <i class="fa fa-home me-1"></i> Ana Sayfa
+            </a>
+        </li>
+        <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Arıza Durumu</li>
+    </ol>
+</nav>
+
     <style>
         .approval-tabs .nav-link {
             font-weight: 600;

@@ -27,11 +27,23 @@ class HomeController extends Controller
         // Bugünkü işlemleri getir
         $todayStats = $this->getTodayStats();
         
+        // Kullanıcı bilgilerini getir
+        $user = auth()->user();
+        
+        // Bildirimleri getir
+        $notifications = $this->getNotifications();
+        
+        // Hava durumu bilgisi (şimdilik statik, API entegrasyonu yapılabilir)
+        $weather = $this->getWeatherInfo();
+        
         return view('admin.home.index', compact(
             'stats', 
             'recentActivities', 
             'criticalStocks', 
-            'todayStats'
+            'todayStats',
+            'user',
+            'notifications',
+            'weather'
         ));
     }
     
@@ -156,4 +168,65 @@ class HomeController extends Controller
         $stats = $this->getDashboardStats();
         return response()->json($stats);
     }
+    
+    private function getNotifications()
+    {
+        $notifications = collect();
+        
+        // Kritik stok uyarıları
+        $criticalStocks = EquipmentStock::where('quantity', '<=', 5)->count();
+        if ($criticalStocks > 0) {
+            $notifications->push([
+                'id' => 1,
+                'type' => 'warning',
+                'icon' => 'fa-exclamation-circle',
+                'title' => 'Kritik stok azaldı!',
+                'message' => $criticalStocks . ' ekipman kritik seviyede',
+                'time' => now()->diffForHumans(),
+                'url' => route('admin.stock')
+            ]);
+        }
+        
+        // Yeni arıza bildirimleri (Fault modeli henüz oluşturulmamış)
+        $newFaults = 0; // Fault::where('status', 'pending')->count();
+        if ($newFaults > 0) {
+            $notifications->push([
+                'id' => 2,
+                'type' => 'danger',
+                'icon' => 'fa-bug',
+                'title' => 'Yeni arıza bildirimi',
+                'message' => $newFaults . ' yeni arıza bekliyor',
+                'time' => now()->diffForHumans(),
+                'url' => route('admin.fault')
+            ]);
+        }
+        
+        // Yeni kullanıcı kayıtları
+        $newUsers = User::whereDate('created_at', today())->count();
+        if ($newUsers > 0) {
+            $notifications->push([
+                'id' => 3,
+                'type' => 'success',
+                'icon' => 'fa-user-plus',
+                'title' => 'Yeni kullanıcı eklendi',
+                'message' => $newUsers . ' yeni kullanıcı bugün eklendi',
+                'time' => now()->diffForHumans(),
+                'url' => route('admin.users')
+            ]);
+        }
+        
+        return $notifications;
+    }
+    
+    private function getWeatherInfo()
+    {
+        // Şimdilik statik veri, daha sonra hava durumu API'si entegre edilebilir
+        return [
+            'city' => 'Konya',
+            'temperature' => '24°C',
+            'condition' => 'Parçalı Bulutlu',
+            'icon' => 'fa-cloud-sun'
+        ];
+    }
+    
 }

@@ -69,12 +69,15 @@
             <ul class="sidebar-nav">
                 <li class="sidebar-header">Genel</li>
 
+                <!-- Ana Sayfa - Tüm roller -->
                 <li class="sidebar-item{{ request()->routeIs('admin.dashboard') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.dashboard') }}">
                         <i class="align-middle" data-feather="home"></i>
                         <span class="align-middle">Ana Sayfa</span>
                     </a>
                 </li>
+
+                <!-- Zimmet İşlemleri - Tüm roller -->
                 <li class="sidebar-item{{ request()->routeIs('admin.zimmetAl') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.zimmetAl') }}">
                         <i class="align-middle" data-feather="plus-circle"></i>
@@ -88,6 +91,16 @@
                     </a>
                 </li>
 
+                <!-- Arıza Bildirimi - Tüm roller -->
+                <li class="sidebar-item{{ request()->routeIs('admin.fault.create') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.fault.create') }}">
+                        <i class="align-middle" data-feather="alert-circle"></i>
+                        <span class="align-middle">Arıza Bildir</span>
+                    </a>
+                </li>
+
+                <!-- Ekipman Yönetimi - Admin ve Ekip Yetkilisi -->
+                @if(auth()->user()->canManageEquipment())
                 <li class="sidebar-header">Ekipman Yönetimi</li>
 
                 <li class="sidebar-item{{ request()->routeIs('admin.stock') ? ' active' : '' }}">
@@ -109,14 +122,28 @@
                         <span class="align-middle">Kategoriler</span>
                     </a>
                 </li>
+                @endif
 
-                {{-- <li class="sidebar-item{{ request()->routeIs('admin.ekipman') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.ekipman') }}">
-                        <i class="align-middle" data-feather="cpu"></i>
-                        <span class="align-middle">Ekipman Özellikleri</span>
+                <!-- Arıza Yönetimi - Admin ve Ekip Yetkilisi -->
+                @if(auth()->user()->canManageFaults())
+                <li class="sidebar-header">Arıza Yönetimi</li>
+
+                <li class="sidebar-item{{ request()->routeIs('admin.fault') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.fault') }}">
+                        <i class="align-middle" data-feather="alert-triangle"></i>
+                        <span class="align-middle">Arıza Yönetimi</span>
                     </a>
-                </li> --}}
+                </li>
 
+                <li class="sidebar-item{{ request()->routeIs('admin.fault.status') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.fault.status') }}">
+                        <i class="align-middle" data-feather="check-square"></i>
+                        <span class="align-middle">Arıza Durumu</span>
+                    </a>
+                </li>
+                @endif
+
+                <!-- İşlem Takibi - Tüm roller -->
                 <li class="sidebar-header">İşlem Takibi</li>
 
                 <li class="sidebar-item{{ request()->routeIs('admin.gidenGelen') ? ' active' : '' }}">
@@ -126,47 +153,17 @@
                     </a>
                 </li>
 
+                @if(auth()->user()->canManageEquipment())
                 <li class="sidebar-item{{ request()->routeIs('admin.equipmentStatus') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.equipmentStatus') }}">
                         <i class="align-middle" data-feather="check-circle"></i>
                         <span class="align-middle">Ekipman Durumu</span>
                     </a>
                 </li>
+                @endif
 
-                {{-- <li class="sidebar-item{{ request()->routeIs('admin.statusCheck') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.statusCheck') }}">
-                        <i class="align-middle" data-feather="activity"></i>
-                        <span class="align-middle">Durum Kontrolü</span>
-                    </a>
-                </li> --}}
-
-                <li class="sidebar-header">Destek & Takip</li>
-
-                <li class="sidebar-item{{ request()->routeIs('admin.fault') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.fault') }}">
-                        <i class="align-middle" data-feather="alert-circle"></i>
-                        <span class="align-middle">Arıza Bildirimi</span>
-                    </a>
-                </li>
-
-             
-
-                <li class="sidebar-item{{ request()->routeIs('admin.fault.status') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.fault.status') }}">
-                        <i class="align-middle" data-feather="check-square"></i>
-                        <span class="align-middle">Arıza Durumu</span>
-                    </a>
-                </li>
-                {{-- <li class="sidebar-item{{ request()->routeIs('requests.index') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('requests.index') }}">
-                        <i class="align-middle" data-feather="clipboard"></i>
-                        <span class="align-middle">Talepler</span>
-                    </a>
-                </li> --}}
-
-
-
-                <li class="sidebar-header">Analiz & Rapor</li>
+                <!-- Raporlama - Tüm roller -->
+                <li class="sidebar-header">Raporlama</li>
 
                 <li class="sidebar-item{{ request()->routeIs('admin.reporting') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.reporting') }}">
@@ -175,33 +172,26 @@
                     </a>
                 </li>
 
-                {{-- <li class="sidebar-item{{ request()->routeIs('admin.dataAnalysis') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.dataAnalysis') }}">
-                        <i class="align-middle" data-feather="pie-chart"></i>
-                        <span class="align-middle">Veri Analizi</span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item{{ request()->routeIs('admin.equipmentAnalysis') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.equipmentAnalysis') }}">
-                        <i class="align-middle" data-feather="settings"></i>
-                        <span class="align-middle">Ekipman Analizi</span>
-                    </a>
-                </li> --}}
-
-                {{-- <li class="sidebar-item{{ request()->routeIs('admin.memberAnalysis') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.memberAnalysis') }}">
-                        <i class="align-middle" data-feather="users"></i>
-                        <span class="align-middle">Üye Analizi</span>
-                    </a>
-                </li> --}}
-
-                <li class="sidebar-header">Kullanıcı</li>
+                <!-- Kullanıcı Yönetimi - Sadece Admin -->
+                @if(auth()->user()->canManageUsers())
+                <li class="sidebar-header">Kullanıcı Yönetimi</li>
 
                 <li class="sidebar-item{{ request()->routeIs('admin.users') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.users') }}">
                         <i class="align-middle" data-feather="user"></i>
                         <span class="align-middle">Kullanıcılar</span>
+                    </a>
+                </li>
+                @endif
+
+                <!-- Profil - Tüm roller -->
+                <li class="sidebar-header">Hesap</li>
+
+                <li class="sidebar-item{{ request()->routeIs('admin.profile') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.profile') }}">
+                        <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 20px; height: 20px; margin-right: 8px;">
+                        <i class="align-middle" data-feather="user-circle"></i>
+                        <span class="align-middle">Profilim</span>
                     </a>
                 </li>
             </ul>
@@ -220,29 +210,34 @@
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <span
                                 class="avatar bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-1"
-                                style="width:36px;height:36px;font-weight:700;font-size:1.2rem;">B</span>
-                            <span class="text-dark">Berat Çoban</span>
+                                style="width:36px;height:36px;font-weight:700;font-size:1.2rem;">{{ substr(auth()->user()->name ?? 'U', 0, 1) }}</span>
+                            <span class="text-dark">{{ auth()->user()->name ?? 'Kullanıcı' }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="min-width:200px;">
                             <li class="px-3 py-3 border-bottom text-center">
                                 <span
                                     class="avatar bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                                    style="width:48px;height:48px;font-weight:700;font-size:1.5rem;">B</span>
-                                <div class="fw-bold">Berat Çoban</div>
-                                <div class="text-muted small">admin@ibag.com</div>
+                                    style="width:48px;height:48px;font-weight:700;font-size:1.5rem;">{{ substr(auth()->user()->name ?? 'U', 0, 1) }}</span>
+                                <div class="fw-bold">{{ auth()->user()->name ?? 'Kullanıcı' }}</div>
+                                <div class="text-muted small">{{ auth()->user()->email ?? 'email@example.com' }}</div>
+                                <div class="text-muted small">{{ auth()->user()->role_label ?? 'Rol' }}</div>
                             </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.profile') }}"><i
                                         class="fas fa-user-circle fa-fw"></i> Profilim</a></li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i
-                                        class="fas fa-cog fa-fw"></i> Ayarlar</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"><i
-                                        class="fas fa-sign-out-alt fa-fw"></i> Çıkış Yap</a></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger w-100 border-0 bg-transparent">
+                                        <i class="fas fa-sign-out-alt fa-fw"></i> Çıkış Yap
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
                 </ul>
