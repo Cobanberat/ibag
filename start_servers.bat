@@ -1,0 +1,16 @@
+@echo off
+echo Starting Laravel Development Server...
+start "Laravel Server" cmd /k "php artisan serve --host=0.0.0.0 --port=8000"
+
+echo Waiting 3 seconds...
+timeout /t 3 /nobreak > nul
+
+echo Starting Vite Development Server...
+start "Vite Server" cmd /k "npm run dev"
+
+echo Both servers are starting...
+echo Laravel: http://192.168.1.202:8000
+echo Vite: http://192.168.1.202:5173
+echo.
+echo Press any key to exit...
+pause > nul

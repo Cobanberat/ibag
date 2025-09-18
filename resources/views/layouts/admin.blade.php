@@ -91,14 +91,7 @@
                     </a>
                 </li>
 
-                <!-- Arıza Bildirimi - Tüm roller -->
-                <li class="sidebar-item{{ request()->routeIs('admin.fault.create') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.fault.create') }}">
-                        <i class="align-middle" data-feather="alert-circle"></i>
-                        <span class="align-middle">Arıza Bildir</span>
-                    </a>
-                </li>
-
+             
                 <!-- Ekipman Yönetimi - Admin ve Ekip Yetkilisi -->
                 @if(auth()->user()->canManageEquipment())
                 <li class="sidebar-header">Ekipman Yönetimi</li>
@@ -128,12 +121,14 @@
                 @if(auth()->user()->canManageFaults())
                 <li class="sidebar-header">Arıza Yönetimi</li>
 
-                <li class="sidebar-item{{ request()->routeIs('admin.fault') ? ' active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.fault') }}">
-                        <i class="align-middle" data-feather="alert-triangle"></i>
-                        <span class="align-middle">Arıza Yönetimi</span>
+                  <!-- Arıza Bildirimi - Tüm roller -->
+                  <li class="sidebar-item{{ request()->routeIs('admin.fault.create') ? ' active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('admin.fault.create') }}">
+                        <i class="align-middle" data-feather="alert-circle"></i>
+                        <span class="align-middle">Arıza Bildir</span>
                     </a>
                 </li>
+
 
                 <li class="sidebar-item{{ request()->routeIs('admin.fault.status') ? ' active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.fault.status') }}">
