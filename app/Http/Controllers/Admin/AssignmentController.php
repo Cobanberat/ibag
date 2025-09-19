@@ -112,11 +112,13 @@ class AssignmentController extends Controller
                 // Toplu takip - miktarı azalt
                 $stock = EquipmentStock::where('equipment_id', $equipment->id)->first();
                 if ($stock) {
+                    $oldQuantity = $stock->quantity;
                     $stock->quantity -= $quantity;
                     if ($stock->quantity <= 0) {
                         $stock->status = 'Yok';
                     }
                     $stock->save();
+                    
                 }
             }
         }
@@ -127,7 +129,7 @@ class AssignmentController extends Controller
 
     public function myAssignments()
     {
-        $assignments = Assignment::with('items.equipment')
+        $assignments = Assignment::with(['items.equipment', 'items.equipmentStock'])
             ->where('user_id', Auth::id())
             ->get();
 
@@ -139,81 +141,83 @@ class AssignmentController extends Controller
      */
     public function returnAssignment(Request $request, $id)
     {
-        // Validation
+
+        // Validation - Fotoğrafları opsiyonel yap
         $request->validate([
-            'return_photos' => 'required|array',
-            'return_photos.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'used_qty' => 'array',
             'used_qty.*' => 'integer|min:0'
         ]);
+        
+        // Fotoğraf validasyonu (eğer varsa)
+        if ($request->hasFile('return_photos')) {
+            $request->validate([
+                'return_photos' => 'array',
+                'return_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+        }
 
-        $assignment = Assignment::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-            
+        $assignment = Assignment::findOrFail($id);
+        
         foreach ($assignment->items as $item) {
-            if (isset($request->return_photos[$item->id])) {
+            // Kullanılan miktarı al - array'den direkt al
+            $usedQty = isset($request->used_qty[$item->id]) ? (int) $request->used_qty[$item->id] : 0;
+            
+            // Geri dönen miktarı hesapla
+            $returnedQty = $item->quantity - $usedQty;
+            
+            
 
-                // Kullanıcıdan gelen kullanılan miktar bilgisi
-                $usedQty = isset($request->used_qty[$item->id])
-                    ? (int) $request->used_qty[$item->id]
-                    : $item->quantity; // Eğer belirtilmemişse tamamını kullanmış kabul et
-
-                // Alınan adedi aşmasın
-                $usedQty = min($usedQty, $item->quantity);
-                
-                // Geri dönen miktar
-                $returnedQty = $item->quantity - $usedQty;
-
-                // Fotoğraf yükleme
+            // Fotoğraf yükleme (opsiyonel)
+            $filePath = null;
+            if ($request->hasFile("return_photos.{$item->id}")) {
                 $file = $request->file("return_photos.{$item->id}");
                 $filePath = $file->store('equipment_returns', 'public');
+            }
 
-                // AssignmentItem tablosuna kaydet
-                $item->update([
-                    'return_photo_path' => $filePath,
-                    'returned_quantity' => $returnedQty, // Geri dönen miktar
-                ]);
+            // AssignmentItem tablosuna kaydet
+            $updateData = [
+                'returned_quantity' => $returnedQty, // Geri dönen miktar
+            ];
+            
+            if ($filePath) {
+                $updateData['return_photo_path'] = $filePath;
+            }
+            
+            $item->update($updateData);
 
-                // --- Stok güncelleme ---
-                if ($item->equipment->individual_tracking) {
-                    // Ayrı takip - geri dönen ekipmanları "Aktif" durumuna getir
-                    if ($returnedQty > 0) {
-                        $stocksToReturn = EquipmentStock::where('equipment_id', $item->equipment_id)
-                            ->where('status', 'Kullanımda')
-                            ->limit($returnedQty)
-                            ->get();
-                            
-                        foreach ($stocksToReturn as $stock) {
-                            $stock->update(['status' => 'Aktif']);
-                        }
+            // --- Stok güncelleme ---
+            if ($item->equipment->individual_tracking) {
+                // Ayrı takip - geri dönen ekipmanları "Aktif" durumuna getir
+                if ($returnedQty > 0) {
+                    $stocksToReturn = EquipmentStock::where('equipment_id', $item->equipment_id)
+                        ->where('status', 'Kullanımda')
+                        ->limit($returnedQty)
+                        ->get();
+                        
+                    foreach ($stocksToReturn as $stock) {
+                        $stock->update(['status' => 'Aktif']);
                     }
-                    
-                    // Kullanılan (kayıp/hasarlı) ekipmanları "Arızalı" durumuna getir
-                    if ($usedQty > $returnedQty) {
-                        $damagedQty = $usedQty - $returnedQty;
-                        $stocksToDamage = EquipmentStock::where('equipment_id', $item->equipment_id)
-                            ->where('status', 'Kullanımda')
-                            ->limit($damagedQty)
-                            ->get();
-                            
-                        foreach ($stocksToDamage as $stock) {
-                            $stock->update(['status' => 'Arızalı']);
-                        }
+                }
+                
+                // Kullanılan (kayıp/hasarlı) ekipmanları "Arızalı" durumuna getir
+                if ($usedQty > $returnedQty) {
+                    $damagedQty = $usedQty - $returnedQty;
+                    $stocksToDamage = EquipmentStock::where('equipment_id', $item->equipment_id)
+                        ->where('status', 'Kullanımda')
+                        ->limit($damagedQty)
+                        ->get();
+                        
+                    foreach ($stocksToDamage as $stock) {
+                        $stock->update(['status' => 'Arızalı']);
                     }
-                } else {
-                    // Toplu takip - geri dönen miktarı stoka ekle
-                    $stock = EquipmentStock::where('equipment_id', $item->equipment_id)->first();
-                    if ($stock) {
-                        $stock->quantity += $returnedQty;
-                        // Stok durumunu güncelle
-                        if ($stock->quantity > 0) {
-                            $stock->status = 'Aktif';
-                        } else {
-                            $stock->status = 'Yok';
-                        }
-                        $stock->save();
-                    }
+                }
+            } else {
+                // Toplu takip - geri dönen miktarı stoka ekle
+                $stock = EquipmentStock::where('equipment_id', $item->equipment_id)->first();
+                if ($stock) {
+                    $stock->quantity += $returnedQty;
+                    $stock->save();
+
                 }
             }
         }
@@ -223,7 +227,10 @@ class AssignmentController extends Controller
         $assignment->damage_note = $request->damage_note; // Arıza notunu kaydet
         $assignment->save();
 
-        return redirect()->route('admin.teslimEt')->with('success', 'Zimmet başarıyla geri teslim edildi.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Zimmet başarıyla geri teslim edildi.'
+        ]);
     }
 
     public function finish($id)
@@ -275,6 +282,73 @@ class AssignmentController extends Controller
                 'initial' => $initial,
                 'return' => $return,
             ],
+        ]);
+    }
+
+    // Zimmet detayını göster (teslim alma sayfası)
+    public function showAssignment($id)
+    {
+        $assignment = Assignment::with(['items.equipment', 'assignedUser', 'assignedBy'])
+            ->findOrFail($id);
+
+        $pageTitle = 'Zimmet Teslim Alma';
+
+        return view('admin.assignments.show', compact('assignment', 'pageTitle'));
+    }
+
+    // Ekipman teslim alma
+    public function returnItem(Request $request, $id)
+    {
+        $request->validate([
+            'note' => 'nullable|string|max:1000',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $item = AssignmentItem::findOrFail($id);
+        
+        // Teslim fotoğrafını kaydet
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('assignment-returns', 'public');
+            $item->return_photo_path = $photoPath;
+        }
+
+        $item->return_note = $request->note;
+        $item->returned_at = now();
+        $item->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ekipman başarıyla teslim alındı.'
+        ]);
+    }
+
+    // Zimmet teslim alma işlemini tamamla
+    public function completeAssignment(Request $request, $id)
+    {
+        $assignment = Assignment::findOrFail($id);
+        
+        // Zimmet durumunu güncelle
+        $assignment->status = 1; // Teslim alındı
+        $assignment->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Zimmet teslim alma işlemi tamamlandı.'
+        ]);
+    }
+
+    // Zimmet işlemini bitir (finish)
+    public function finishAssignment(Request $request, $id)
+    {
+        $assignment = Assignment::findOrFail($id);
+        
+        // Zimmet durumunu güncelle
+        $assignment->status = 2; // Tamamlandı
+        $assignment->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Zimmet işlemi tamamlandı.'
         ]);
     }
 

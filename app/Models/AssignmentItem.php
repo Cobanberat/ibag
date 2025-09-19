@@ -22,7 +22,12 @@ class AssignmentItem extends Model
 
     public function equipment()
     {
-        return $this->belongsTo(Equipment::class); // equipment tablon var
+        return $this->belongsTo(Equipment::class);
+    }
+
+    public function equipmentStock()
+    {
+        return $this->belongsTo(EquipmentStock::class, 'equipment_id', 'equipment_id');
     }
 }
 

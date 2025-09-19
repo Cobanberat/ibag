@@ -7,6 +7,7 @@ class Assignment extends Model
 {
     protected $fillable = [
         'user_id',
+        'assigned_by',
         'note',
         'status',
         'damage_note',
@@ -16,6 +17,18 @@ class Assignment extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Zimmet alan kullanıcı
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Zimmet veren kullanıcı
+    public function assignedBy()
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 
     // Atama ile item ilişkisi

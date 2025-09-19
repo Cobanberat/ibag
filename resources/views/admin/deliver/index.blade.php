@@ -286,13 +286,36 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="returnModalBody">
-                <div class="text-center">
-                    <div class="spinner-border text-success" role="status">
-                        <span class="visually-hidden">Yükleniyor...</span>
+            <div class="modal-body">
+                <form id="returnForm" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Bilgi:</strong> Teslim fotoğrafı yüklemek opsiyoneldir. Kullanılan miktarı belirtmeyi unutmayın.
                     </div>
-                    <p class="mt-2">Form yükleniyor...</p>
-                </div>
+                    
+                    <!-- Bu kısım JavaScript ile doldurulacak -->
+                    <div id="equipmentItems">
+                        <!-- Equipment items buraya eklenecek -->
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="damageNote" class="form-label fw-bold">
+                            <i class="fas fa-sticky-note me-1"></i>Arıza/Hasar Notu (Opsiyonel)
+                        </label>
+                        <textarea class="form-control" id="damageNote" name="damage_note" rows="3" placeholder="Arıza veya hasar durumu hakkında notlar..."></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i>Teslim Et
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -544,6 +567,73 @@
 // Global değişkenler
 let assignments = @json($assignments);
 
+// Toast bildirim fonksiyonu
+function showToast(message, type = 'info') {
+    // Toast container oluştur (eğer yoksa)
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+
+    // Toast ID oluştur
+    const toastId = 'toast-' + Date.now();
+    
+    // Toast type'a göre class'ları belirle
+    let bgClass, iconClass;
+    switch(type) {
+        case 'success':
+            bgClass = 'bg-success';
+            iconClass = 'fas fa-check-circle';
+            break;
+        case 'error':
+            bgClass = 'bg-danger';
+            iconClass = 'fas fa-exclamation-circle';
+            break;
+        case 'warning':
+            bgClass = 'bg-warning';
+            iconClass = 'fas fa-exclamation-triangle';
+            break;
+        default:
+            bgClass = 'bg-info';
+            iconClass = 'fas fa-info-circle';
+    }
+
+    // Toast HTML oluştur
+    const toastHTML = `
+        <div id="${toastId}" class="toast ${bgClass} text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header ${bgClass} text-white border-0">
+                <i class="${iconClass} me-2"></i>
+                <strong class="me-auto">${type === 'success' ? 'Başarılı' : type === 'error' ? 'Hata' : type === 'warning' ? 'Uyarı' : 'Bilgi'}</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+
+    // Toast'u container'a ekle
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+    // Toast'u göster
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: type === 'success' ? 3000 : 5000
+    });
+    
+    toast.show();
+
+    // Toast kapandıktan sonra DOM'dan kaldır
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+}
+
 // Modal açma fonksiyonları
 function openDetailModal(assignmentId) {
     console.log('Detay modal açılıyor:', assignmentId);
@@ -588,8 +678,8 @@ function openDetailModal(assignmentId) {
                     <div class="border rounded p-2 h-100 d-flex flex-column justify-content-between">
                         <div class="small mb-2">
                             <strong class="d-block">${item.equipment?.name || 'Bilinmiyor'}</strong>
-                            ${item.equipment?.individual_tracking ? 
-                                `<span class="badge bg-info">Ayrı Takip</span><br><small class="text-muted">Kod: ${item.code || '-'}</small>` :
+                            ${item.equipment?.individual_tracking == 1 || item.equipment?.individual_tracking === true || item.equipment?.individual_tracking === '1' ? 
+                                `<span class="badge bg-info">Ayrı Takip</span><br><small class="text-muted">Kod: ${item.equipment_stock?.code || item.code || '-'}</small>` :
                                 `<span class="badge bg-secondary">Toplu Takip</span><br><small class="text-muted">Miktar: ${item.quantity || 0}</small>`
                             }
                         </div>
@@ -647,22 +737,19 @@ function openReturnModal(assignmentId) {
         return;
     }
     
-    const modalBody = document.getElementById('returnModalBody');
-    if (!modalBody) {
-        console.error('Return modal body bulunamadı');
+    const equipmentItems = document.getElementById('equipmentItems');
+    if (!equipmentItems) {
+        console.error('Equipment items container bulunamadı');
         return;
     }
     
-    let html = `
-        <form action="/admin/teslim-al/${assignmentId}" method="POST" enctype="multipart/form-data" id="returnForm${assignmentId}">
-            @csrf
-            @method('PUT')
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Bilgi:</strong> Her ekipman için teslim fotoğrafı yüklemek zorunludur.
-            </div>
-            <div class="row g-3">
-    `;
+    // Form action'ını ayarla
+    const form = document.getElementById('returnForm');
+    if (form) {
+        form.action = `/admin/teslim-et/${assignmentId}`;
+    }
+    
+    let html = '<div class="row g-3">';
     
     if (assignment.items && assignment.items.length > 0) {
         assignment.items.forEach(item => {
@@ -673,8 +760,8 @@ function openReturnModal(assignmentId) {
                             <h6 class="mb-0">
                                 <i class="fas fa-cube me-2"></i>
                                 ${item.equipment?.name || 'Bilinmiyor'}
-                                <span class="badge ${item.equipment?.individual_tracking ? 'bg-info' : 'bg-secondary'} ms-2">
-                                    ${item.equipment?.individual_tracking ? 'Ayrı Takip' : 'Toplu Takip'}
+                                <span class="badge ${item.equipment?.individual_tracking == 1 || item.equipment?.individual_tracking === true || item.equipment?.individual_tracking === '1' ? 'bg-info' : 'bg-secondary'} ms-2">
+                                    ${item.equipment?.individual_tracking == 1 || item.equipment?.individual_tracking === true || item.equipment?.individual_tracking === '1' ? 'Ayrı Takip' : 'Toplu Takip'}
                                 </span>
                             </h6>
                         </div>
@@ -690,7 +777,7 @@ function openReturnModal(assignmentId) {
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-camera me-1"></i>Teslim Fotoğrafı:
                                 </label>
-                                <input type="file" name="return_photos[${item.id}]" class="form-control" accept="image/*" required>
+                                <input type="file" name="return_photos[${item.id}]" class="form-control" accept="image/*">
                                 <small class="text-muted">Teslim edilen ekipmanın fotoğrafını çekin</small>
                             </div>
                             
@@ -701,7 +788,7 @@ function openReturnModal(assignmentId) {
                                 </small>
                             </div>
                             
-                            ${!item.equipment?.individual_tracking ? `
+                            ${!(item.equipment?.individual_tracking == 1 || item.equipment?.individual_tracking === true || item.equipment?.individual_tracking === '1') ? `
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">
                                         <i class="fas fa-exclamation-triangle me-1 text-warning"></i>Kullanılan/Kayıp Miktar:
@@ -734,33 +821,48 @@ function openReturnModal(assignmentId) {
         html += '<div class="col-12"><p class="text-muted">Ekipman bulunamadı.</p></div>';
     }
     
-    html += `
-            </div>
-            
-            <div class="mb-3 mt-4">
-                <label class="form-label fw-bold">
-                    <i class="fas fa-exclamation-triangle me-1"></i>Arıza/Hasar Notu:
-                </label>
-                <textarea name="damage_note" class="form-control" rows="3" placeholder="Ekipmanlarda herhangi bir arıza veya hasar varsa belirtin..."></textarea>
-            </div>
-            
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>İptal
-                </button>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-check me-1"></i>Teslim Et
-                </button>
-            </div>
-        </form>
-    `;
+    html += '</div>';
     
-    modalBody.innerHTML = html;
+    equipmentItems.innerHTML = html;
     
     const modal = document.getElementById('returnModal');
     if (modal) {
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
+        
+        // Form submit event listener ekle
+        const form = document.getElementById('returnForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'PUT',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Teslim işlemi başarılı!', 'success');
+                        setTimeout(() => {
+                            window.location.href = window.location.pathname + '?success=1';
+                        }, 1500);
+                    } else {
+                        showToast(data.message || 'Bilinmeyen hata oluştu', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Bir hata oluştu: ' + error.message, 'error');
+                });
+            });
+        }
     }
 }
 
@@ -864,6 +966,14 @@ function clearFilters() {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // URL parametresi kontrol et
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        showToast('Teslim işlemi başarılı!', 'success');
+        // URL'den parametreyi temizle
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     // Filtre butonları
     document.getElementById('filterBtn').addEventListener('click', filterAssignments);
     document.getElementById('clearBtn').addEventListener('click', clearFilters);

@@ -229,6 +229,68 @@ class EquipmentController extends Controller
     }
 
     /**
+     * Delete single equipment stock
+     */
+    public function destroyStock($id)
+    {
+        $equipmentStock = EquipmentStock::with('equipment')->findOrFail($id);
+        
+        // Ekipman adını sakla
+        $equipmentName = $equipmentStock->equipment->name ?? 'Ekipman';
+        $stockCode = $equipmentStock->code ?? $equipmentStock->id;
+        
+        // Stok kaydını sil
+        $equipmentStock->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$equipmentName} (Kod: {$stockCode}) başarıyla silindi"
+        ]);
+    }
+
+    /**
+     * Bulk delete equipment stocks
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:stock_depo,id'
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = 0;
+        $errors = [];
+
+        foreach ($ids as $id) {
+            try {
+                $equipmentStock = EquipmentStock::find($id);
+                if ($equipmentStock) {
+                    $equipmentStock->delete();
+                    $deletedCount++;
+                }
+            } catch (\Exception $e) {
+                $errors[] = "ID {$id}: " . $e->getMessage();
+            }
+        }
+
+        if ($deletedCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "{$deletedCount} adet ekipman stok kaydı başarıyla silindi.",
+                'deleted_count' => $deletedCount,
+                'errors' => $errors
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hiçbir kayıt silinemedi.',
+                'errors' => $errors
+            ], 400);
+        }
+    }
+
+    /**
      * Export equipment data to CSV
      */
     public function exportCsv()
@@ -272,6 +334,54 @@ class EquipmentController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Download QR code for equipment stock
+     */
+    public function downloadQR($id)
+    {
+        $equipmentStock = EquipmentStock::with('equipment')->findOrFail($id);
+        
+        // QR kod yoksa oluştur
+        if (!$equipmentStock->qr_code) {
+            $equipmentStock->generateQrCode();
+        }
+        
+        try {
+            // Base64 SVG'yi PNG'ye çevir
+            $svgData = base64_decode($equipmentStock->qr_code);
+            
+            // Imagick varsa PNG'ye çevir
+            if (extension_loaded('imagick')) {
+                $image = new \Imagick();
+                $image->setBackgroundColor(new \ImagickPixel('transparent'));
+                $image->readImageBlob($svgData);
+                $image->setImageFormat('png');
+                $image->setImageCompressionQuality(100);
+                
+                $pngData = $image->getImageBlob();
+            } else {
+                // Imagick yoksa SVG'yi direkt döndür
+                $pngData = $svgData;
+            }
+            
+            $filename = 'QR_' . ($equipmentStock->equipment->name ?? 'Ekipman') . '_' . ($equipmentStock->code ?? $equipmentStock->id) . (extension_loaded('imagick') ? '.png' : '.svg');
+            $contentType = extension_loaded('imagick') ? 'image/png' : 'image/svg+xml';
+            
+            return response($pngData, 200, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Length' => strlen($pngData)
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('QR kod indirme hatası: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'QR kod oluşturulamadı: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

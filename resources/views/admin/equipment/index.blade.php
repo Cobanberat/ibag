@@ -22,20 +22,15 @@
             <a href="{{ route('stock.create') }}" class="btn btn-success shadow-sm">
                 <i class="fas fa-plus"></i> Ekipman Ekle
             </a>
-            <button class="btn btn-outline-primary ms-2 shadow-sm" id="exportCsvBtn">
-                <i class="fas fa-file-csv"></i> CSV Aktar
-            </button>
+
             <button class="btn btn-outline-success ms-2 shadow-sm" id="importExcelBtn">
                 <i class="fas fa-file-excel"></i> Excel İçe Aktar
-            </button>
-            <button class="btn btn-outline-danger ms-2 shadow-sm" id="deleteSelectedBtn" disabled>
-                <i class="fas fa-trash"></i> Seçiliyi Sil
             </button>
         </div>
     </div>
     
     <!-- Düzenleme Yardım Paneli -->
-    <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+    {{-- <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
         <div class="d-flex align-items-center">
             <i class="fas fa-info-circle me-2"></i>
             <div>
@@ -51,10 +46,10 @@
             </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    </div> --}}
     
     <!-- Individual Tracking Bilgi Paneli -->
-    <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+    {{-- <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
         <div class="d-flex align-items-center">
             <i class="fas fa-exclamation-triangle me-2"></i>
             <div>
@@ -68,7 +63,7 @@
             </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    </div> --}}
     <div class="row mb-4 g-2">
         <div class="col-md-4">
             <input type="text" class="form-control" placeholder="Ara..." id="searchInput">
@@ -90,12 +85,28 @@
             </button>
         </div>
     </div>
+    <!-- Toplu İşlem Butonları -->
+    <div class="mb-3" id="bulkActions" style="display: none;">
+        <div class="d-flex gap-2 align-items-center">
+            <span class="text-muted">Seçilen: <span id="selectedCount">0</span></span>
+            <button type="button" class="btn btn-danger btn-sm" id="bulkDeleteBtn">
+                <i class="fas fa-trash me-1"></i>Seçilenleri Sil
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="clearSelectionBtn">
+                <i class="fas fa-times me-1"></i>Seçimi Temizle
+            </button>
+        </div>
+    </div>
+
     <div class="card shadow-lg border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="equipmentTable">
                     <thead class="table-light">
                         <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" class="form-check-input">
+                            </th>
                             <th>Sıra</th>
                             <th>Kod</th>
                             <th>Resim</th>
@@ -116,6 +127,9 @@
                     <tbody>
                         @forelse($equipmentStocks as $index => $stock)
                             <tr data-id="{{ $stock->id }}" data-category="{{ $stock->equipment->category->id ?? '' }}">
+                                <td>
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="{{ $stock->id }}">
+                                </td>
                                 <td>{{ ($equipmentStocks->currentPage() - 1) * $equipmentStocks->perPage() + $index + 1 }}</td>
                                 <td class="editable-cell" data-field="code" data-id="{{ $stock->id }}">{{ $stock->code ?? '-' }}</td>
                                 <td>
@@ -136,7 +150,7 @@
                                     
                                     @if($qrCode)
                                         <div class="d-flex flex-column align-items-center">
-                                            <img src="data:image/svg+xml;base64,{{ $qrCode }}" alt="QR Kod" class="img-fluid" style="max-width: 50px; max-height: 50px; cursor: pointer;" onclick="showQrModal('{{ $qrCode }}', '{{ $stock->code ?? 'QR Kod' }}')">
+                                            <img src="data:image/svg+xml;base64,{{ $qrCode }}" alt="QR Kod" class="img-fluid" style="max-width: 50px; max-height: 50px; cursor: pointer;" onclick="showQrModal('{{ $qrCode }}', '{{ $stock->code ?? 'QR Kod' }}', {{ $stock->id }})">
                                             <small class="text-muted mt-1">
                                                 <a href="{{ route('admin.equipment.qr-download', $stock->id) }}" class="text-decoration-none" title="QR Kodu İndir">
                                                     <i class="fas fa-download"></i> İndir
@@ -195,7 +209,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="15" class="text-center py-4">
+                                <td colspan="16" class="text-center py-4">
                                     <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz ekipman bulunmuyor</p>
                                 </td>
@@ -258,7 +272,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Ekipman Resmi</h5>
+                    <h5 class="modal-title" id="imageModalLabel">Ekipman Resmi</h5> 
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">

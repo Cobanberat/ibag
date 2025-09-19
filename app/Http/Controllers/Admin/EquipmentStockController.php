@@ -965,9 +965,20 @@ class EquipmentStockController extends Controller
             
             $previewData = [];
             $errors = [];
+            $criticalErrors = [];
+            
+            // Başlık satırı kontrolü
+            $headerRow = 1;
+            $expectedHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+            foreach ($expectedHeaders as $col) {
+                $cellValue = trim($worksheet->getCell($col . $headerRow)->getValue() ?? '');
+                if (empty($cellValue)) {
+                    $criticalErrors[] = "Sütun {$col} başlığı eksik veya boş";
+                }
+            }
             
             // İlk satır başlık, 2. satırdan başla
-            for ($row = 2; $row <= min($highestRow, 11); $row++) { // İlk 10 satırı önizle
+            for ($row = 2; $row <= min($highestRow, 21); $row++) { // İlk 20 satırı önizle
                 $categoryName = trim($worksheet->getCell('A' . $row)->getValue() ?? '');
                 $equipmentName = trim($worksheet->getCell('B' . $row)->getValue() ?? '');
                 $code = trim($worksheet->getCell('C' . $row)->getValue() ?? '');
@@ -986,7 +997,7 @@ class EquipmentStockController extends Controller
                     continue;
                 }
                 
-                // Açıklama satırlarını atla (AÇIKLAMALAR: ile başlayan)
+                // Açıklama satırlarını atla
                 if (strpos($categoryName, 'AÇIKLAMALAR') === 0 || 
                     strpos($categoryName, '•') === 0 ||
                     strpos($equipmentName, 'AÇIKLAMALAR') === 0 ||
@@ -994,10 +1005,149 @@ class EquipmentStockController extends Controller
                     continue;
                 }
                 
-                // Validasyon - sadece gerçekten gerekli alanları kontrol et
+                // Kapsamlı validasyon
                 $rowErrors = [];
-                if (empty($categoryName)) $rowErrors[] = 'Kategori adı gerekli';
-                if (empty($equipmentName)) $rowErrors[] = 'Ekipman adı gerekli';
+                $rowWarnings = [];
+                
+                // Zorunlu alanlar
+                if (empty($categoryName)) {
+                    $rowErrors[] = 'Kategori adı gerekli';
+                } else {
+                    // Kategori adı validasyonu
+                    if (strlen($categoryName) > 100) {
+                        $rowErrors[] = 'Kategori adı 100 karakterden uzun olamaz';
+                    }
+                    if (preg_match('/[<>"\'&]/', $categoryName)) {
+                        $rowErrors[] = 'Kategori adında özel karakterler (<>"\'&) bulunamaz';
+                    }
+                    // Sadece boşluk kontrolü
+                    if (trim($categoryName) === '') {
+                        $rowErrors[] = 'Kategori adı sadece boşluk olamaz';
+                    }
+                    // Sayısal kontrol
+                    if (is_numeric($categoryName)) {
+                        $rowErrors[] = 'Kategori adı sadece sayı olamaz';
+                    }
+                }
+                
+                if (empty($equipmentName)) {
+                    $rowErrors[] = 'Ekipman adı gerekli';
+                } else {
+                    // Ekipman adı validasyonu
+                    if (strlen($equipmentName) > 100) {
+                        $rowErrors[] = 'Ekipman adı 100 karakterden uzun olamaz';
+                    }
+                    if (preg_match('/[<>"\'&]/', $equipmentName)) {
+                        $rowErrors[] = 'Ekipman adında özel karakterler (<>"\'&) bulunamaz';
+                    }
+                    // Sadece boşluk kontrolü
+                    if (trim($equipmentName) === '') {
+                        $rowErrors[] = 'Ekipman adı sadece boşluk olamaz';
+                    }
+                    // Sayısal kontrol
+                    if (is_numeric($equipmentName)) {
+                        $rowErrors[] = 'Ekipman adı sadece sayı olamaz';
+                    }
+                }
+                
+                // Kod validasyonu
+                if (!empty($code)) {
+                    if (strlen($code) > 50) {
+                        $rowErrors[] = 'Kod 50 karakterden uzun olamaz';
+                    }
+                    if (preg_match('/[<>"\'&]/', $code)) {
+                        $rowErrors[] = 'Kodda özel karakterler (<>"\'&) bulunamaz';
+                    }
+                    // Sadece boşluk kontrolü
+                    if (trim($code) === '') {
+                        $rowErrors[] = 'Kod sadece boşluk olamaz';
+                    }
+                    // Özel karakterler (sadece harf, rakam, tire, alt çizgi)
+                    if (!preg_match('/^[A-Za-z0-9\-_]+$/', trim($code))) {
+                        $rowErrors[] = 'Kod sadece harf, rakam, tire (-) ve alt çizgi (_) içerebilir';
+                    }
+                    // Mevcut kod kontrolü (sadece ayrı takip ekipmanları için)
+                    if (!empty($trackingType) && in_array($trackingType, ['Ayrı Takip', 'ayrı takip', 'AYRI TAKİP', 'Ayrı', 'ayrı', 'AYRI'])) {
+                        if (EquipmentStock::where('code', trim($code))->exists()) {
+                            $rowWarnings[] = 'Bu kod zaten kullanımda (ayrı takip ekipmanı)';
+                        }
+                    }
+                }
+                
+                // Marka validasyonu
+                if (!empty($brand) && strlen($brand) > 50) {
+                    $rowErrors[] = 'Marka 50 karakterden uzun olamaz';
+                }
+                if (!empty($brand) && preg_match('/[<>"\'&]/', $brand)) {
+                    $rowErrors[] = 'Markada özel karakterler (<>"\'&) bulunamaz';
+                }
+                
+                // Model validasyonu
+                if (!empty($model) && strlen($model) > 50) {
+                    $rowErrors[] = 'Model 50 karakterden uzun olamaz';
+                }
+                if (!empty($model) && preg_match('/[<>"\'&]/', $model)) {
+                    $rowErrors[] = 'Modelde özel karakterler (<>"\'&) bulunamaz';
+                }
+                
+                // Beden validasyonu
+                if (!empty($size) && strlen($size) > 50) {
+                    $rowErrors[] = 'Beden 50 karakterden uzun olamaz';
+                }
+                
+                // Özellik validasyonu
+                if (!empty($feature) && strlen($feature) > 500) {
+                    $rowErrors[] = 'Özellik 500 karakterden uzun olamaz';
+                }
+                
+                // Birim türü validasyonu
+                if (!empty($unitType)) {
+                    $validUnitTypes = ['adet', 'metre', 'kilogram', 'litre', 'paket', 'kutu', 'çift', 'takım', 'Adet', 'Metre', 'Kilogram', 'Litre', 'Paket', 'Kutu', 'Çift', 'Takım'];
+                    if (!in_array($unitType, $validUnitTypes)) {
+                        $rowErrors[] = 'Geçersiz birim türü. Geçerli değerler: adet, metre, kilogram, litre, paket, kutu, çift, takım';
+                    }
+                }
+                
+                // Miktar validasyonu
+                if (!empty($quantity)) {
+                    if (!is_numeric($quantity)) {
+                        $rowErrors[] = 'Miktar sayısal değer olmalıdır';
+                    } elseif ((int)$quantity < 1) {
+                        $rowErrors[] = 'Miktar 1\'den küçük olamaz';
+                    } elseif ((int)$quantity > 999999) {
+                        $rowErrors[] = 'Miktar 999,999\'dan büyük olamaz';
+                    }
+                }
+                
+                // Takip türü validasyonu
+                if (!empty($trackingType)) {
+                    $validTrackingTypes = ['Toplu Takip', 'Ayrı Takip', 'toplu takip', 'ayrı takip', 'TOPLU TAKİP', 'AYRI TAKİP', 'Toplu', 'Ayrı', 'toplu', 'ayrı', 'TOPLU', 'AYRI'];
+                    if (!in_array($trackingType, $validTrackingTypes)) {
+                        $rowErrors[] = 'Geçersiz takip türü. Geçerli değerler: Toplu Takip, Ayrı Takip';
+                    }
+                }
+                
+                // Durum validasyonu
+                if (!empty($status)) {
+                    $validStatuses = [
+                        'Aktif', 'Pasif', 'Arızalı', 'Bakımda', 'Yok',
+                        'aktif', 'pasif', 'arızalı', 'bakımda', 'yok',
+                        'AKTİF', 'PASİF', 'ARIYALI', 'BAKIMDA', 'YOK',
+                        'Active', 'Passive', 'Faulty', 'Maintenance', 'None',
+                        'active', 'passive', 'faulty', 'maintenance', 'none'
+                    ];
+                    if (!in_array($status, $validStatuses)) {
+                        $rowErrors[] = 'Geçersiz durum. Geçerli değerler: Aktif, Pasif, Arızalı, Bakımda, Yok';
+                    }
+                }
+                
+                // Not validasyonu
+                if (!empty($note) && strlen($note) > 1000) {
+                    $rowErrors[] = 'Not 1000 karakterden uzun olamaz';
+                }
+                if (!empty($note) && preg_match('/[<>"\'&]/', $note)) {
+                    $rowErrors[] = 'Notta özel karakterler (<>"\'&) bulunamaz';
+                }
                 
                 $previewData[] = [
                     'row' => $row,
@@ -1013,7 +1163,8 @@ class EquipmentStockController extends Controller
                     'tracking_type' => $trackingType ?: 'Toplu Takip',
                     'status' => $status ?: 'Aktif',
                     'note' => $note,
-                    'errors' => $rowErrors
+                    'errors' => $rowErrors,
+                    'warnings' => $rowWarnings
                 ];
                 
                 if (!empty($rowErrors)) {
@@ -1021,11 +1172,21 @@ class EquipmentStockController extends Controller
                 }
             }
             
+            // Kritik hatalar varsa işlemi durdur
+            if (!empty($criticalErrors)) {
+                return response()->json([
+                    'success' => false,
+                    'critical_errors' => $criticalErrors,
+                    'message' => 'Excel dosyası formatı hatalı. Lütfen şablon dosyasını kullanın.'
+                ]);
+            }
+            
             return response()->json([
                 'success' => true,
                 'preview' => $previewData,
                 'total_rows' => $highestRow - 1, // Başlık satırını çıkar
-                'errors' => $errors
+                'errors' => $errors,
+                'has_errors' => !empty($errors)
             ]);
             
         } catch (\Exception $e) {
@@ -1055,42 +1216,20 @@ class EquipmentStockController extends Controller
                 'success' => 0,
                 'skipped' => 0,
                 'errors' => 0,
-                'categories_created' => 0
+                'categories_created' => 0,
+                'equipments_created' => 0,
+                'stocks_created' => 0
             ];
             $errors = [];
             $skippedRows = [];
-            $duplicateRows = [];
             $autoAssign = $request->boolean('auto_assign_codes', false);
             $skipDuplicates = $request->boolean('skip_duplicates', true);
             $createCategories = $request->boolean('create_categories', true);
             
-            // --- PRE-SCAN: Detect code duplicates (for individual tracking) ---
-            for ($row = 2; $row <= $highestRow; $row++) {
-                $categoryName = trim($worksheet->getCell('A' . $row)->getValue() ?? '');
-                $equipmentName = trim($worksheet->getCell('B' . $row)->getValue() ?? '');
-                $code = trim($worksheet->getCell('C' . $row)->getValue() ?? '');
-                $trackingType = trim($worksheet->getCell('J' . $row)->getValue() ?? '');
-
-                if (empty($categoryName) && empty($equipmentName)) continue;
-                if (strpos($categoryName, 'AÇIKLAMALAR') === 0 || strpos($categoryName, '•') === 0 || strpos($equipmentName, 'AÇIKLAMALAR') === 0 || strpos($equipmentName, '•') === 0) continue;
-
-                if ($trackingType === 'Ayrı Takip' && $code !== '') {
-                    $exists = EquipmentStock::where('code', $code)->exists();
-                    if ($exists) {
-                        $duplicateRows[] = "Satır {$row}: Kod '{$code}' zaten mevcut (Ayrı Takip)";
-                    }
-                }
-            }
-            if (!$autoAssign && count($duplicateRows) > 0) {
-                return response()->json([
-                    'success' => false,
-                    'need_confirmation' => true,
-                    'message' => 'Aynı koda sahip kayıtlar bulundu. Otomatik kod atansın mı?',
-                    'duplicates' => $duplicateRows,
-                ]);
-            }
+            // Önce tüm verileri validate et
+            $validationErrors = [];
+            $validRows = [];
             
-            // İlk satır başlık, 2. satırdan başla
             for ($row = 2; $row <= $highestRow; $row++) {
                 $categoryName = trim($worksheet->getCell('A' . $row)->getValue() ?? '');
                 $equipmentName = trim($worksheet->getCell('B' . $row)->getValue() ?? '');
@@ -1118,7 +1257,130 @@ class EquipmentStockController extends Controller
                     continue;
                 }
                 
+                $rowErrors = [];
+                
+                // Kritik validasyonlar
+                if (empty($categoryName)) {
+                    $rowErrors[] = 'Kategori adı gerekli';
+                } elseif (strlen($categoryName) > 100) {
+                    $rowErrors[] = 'Kategori adı 100 karakterden uzun olamaz';
+                } elseif (preg_match('/[<>"\'&]/', $categoryName)) {
+                    $rowErrors[] = 'Kategori adında özel karakterler (<>"\'&) bulunamaz';
+                }
+                
+                if (empty($equipmentName)) {
+                    $rowErrors[] = 'Ekipman adı gerekli';
+                } elseif (strlen($equipmentName) > 100) {
+                    $rowErrors[] = 'Ekipman adı 100 karakterden uzun olamaz';
+                } elseif (preg_match('/[<>"\'&]/', $equipmentName)) {
+                    $rowErrors[] = 'Ekipman adında özel karakterler (<>"\'&) bulunamaz';
+                }
+                
+                // Kod validasyonu
+                if (!empty($code)) {
+                    if (strlen($code) > 50) {
+                        $rowErrors[] = 'Kod 50 karakterden uzun olamaz';
+                    } elseif (preg_match('/[<>"\'&]/', $code)) {
+                        $rowErrors[] = 'Kodda özel karakterler (<>"\'&) bulunamaz';
+                    } elseif (!empty($trackingType) && in_array($trackingType, ['Ayrı Takip', 'ayrı takip', 'AYRI TAKİP', 'Ayrı', 'ayrı', 'AYRI']) && EquipmentStock::where('code', $code)->exists()) {
+                        if (!$skipDuplicates && !$autoAssign) {
+                            $rowErrors[] = 'Bu kod zaten kullanımda (ayrı takip ekipmanı)';
+                        }
+                    }
+                }
+                
+                // Diğer alan validasyonları
+                if (!empty($brand) && strlen($brand) > 50) {
+                    $rowErrors[] = 'Marka 50 karakterden uzun olamaz';
+                }
+                if (!empty($model) && strlen($model) > 50) {
+                    $rowErrors[] = 'Model 50 karakterden uzun olamaz';
+                }
+                if (!empty($size) && strlen($size) > 50) {
+                    $rowErrors[] = 'Beden 50 karakterden uzun olamaz';
+                }
+                if (!empty($feature) && strlen($feature) > 500) {
+                    $rowErrors[] = 'Özellik 500 karakterden uzun olamaz';
+                }
+                if (!empty($note) && strlen($note) > 1000) {
+                    $rowErrors[] = 'Not 1000 karakterden uzun olamaz';
+                }
+                
+                // Miktar validasyonu
+                if (!empty($quantity) && (!is_numeric($quantity) || (int)$quantity < 1 || (int)$quantity > 999999)) {
+                    $rowErrors[] = 'Miktar geçersiz (1-999,999 arası sayı olmalı)';
+                }
+                
+                // Birim türü validasyonu
+                if (!empty($unitType)) {
+                    $validUnitTypes = ['adet', 'metre', 'kilogram', 'litre', 'paket', 'kutu', 'çift', 'takım', 'Adet', 'Metre', 'Kilogram', 'Litre', 'Paket', 'Kutu', 'Çift', 'Takım'];
+                    if (!in_array($unitType, $validUnitTypes)) {
+                        $rowErrors[] = 'Geçersiz birim türü. Geçerli değerler: adet, metre, kilogram, litre, paket, kutu, çift, takım';
+                    }
+                }
+                
+                // Takip türü validasyonu
+                if (!empty($trackingType)) {
+                    $validTrackingTypes = ['Toplu Takip', 'Ayrı Takip', 'toplu takip', 'ayrı takip', 'TOPLU TAKİP', 'AYRI TAKİP', 'Toplu', 'Ayrı', 'toplu', 'ayrı', 'TOPLU', 'AYRI'];
+                    if (!in_array($trackingType, $validTrackingTypes)) {
+                        $rowErrors[] = 'Geçersiz takip türü. Geçerli değerler: Toplu Takip, Ayrı Takip';
+                    }
+                }
+                
+                // Durum validasyonu
+                if (!empty($status)) {
+                    $validStatuses = [
+                        'Aktif', 'Pasif', 'Arızalı', 'Bakımda', 'Yok',
+                        'aktif', 'pasif', 'arızalı', 'bakımda', 'yok',
+                        'AKTİF', 'PASİF', 'ARIYALI', 'BAKIMDA', 'YOK',
+                        'Active', 'Passive', 'Faulty', 'Maintenance', 'None',
+                        'active', 'passive', 'faulty', 'maintenance', 'none'
+                    ];
+                    if (!in_array($status, $validStatuses)) {
+                        $rowErrors[] = 'Geçersiz durum. Geçerli değerler: Aktif, Pasif, Arızalı, Bakımda, Yok';
+                    }
+                }
+                
+                if (!empty($rowErrors)) {
+                    $validationErrors[] = "Satır {$row}: " . implode(', ', $rowErrors);
+                } else {
+                    $validRows[] = [
+                        'row' => $row,
+                        'category_name' => $categoryName,
+                        'equipment_name' => $equipmentName,
+                        'code' => $code,
+                        'brand' => $brand,
+                        'model' => $model,
+                        'size' => $size,
+                        'feature' => $feature,
+                        'unit_type' => $unitType,
+                        'quantity' => $quantity,
+                        'tracking_type' => $trackingType,
+                        'status' => $status,
+                        'note' => $note
+                    ];
+                }
+            }
+            
+            // Hataları kaydet ama işlemi durdurma
+            $summary['errors'] = count($validationErrors);
+            
+            // Validasyon başarılı, import işlemini başlat
+            foreach ($validRows as $rowData) {
                 try {
+                    $categoryName = $rowData['category_name'];
+                    $equipmentName = $rowData['equipment_name'];
+                    $code = $rowData['code'];
+                    $brand = $rowData['brand'];
+                    $model = $rowData['model'];
+                    $size = $rowData['size'];
+                    $feature = $rowData['feature'];
+                    $unitType = $rowData['unit_type'];
+                    $quantity = $rowData['quantity'];
+                    $trackingType = $rowData['tracking_type'];
+                    $status = $rowData['status'];
+                    $note = $rowData['note'];
+                    
                     // Kategori kontrolü ve oluşturma
                     $category = EquipmentCategory::where('name', $categoryName)->first();
                     if (!$category && $createCategories) {
@@ -1128,7 +1390,7 @@ class EquipmentStockController extends Controller
                         ]);
                         $summary['categories_created']++;
                     } elseif (!$category) {
-                        $errors[] = "Satır {$row}: Kategori '{$categoryName}' bulunamadı";
+                        $errors[] = "Satır {$rowData['row']}: Kategori '{$categoryName}' bulunamadı";
                         $summary['errors']++;
                         continue;
                     }
@@ -1138,17 +1400,20 @@ class EquipmentStockController extends Controller
                         ->where('category_id', $category->id)
                         ->first();
                     
+                    $isNewEquipment = false;
                     if (!$equipment) {
                         $equipment = Equipment::create([
                             'name' => $equipmentName,
                             'category_id' => $category->id,
-                            'unit_type' => strtolower($unitType ?: 'adet'),
-                            'individual_tracking' => $trackingType === 'Ayrı Takip'
+                            'unit_type' => strtolower(trim($unitType) ?: 'adet'),
+                            'individual_tracking' => in_array($trackingType, ['Ayrı Takip', 'ayrı takip', 'AYRI TAKİP', 'Ayrı', 'ayrı', 'AYRI'])
                         ]);
+                        $summary['equipments_created']++;
+                        $isNewEquipment = true;
                     }
                     
                     // Takip türüne göre işlem
-                    if ($trackingType === 'Ayrı Takip') {
+                    if (in_array($trackingType, ['Ayrı Takip', 'ayrı takip', 'AYRI TAKİP', 'Ayrı', 'ayrı', 'AYRI'])) {
                         // Ayrı takip: Her ekipman için ayrı stok kaydı
                         if (empty($code)) {
                             $code = $this->generateRandomCode();
@@ -1161,10 +1426,10 @@ class EquipmentStockController extends Controller
                                 $code = $this->generateRandomCode();
                             } else if ($skipDuplicates) {
                                 $summary['skipped']++;
-                                $skippedRows[] = "Satır {$row}: Kod '{$code}' zaten mevcut (skip_duplicates açık).";
+                                $skippedRows[] = "Satır {$rowData['row']}: Kod '{$code}' zaten mevcut (atlandı).";
                                 continue;
                             } else {
-                                $errors[] = "Satır {$row}: Kod '{$code}' zaten mevcut";
+                                $errors[] = "Satır {$rowData['row']}: Kod '{$code}' zaten mevcut";
                                 $summary['errors']++;
                                 continue;
                             }
@@ -1182,6 +1447,7 @@ class EquipmentStockController extends Controller
                             'status' => $status ?: 'Aktif',
                             'note' => $note
                         ]);
+                        $summary['stocks_created']++;
                         
                     } else {
                         // Toplu takip: Aynı ekipman için miktarı artır
@@ -1211,13 +1477,14 @@ class EquipmentStockController extends Controller
                                 'status' => $status ?: 'Aktif',
                                 'note' => $note
                             ]);
+                            $summary['stocks_created']++;
                         }
                     }
                     
                     $summary['success']++;
                     
                 } catch (\Exception $e) {
-                    $errors[] = "Satır {$row}: " . $e->getMessage();
+                    $errors[] = "Satır {$rowData['row']}: " . $e->getMessage();
                     $summary['errors']++;
                 }
             }
@@ -1227,7 +1494,8 @@ class EquipmentStockController extends Controller
                 'message' => 'Import işlemi tamamlandı',
                 'summary' => $summary,
                 'errors' => $errors,
-                'skipped_rows' => $skippedRows
+                'skipped_rows' => $skippedRows,
+                'validation_errors' => $validationErrors ?? []
             ]);
             
         } catch (\Exception $e) {
