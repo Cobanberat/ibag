@@ -138,6 +138,40 @@
             color: var(--bs-primary);
         }
 
+        .form-label {
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 0.875rem 0.75rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-group .form-control:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.2rem rgba(59, 125, 221, 0.25);
+            background: white;
+        }
+
+        .input-group .btn {
+            border: 2px solid #e9ecef;
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            background: #f8f9fa;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .input-group .form-control:focus + .btn {
+            border-color: var(--bs-primary);
+        }
+
         .btn-login {
             background: linear-gradient(135deg, var(--bs-primary) 0%, #2f64b1 100%);
             border: none;
@@ -351,30 +385,35 @@
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
-                    <div class="form-floating">
-                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" 
-                               name="email" value="{{ old('email') }}" placeholder="E-posta" required autocomplete="email" autofocus>
-                        <label for="email">
-                            <i class="fas fa-envelope me-2"></i>E-posta Adresi
-                        </label>
-                                @error('email')
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" 
+                                   name="email" value="{{ old('email') }}" placeholder="E-posta Adresi" required autocomplete="email" autofocus>
+                            <button class="btn btn-outline-secondary" type="button" id="clearEmail">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        @error('email')
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>
                         @enderror
-                        </div>
+                    </div>
 
-                    <div class="form-floating">
+                    <div class="mb-3">
                         <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
                             <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" 
                                    name="password" placeholder="Şifre" required autocomplete="current-password">
                             <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                 <i class="fas fa-eye" id="toggleIcon"></i>
                             </button>
                         </div>
-                        <label for="password">
-                            <i class="fas fa-lock me-2"></i>Şifre
-                        </label>
                         @error('password')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -405,6 +444,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // E-posta temizle
+        document.getElementById('clearEmail').addEventListener('click', function() {
+            document.getElementById('email').value = '';
+            document.getElementById('email').focus();
+        });
+
         // Şifre göster/gizle
         document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordField = document.getElementById('password');

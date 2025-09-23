@@ -66,7 +66,8 @@
         <select class="form-select" id="userFilterRole">
           <option value="">Tüm Roller</option>
           <option value="admin">Admin</option>
-          <option value="user">Kullanıcı</option>
+          <option value="ekip_yetkilisi">Ekip Yetkilisi</option>
+          <option value="üye">Üye</option>
         </select>
       </div>
       <div class="col-md-3">
@@ -97,12 +98,9 @@
         <span class="badge bg-primary ms-2" id="userCount">{{ count($users ?? []) }}</span>
       </h6>
       <div class="d-flex gap-2">
-        <button class="btn btn-outline-success btn-sm" id="addUserBtn" title="Yeni Kullanıcı Ekle">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-outline-success btn-sm" title="Yeni Kullanıcı Ekle">
           <i class="bi bi-plus-circle"></i> Yeni Kullanıcı
-        </button>
-        <button class="btn btn-outline-info btn-sm" id="exportUserExcelBtn" title="Excel'e Aktar">
-          <i class="bi bi-file-earmark-excel"></i> Excel
-        </button>
+        </a>
       </div>
     </div>
     
@@ -140,9 +138,6 @@
                 <div class="d-flex align-items-center">
                   <div>
                     <strong>{{ $user->name ?? 'İsimsiz' }}</strong>
-                    @if($user->username)
-                      <br><small class="text-muted">@{{ $user->username }}</small>
-                    @endif
                   </div>
                 </div>
               </td>
@@ -150,6 +145,10 @@
               <td>
                 @if($user->role === 'admin')
                   <span class="badge bg-primary">Admin</span>
+                @elseif($user->role === 'ekip_yetkilisi')
+                  <span class="badge bg-info">Ekip Yetkilisi</span>
+                @elseif($user->role === 'üye')
+                  <span class="badge bg-secondary">Üye</span>
                 @else
                   <span class="badge bg-secondary">Kullanıcı</span>
                 @endif
@@ -204,9 +203,9 @@
                 <div id="noUserDataIllu" class="no-data-illu">
                   <img src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/no-data.png" alt="No Data" style="max-width:180px;opacity:.7;"><br>
                   <span class="text-muted">Henüz kullanıcı bulunmuyor.</span>
-                  <button class="btn btn-success mt-3" id="addUserBtnEmpty">
+                  <a href="{{ route('admin.users.create') }}" class="btn btn-success mt-3">
                     <i class="bi bi-plus-circle"></i> İlk Kullanıcıyı Ekle
-                  </button>
+                  </a>
                 </div>
               </td>
             </tr>
@@ -235,64 +234,6 @@
   <div id="userSnackbar" class="user-snackbar">Veriler güncellendi!</div>
 </div>
 
-<!-- Kullanıcı Ekle/Düzenle Modalı -->
-<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="userModalLabel">Yeni Kullanıcı Ekle</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body">
-        <form id="userForm">
-          @csrf
-          <input type="hidden" id="userId" name="user_id">
-          
-          <div class="mb-3">
-            <label for="userName" class="form-label">Ad Soyad <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="userName" name="name" required placeholder="Ad Soyad giriniz">
-          </div>
-          
-          <div class="mb-3">
-            <label for="userEmail" class="form-label">E-posta <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" id="userEmail" name="email" required placeholder="E-posta adresi giriniz">
-          </div>
-          
-          <div class="mb-3">
-            <label for="userUsername" class="form-label">Kullanıcı Adı</label>
-            <input type="text" class="form-control" id="userUsername" name="username" placeholder="Kullanıcı adı (opsiyonel)">
-          </div>
-          
-          <div class="mb-3">
-            <label for="userRole" class="form-label">Rol <span class="text-danger">*</span></label>
-            <select class="form-select" id="userRole" name="role" required>
-              <option value="">Rol seçiniz</option>
-              <option value="user">Kullanıcı</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          
-          <div class="mb-3">
-            <label for="userPassword" class="form-label">Şifre <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" id="userPassword" name="password" required placeholder="Şifre giriniz">
-            <small class="text-muted">En az 8 karakter olmalıdır</small>
-          </div>
-          
-          <div class="mb-3">
-            <label for="userPasswordConfirm" class="form-label">Şifre Tekrar <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" id="userPasswordConfirm" name="password_confirmation" required placeholder="Şifreyi tekrar giriniz">
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-        <button type="submit" form="userForm" class="btn btn-primary" id="saveUserBtn">
-          <i class="bi bi-save"></i> Kaydet
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Kullanıcı Detay Modalı -->
 <div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">

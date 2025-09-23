@@ -116,17 +116,21 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/assignments/item/{id}/return', [App\Http\Controllers\Admin\AssignmentController::class, 'returnItem'])->name('admin.assignments.item.return');
     Route::post('/finish/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'finishAssignment'])->name('assignments.finish');
 
-    // Giden-Gelen İşlemleri
-    Route::get('/gidenGelen', [App\Http\Controllers\Admin\AssignmentController::class, 'comingGoing'])->name('admin.gidenGelen');
+    // Giden-Gelen İşlemleri - Admin ve Ekip Yetkilisi
+    Route::middleware(['role:admin,ekip_yetkilisi'])->group(function () {
+        Route::get('/gidenGelen', [App\Http\Controllers\Admin\AssignmentController::class, 'comingGoing'])->name('admin.gidenGelen');
+    });
 
     // Profil
-    Route::get('/profilim', function () {
-        return view('admin.profile.index');
-    })->name('admin.profile');
+    Route::get('/profilim', [App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('admin.profile');
+    Route::put('/profilim', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
+    Route::put('/profilim/password', [App\Http\Controllers\Admin\ProfileController::class, 'changePassword'])->name('admin.profile.password');
 
-    // Raporlama
-    Route::get('/raporlama', [App\Http\Controllers\Admin\ReportingController::class, 'index'])->name('admin.reporting');
-    Route::get('/raporlama/export', [App\Http\Controllers\Admin\ReportingController::class, 'export'])->name('admin.reporting.export');
+    // Raporlama - Sadece Admin
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/raporlama', [App\Http\Controllers\Admin\ReportingController::class, 'index'])->name('admin.reporting');
+        Route::get('/raporlama/export', [App\Http\Controllers\Admin\ReportingController::class, 'export'])->name('admin.reporting.export');
+    });
 
     // Ekipman Listesi (Sadece görüntüleme)
     Route::get('/ekipmanlar', [App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipments');

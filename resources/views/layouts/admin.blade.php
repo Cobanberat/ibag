@@ -138,7 +138,8 @@
                 </li>
                 @endif
 
-                <!-- İşlem Takibi - Tüm roller -->
+                <!-- İşlem Takibi - Admin ve Ekip Yetkilisi -->
+                @if(auth()->user()->isAdmin() || auth()->user()->isTeamLeader())
                 <li class="sidebar-header">İşlem Takibi</li>
 
                 <li class="sidebar-item{{ request()->routeIs('admin.gidenGelen') ? ' active' : '' }}">
@@ -147,6 +148,7 @@
                         <span class="align-middle">Giden / Gelen İşlemler</span>
                     </a>
                 </li>
+                @endif
 
                 @if(auth()->user()->canManageEquipment())
                 <li class="sidebar-item{{ request()->routeIs('admin.equipmentStatus') ? ' active' : '' }}">
@@ -157,7 +159,8 @@
                 </li>
                 @endif
 
-                <!-- Raporlama - Tüm roller -->
+                <!-- Raporlama - Sadece Admin -->
+                @if(auth()->user()->isAdmin())
                 <li class="sidebar-header">Raporlama</li>
 
                 <li class="sidebar-item{{ request()->routeIs('admin.reporting') ? ' active' : '' }}">
@@ -166,6 +169,7 @@
                         <span class="align-middle">Raporlama</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Kullanıcı Yönetimi - Sadece Admin -->
                 @if(auth()->user()->canManageUsers())
@@ -202,34 +206,199 @@
                 <ul class="navbar-nav navbar-align d-flex align-items-center">
                    
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <span
-                                class="avatar bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-1"
-                                style="width:36px;height:36px;font-weight:700;font-size:1.2rem;">{{ substr(auth()->user()->name ?? 'U', 0, 1) }}</span>
-                            <span class="text-dark">{{ auth()->user()->name ?? 'Kullanıcı' }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="min-width:200px;">
-                            <li class="px-3 py-3 border-bottom text-center">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" style="gap: 8px;">
+                            <div class="position-relative">
                                 <span
-                                    class="avatar bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                                    style="width:48px;height:48px;font-weight:700;font-size:1.5rem;">{{ substr(auth()->user()->name ?? 'U', 0, 1) }}</span>
-                                <div class="fw-bold">{{ auth()->user()->name ?? 'Kullanıcı' }}</div>
-                                <div class="text-muted small">{{ auth()->user()->email ?? 'email@example.com' }}</div>
-                                <div class="text-muted small">{{ auth()->user()->role_label ?? 'Rol' }}</div>
+                                    class="avatar bg-gradient-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+                                    style="width:36px;height:36px;font-weight:700;font-size:1.2rem;background: linear-gradient(135deg, #3b7ddd 0%, #2f64b1 100%);">
+                                    {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+                                </span>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle" style="width: 12px; height: 12px;">
+                                    <span class="visually-hidden">Çevrimiçi</span>
+                                </span>
+                            </div>
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="text-dark fw-semibold">{{ auth()->user()->name ?? 'Kullanıcı' }}</span>
+                                <small class="text-muted">{{ auth()->user()->role_label ?? 'Rol' }}</small>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width:280px; border-radius: 12px; margin-top: 8px;">
+                            <!-- Profil Header -->
+                            <li class="px-4 py-3 border-bottom" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px 12px 0 0;">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative me-3">
+                                        <span
+                                            class="avatar bg-gradient-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+                                            style="width:50px;height:50px;font-weight:700;font-size:1.4rem;background: linear-gradient(135deg, #3b7ddd 0%, #2f64b1 100%);">
+                                            {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+                                        </span>
+                                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle" style="width: 14px; height: 14px;">
+                                            <span class="visually-hidden">Çevrimiçi</span>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold text-dark mb-1">{{ auth()->user()->name ?? 'Kullanıcı' }}</div>
+                                        <div class="text-muted small mb-1">{{ auth()->user()->email ?? 'email@example.com' }}</div>
+                                        <span class="badge bg-primary text-white" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">
+                                            {{ auth()->user()->role_label ?? 'Rol' }}
+                                        </span>
+                                    </div>
+                                </div>
                             </li>
-                            <li>
-                                <hr class="dropdown-divider">
+                            
+                            <!-- Menü Öğeleri -->
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.profile') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(59, 125, 221, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-user-circle text-primary" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Profilim</div>
+                                        <small class="text-muted">Hesap ayarları ve bilgiler</small>
+                                    </div>
+                                </a>
                             </li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.profile') }}"><i
-                                        class="fas fa-user-circle fa-fw"></i> Profilim</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
+                            
+                            @if(auth()->user()->isAdmin())
+                            <!-- Admin için menüler -->
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.dashboard') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(40, 167, 69, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-tachometer-alt text-success" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Ana Sayfa</div>
+                                        <small class="text-muted">Dashboard ve genel bakış</small>
+                                    </div>
+                                </a>
                             </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.stock') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(255, 87, 34, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-boxes text-warning" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Stok Durumu</div>
+                                        <small class="text-muted">Ekipman stok takibi</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.users') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(108, 117, 125, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-users text-secondary" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Kullanıcılar</div>
+                                        <small class="text-muted">Kullanıcı yönetimi</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            @elseif(auth()->user()->isTeamLeader())
+                            <!-- Ekip Yetkilisi için menüler -->
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.dashboard') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(40, 167, 69, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-tachometer-alt text-success" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Ana Sayfa</div>
+                                        <small class="text-muted">Ekip dashboard'u</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.stock') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(255, 87, 34, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-boxes text-warning" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Stok Durumu</div>
+                                        <small class="text-muted">Ekipman stok takibi</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.gidenGelen') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(13, 110, 253, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-exchange-alt text-primary" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Giden/Gelen</div>
+                                        <small class="text-muted">İşlem takibi</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            @else
+                            <!-- Üye için menüler -->
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.dashboard') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(40, 167, 69, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-tachometer-alt text-success" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Ana Sayfa</div>
+                                        <small class="text-muted">Kişisel dashboard</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.zimmetAl') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(40, 167, 69, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-plus-circle text-success" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Zimmet Al</div>
+                                        <small class="text-muted">Yeni ekipman al</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.teslimEt') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(255, 193, 7, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-hand-holding text-warning" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Teslim Et</div>
+                                        <small class="text-muted">Ekipmanı teslim et</small>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <li class="px-2 py-1">
+                                <a class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded" href="{{ route('admin.fault.create') }}" style="transition: all 0.2s ease;">
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(220, 53, 69, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 1.1rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">Arıza Bildir</div>
+                                        <small class="text-muted">Arıza kaydı oluştur</small>
+                                    </div>
+                                </a>
+                            </li>
+                            @endif
+                            
+                            <li><hr class="dropdown-divider my-2"></li>
+                            
+                            <li class="px-2 py-1">
+                                <form method="POST" action="{{ route('logout') }}" class="d-inline w-100">
                                     @csrf
-                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger w-100 border-0 bg-transparent">
-                                        <i class="fas fa-sign-out-alt fa-fw"></i> Çıkış Yap
+                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-3 py-2 px-3 rounded text-danger w-100 border-0 bg-transparent" style="transition: all 0.2s ease;">
+                                        <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(220, 53, 69, 0.1); border-radius: 8px;">
+                                            <i class="fas fa-sign-out-alt" style="font-size: 1.1rem;"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">Çıkış Yap</div>
+                                            <small class="text-muted">Hesabınızdan güvenle çıkın</small>
+                                        </div>
                                     </button>
                                 </form>
                             </li>

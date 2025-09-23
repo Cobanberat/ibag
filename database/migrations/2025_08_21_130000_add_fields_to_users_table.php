@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('username')->nullable()->after('email');
-            $table->enum('role', ['user', 'admin'])->default('user')->after('username');
+            $table->enum('role', ['admin', 'ekip_yetkilisi', 'üye'])->default('üye')->after('username');
             $table->enum('status', ['active', 'inactive'])->default('active')->after('role');
             $table->string('avatar_color')->nullable()->after('status');
             $table->timestamp('last_login_at')->nullable()->after('avatar_color');

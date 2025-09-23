@@ -2,41 +2,85 @@
 @section('content')
 @vite('resources/css/stock.css')
 
-<nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
+<!-- Breadcrumb -->
+<div class="row mb-3">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item">
             <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
-                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 24px; height: 24px; margin-right: 8px;">
-                <i class="fa fa-home me-1"></i> Ana Sayfa
+                        <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 20px; height: 20px; margin-right: 6px;">
+                        <i class="fa fa-home me-1"></i> 
+                        <span class="d-none d-sm-inline">Ana Sayfa</span>
             </a>
         </li>
-        <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle ?? 'Stok' }}</li>
+                <li class="breadcrumb-item">
+                    <a href="/admin/" class="text-decoration-none d-none d-md-inline">Yönetim</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fas fa-boxes me-1"></i>
+                    <span class="d-none d-sm-inline">{{ $pageTitle ?? 'Stok' }}</span>
+                    <span class="d-sm-none">Stok</span>
+                </li>
     </ol>
 </nav>
+    </div>
+</div>
    <div>
     <div class="alert alert-warning d-flex align-items-center" role="alert">
         <i class="fas fa-exclamation-circle me-2"></i>
         Kritik seviyenin altına düşen ürünler var! Lütfen stokları kontrol edin.
     </div>
-    <div class="filter-bar mb-2 d-flex gap-3 align-items-center">
-        <input type="text" class="form-control form-control-sm" id="filterSearch" placeholder="Ekipman ara..." style="width: 250px;">
-        <select class="form-select form-select-sm" id="filterCategory" style="width: 200px;">
+    <!-- Filtreler -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label class="form-label fw-bold small mb-1">
+                                <i class="fas fa-search me-1 text-primary"></i>Arama
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="filterSearch" placeholder="Ekipman ara...">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
+                            <label class="form-label fw-bold small mb-1">
+                                <i class="fas fa-layer-group me-1 text-primary"></i>Kategori
+                            </label>
+                            <select class="form-select form-select-sm" id="filterCategory">
             <option value="">Tüm Kategoriler</option>
             @foreach($categories as $category)
                 <option value="{{ $category->id }}">{{ $category->name }}</option>
             @endforeach
         </select>
-        <select class="form-select form-select-sm" id="filterTracking" style="width: 180px;">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
+                            <label class="form-label fw-bold small mb-1">
+                                <i class="fas fa-tags me-1 text-primary"></i>Takip Türü
+                            </label>
+                            <select class="form-select form-select-sm" id="filterTracking">
             <option value="">Tüm Takip Türleri</option>
             <option value="1">Ayrı Takip</option>
             <option value="0">Toplu Takip</option>
         </select>
-        <button class="btn btn-sm btn-outline-secondary" id="clearFiltersBtn"><i class="fas fa-times"></i> Temizle</button>
-        <button class="btn btn-add-equipment d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
+                            <button class="btn btn-sm btn-outline-secondary w-100" id="clearFiltersBtn">
+                                <i class="fas fa-times me-1"></i>
+                                <span class="d-none d-sm-inline">Temizle</span>
+                            </button>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-3">
+                            <button class="btn btn-add-equipment d-flex align-items-center justify-content-center gap-2 w-100" data-bs-toggle="modal" data-bs-target="#addProductModal">
             <i class="fas fa-plus"></i>
-            <span>Yeni Ekipman Ekle</span>
+                                <span class="d-none d-sm-inline">Yeni Ekipman Ekle</span>
+                                <span class="d-sm-none">Ekle</span>
         </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Ürün Ekle Modal -->
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
@@ -274,49 +318,67 @@
         </div>
     </div>
     <!-- Bootstrap JS -->
+    <!-- Stok Tablosu -->
     <div class="card mt-2 p-2" style="border-radius:1.2rem;box-shadow:0 4px 24px #0d6efd11;">
             <div class="card-body p-0">
+            <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0" id="stockTable" style="font-size:0.95em;">
                     <thead class="table-light">
                         <tr>
-                            <th><input type="checkbox" id="selectAll"></th>
+                            <th class="d-none d-md-table-cell"><input type="checkbox" id="selectAll"></th>
                             <th>Ürün</th>
-                            <th>Kategori</th>
-                            <th>Birim Türü</th>
+                            <th class="d-none d-sm-table-cell">Kategori</th>
+                            <th class="d-none d-md-table-cell">Birim Türü</th>
                             <th>Miktar</th>
-                            <th>Kritik Seviye</th>
-                            <th>Takip Türü</th>
-                            <th>Stok Durumu</th>
-                            <th></th>
+                            <th class="d-none d-sm-table-cell">Kritik Seviye</th>
+                            <th class="d-none d-md-table-cell">Takip Türü</th>
+                            <th class="d-none d-lg-table-cell">Stok Durumu</th>
+                            <th class="d-none d-xl-table-cell">Durum</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody id="stockTableBody">
                         @forelse($stocks as $stock)
                             <tr class="{{ $stock->row_class }}" data-id="{{ $stock->id }}">
-                                <td><input type="checkbox" class="stock-checkbox" value="{{ $stock->id }}"></td>
+                                <td class="d-none d-md-table-cell"><input type="checkbox" class="stock-checkbox" value="{{ $stock->id }}"></td>
                                 <td>
+                                    <div class="d-flex flex-column">
                                     <span class="fw-bold">{{ $stock->name ?? '-' }}</span>
+                                        <small class="text-muted d-md-none">{{ $stock->category->name ?? '-' }}</small>
+                                        <div class="d-flex gap-1 mt-1 d-md-none">
+                                            <span class="badge bg-info small">{{ $stock->unit_type_label }}</span>
+                                            @if($stock->individual_tracking)
+                                                <span class="badge bg-primary small"><i class="fas fa-user"></i> Ayrı</span>
+                                            @else
+                                                <span class="badge bg-secondary small"><i class="fas fa-layer-group"></i> Toplu</span>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
-                                <td>{{ $stock->category->name ?? '-' }}</td>
-                                <td>
+                                <td class="d-none d-sm-table-cell">{{ $stock->category->name ?? '-' }}</td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="badge bg-info">{{ $stock->unit_type_label }}</span>
                                 </td>
-                                <td>{{ $stock->total_quantity }}</td>
-                                <td>{{ $stock->critical_level }}</td>
                                 <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold">{{ $stock->total_quantity }}</span>
+                                        <small class="text-muted d-sm-none">Kritik: {{ $stock->critical_level }}</small>
+                                    </div>
+                                </td>
+                                <td class="d-none d-sm-table-cell">{{ $stock->critical_level }}</td>
+                                <td class="d-none d-md-table-cell">
                                     @if($stock->individual_tracking)
                                         <span class="badge bg-primary"><i class="fas fa-user"></i> Ayrı Takip</span>
                                     @else
                                         <span class="badge bg-secondary"><i class="fas fa-layer-group"></i> Toplu Takip</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     <div class="progress" style="height: 10px;">
                                         <div class="progress-bar {{ $stock->bar_class }}" style="width: {{ $stock->percentage }}%"></div>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-xl-table-cell">
                                     @if($stock->status === 'Arızalı')
                                         <span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Arızalı</span>
                                     @elseif($stock->status === 'Bakımda')
@@ -325,55 +387,67 @@
                                         <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>
                                     @elseif($stock->stock_status === 'Az')
                                         <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>
-                                    @else
-                                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>
                                     @endif
                                 </td>
                                 
                                 <td class="category-actions">
+                                    <div class="d-flex flex-wrap gap-1">
                                     @if($stock->status === 'Arızalı')
-                                        <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="viewFault({{ $stock->id }})" title="Arıza Detayı">
+                                            <button class="btn btn-outline-danger btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="viewFault({{ $stock->id }})" title="Arıza Detayı">
                                             <i class="fas fa-exclamation-triangle"></i>
+                                                <span class="d-none d-lg-inline ms-1">Arıza</span>
                                         </button>
-                                        <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="repairEquipment({{ $stock->id }})" title="Tamir Et">
+                                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="repairEquipment({{ $stock->id }})" title="Tamir Et">
                                             <i class="fas fa-wrench"></i>
+                                                <span class="d-none d-lg-inline ms-1">Tamir</span>
                                         </button>
                                     @elseif($stock->status === 'Bakımda')
-                                        <button class="btn btn-outline-warning btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="viewMaintenance({{ $stock->id }})" title="Bakım Detayı">
+                                            <button class="btn btn-outline-warning btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="viewMaintenance({{ $stock->id }})" title="Bakım Detayı">
                                             <i class="fas fa-tools"></i>
+                                                <span class="d-none d-lg-inline ms-1">Bakım</span>
                                         </button>
-                                        <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="completeMaintenance({{ $stock->id }})" title="Bakımı Tamamla">
+                                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="completeMaintenance({{ $stock->id }})" title="Bakımı Tamamla">
                                             <i class="fas fa-check"></i>
+                                                <span class="d-none d-lg-inline ms-1">Tamamla</span>
                                         </button>
                                     @else
-                                        <button class="btn btn-outline-info btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="toggleStockDetails({{ $stock->id }})" title="Detayları Göster/Gizle">
+                                            <button class="btn btn-outline-info btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="toggleStockDetails({{ $stock->id }})" title="Detayları Göster/Gizle">
                                             <i class="fas fa-eye"></i>
+                                                <span class="d-none d-lg-inline ms-1">Detay</span>
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="editStock({{ $stock->id }})">
+                                            <button class="btn btn-outline-secondary btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="editStock({{ $stock->id }})" title="Düzenle">
                                             <i class="fas fa-edit"></i>
+                                                <span class="d-none d-lg-inline ms-1">Düzenle</span>
                                         </button>
-                                        <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockIn({{ $stock->id }})">
+                                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="stockIn({{ $stock->id }})" title="Stok Girişi">
                                             <i class="fas fa-plus"></i>
+                                                <span class="d-none d-lg-inline ms-1">Giriş</span>
                                         </button>
-                                        <button class="btn btn-outline-warning btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockOut({{ $stock->id }})">
+                                            <button class="btn btn-outline-warning btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="stockOut({{ $stock->id }})" title="Stok Çıkışı">
                                             <i class="fas fa-minus"></i>
+                                                <span class="d-none d-lg-inline ms-1">Çıkış</span>
                                         </button>
                                     @endif
-                                    <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="deleteStock({{ $stock->id }})">
+                                        <button class="btn btn-outline-danger btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="deleteStock({{ $stock->id }})" title="Sil">
                                         <i class="fas fa-trash"></i>
+                                            <span class="d-none d-lg-inline ms-1">Sil</span>
                                     </button>
+                                    </div>
                                 </td>
                             </tr>
                             <!-- Detay satırı (gizli) -->
                             <tr class="stock-detail-row" id="detailRow{{ $stock->id }}" style="display: none;">
-                                <td colspan="10" class="p-0">
-                                    <div class="bg-light p-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                <td colspan="11" class="p-0">
+                                    <div class="bg-light p-2 p-md-3">
+                                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
                                             <h6 class="mb-0 text-primary">
-                                                <i class="fas fa-barcode me-2"></i>{{ $stock->name }} - Stok Kodları
+                                                <i class="fas fa-barcode me-2"></i>
+                                                <span class="d-none d-sm-inline">{{ $stock->name }} - Stok Kodları</span>
+                                                <span class="d-sm-none">Stok Kodları</span>
                                             </h6>
                                             <button class="btn btn-sm btn-outline-secondary" onclick="toggleStockDetails({{ $stock->id }})">
-                                                <i class="fas fa-times"></i> Kapat
+                                                <i class="fas fa-times me-1"></i>
+                                                <span class="d-none d-sm-inline">Kapat</span>
                                             </button>
                                         </div>
                                         <div id="stockCodes{{ $stock->id }}" class="stock-codes-container">
@@ -386,13 +460,17 @@
                                         </div>
                                         <!-- Carousel Controls -->
                                         <div id="carouselControls{{ $stock->id }}" style="display: none;">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <button class="btn btn-sm btn-outline-primary carousel-btn" onclick="previousPage({{ $stock->id }})" id="prevBtn{{ $stock->id }}" disabled>
-                                                    <i class="fas fa-chevron-left"></i> Önceki
+                                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-2 gap-2">
+                                                <button class="btn btn-sm btn-outline-primary carousel-btn w-100 w-sm-auto" onclick="previousPage({{ $stock->id }})" id="prevBtn{{ $stock->id }}" disabled>
+                                                    <i class="fas fa-chevron-left me-1"></i>
+                                                    <span class="d-none d-sm-inline">Önceki</span>
+                                                    <span class="d-sm-none">Önceki</span>
                                                 </button>
                                                 <span class="text-muted small page-info" id="pageInfo{{ $stock->id }}">1 / 1</span>
-                                                <button class="btn btn-sm btn-outline-primary carousel-btn" onclick="nextPage({{ $stock->id }})" id="nextBtn{{ $stock->id }}" disabled>
-                                                    Sonraki <i class="fas fa-chevron-right"></i>
+                                                <button class="btn btn-sm btn-outline-primary carousel-btn w-100 w-sm-auto" onclick="nextPage({{ $stock->id }})" id="nextBtn{{ $stock->id }}" disabled>
+                                                    <span class="d-none d-sm-inline">Sonraki</span>
+                                                    <span class="d-sm-none">Sonraki</span>
+                                                    <i class="fas fa-chevron-right ms-1"></i>
                                                 </button>
                                             </div>
                                             <!-- Dots indicator -->
@@ -405,7 +483,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4">
+                                <td colspan="11" class="text-center py-4">
                                     <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
                                     <p class="text-muted">Henüz stok bulunmuyor</p>
                                 </td>
@@ -414,12 +492,15 @@
                     </tbody>
                 </table>
             </div>
-            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                <button class="btn btn-danger btn-sm" id="deleteSelected">
-                    <i class="fas fa-trash-alt me-1"></i> Seçili Ekipmanları Sil
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3 gap-3">
+                <button class="btn btn-danger btn-lg px-4" id="deleteSelected">
+                    <i class="fas fa-trash-alt me-2"></i> 
+                    <span class="d-none d-sm-inline">Seçili Ekipmanları Sil</span>
+                    <span class="d-sm-none">Seçili Sil</span>
                 </button>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="text-muted small">
+                <div class="d-flex flex-column flex-sm-row align-items-center gap-3 gap-sm-4">
+                    <div class="text-muted text-center text-sm-start">
+                        <i class="fas fa-info-circle me-1"></i>
                         Toplam {{ $pagination['total'] }} stoktan {{ ($pagination['total'] > 0 ? 1 : 0) }}-{{ min($pagination['per_page'], $pagination['total']) }} arası gösteriliyor
                     </div>
                     <nav aria-label="Sayfalama">
@@ -429,7 +510,8 @@
                                 @if($pagination['current_page'] > 1)
                                     <li class="page-item">
                                         <a class="page-link" href="?page={{ $pagination['current_page'] - 1 }}">
-                                            <i class="fas fa-chevron-left"></i>
+                                            <i class="fas fa-chevron-left me-1"></i>
+                                            <span class="d-none d-sm-inline">Önceki</span>
                                         </a>
                                     </li>
                                 @endif
@@ -450,7 +532,8 @@
                                 @if($pagination['current_page'] < $pagination['last_page'])
                                     <li class="page-item">
                                         <a class="page-link" href="?page={{ $pagination['current_page'] + 1 }}">
-                                            <i class="fas fa-chevron-right"></i>
+                                            <span class="d-none d-sm-inline">Sonraki</span>
+                                            <i class="fas fa-chevron-right ms-1"></i>
                                         </a>
                                     </li>  
                                 @endif
@@ -771,6 +854,113 @@
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* Responsive Stock Codes */
+.stock-codes-container {
+    min-height: 200px;
+}
+
+.stock-code-card .card-body {
+    padding: 0.75rem;
+}
+
+.stock-code-card .card-title {
+    font-size: 0.875rem;
+    line-height: 1.2;
+}
+
+.stock-code-card .badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.5em;
+}
+
+.stock-code-card .small {
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+
+/* Mobile Stock Codes */
+@media (max-width: 768px) {
+    .stock-codes-container {
+        min-height: 150px;
+    }
+    
+    .stock-code-card .card-body {
+        padding: 0.5rem;
+    }
+    
+    .stock-code-card .card-title {
+        font-size: 0.8rem;
+    }
+    
+    .stock-code-card .badge {
+        font-size: 0.65rem;
+        padding: 0.2em 0.4em;
+    }
+    
+    .stock-code-card .small {
+        font-size: 0.7rem;
+    }
+    
+    .carousel-btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .page-info {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stock-codes-container {
+        min-height: 120px;
+    }
+    
+    .stock-code-card .card-body {
+        padding: 0.4rem;
+    }
+    
+    .stock-code-card .card-title {
+        font-size: 0.75rem;
+    }
+    
+    .stock-code-card .badge {
+        font-size: 0.6rem;
+        padding: 0.15em 0.3em;
+    }
+    
+    .stock-code-card .small {
+        font-size: 0.65rem;
+    }
+    
+    .carousel-btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .page-info {
+        font-size: 0.7rem;
+    }
+    
+    .dot {
+        height: 6px;
+        width: 6px;
+        margin: 0 3px;
+    }
+}
+
+/* Responsive Breadcrumb */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #6c757d;
+}
+
 /* İşlemler butonları arası boşluk */
 .category-actions .btn {
     margin-bottom: 4px;
@@ -784,7 +974,124 @@
 /* İşlemler sütunu genişlik ayarı */
 .category-actions {
     white-space: nowrap;
-    min-width: 200px;
+    min-width: 150px;
+}
+
+/* Responsive Table */
+.table-responsive {
+    border-radius: 0.5rem;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover td {
+    background-color: transparent;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 0 15px;
+    }
+    
+    .btn-add-equipment {
+        font-size: 0.875rem;
+        padding: 8px 16px;
+    }
+    
+    .btn-add-equipment i {
+        margin-right: 4px;
+    }
+    
+    .category-actions {
+        min-width: 120px;
+    }
+    
+    .category-actions .btn {
+        padding: 0.25em 0.5em;
+        font-size: 0.75rem;
+        margin-bottom: 2px;
+        margin-right: 1px;
+    }
+    
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    .pagination {
+        font-size: 1rem;
+    }
+    
+    .pagination .page-link {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+    }
+    
+    .pagination .page-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-add-equipment {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+    
+    .category-actions {
+        min-width: 100px;
+    }
+    
+    .category-actions .btn {
+        padding: 0.2em 0.4em;
+        font-size: 0.7rem;
+    }
+    
+    .table {
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        font-size: 0.65rem;
+    }
+    
+    .progress {
+        height: 8px;
+    }
+    
+    .pagination {
+        font-size: 0.9rem;
+    }
+    
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        font-weight: 500;
+    }
+    
+    .pagination .page-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .category-actions {
+        min-width: 180px;
+    }
+    
+    .category-actions .btn {
+        padding: 0.3em 0.6em;
+        font-size: 0.75rem;
+    }
 }
 </style>
 
@@ -876,25 +1183,32 @@ function showStockCodesPage(equipmentId, direction = 'none') {
     let html = '<div class="row g-2 stock-codes-slide">';
     pageCodes.forEach((code, index) => {
         html += `
-            <div class="col-md-3 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="card border-0 shadow-sm h-100 stock-code-card" style="animation-delay: ${index * 0.1}s;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title mb-0 text-primary">${code.code || 'Kod Yok'}</h6>
-                            <span class="badge bg-info">${code.quantity || 0} adet</span>
+                    <div class="card-body p-2 p-md-3">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-2 gap-1">
+                            <h6 class="card-title mb-0 text-primary small">${code.code || 'Kod Yok'}</h6>
+                            <span class="badge bg-info small">${code.quantity || 0} adet</span>
                         </div>
                         <div class="small text-muted">
+                            <div class="d-flex flex-column flex-sm-row gap-1">
+                                <div class="flex-fill">
                             <div><strong>Marka:</strong> ${code.brand || '-'}</div>
                             <div><strong>Model:</strong> ${code.model || '-'}</div>
+                                </div>
+                                <div class="flex-fill">
                             <div><strong>Beden:</strong> ${code.size || '-'}</div>
-                            ${code.feature ? `<div><strong>Özellik:</strong> ${code.feature}</div>` : ''}
-                            ${code.note ? `<div><strong>Not:</strong> ${code.note}</div>` : ''}
+                                    <div class="d-none d-sm-block"><strong>Tarih:</strong> ${new Date(code.created_at).toLocaleDateString('tr-TR')}</div>
                         </div>
-                        <div class="mt-2">
+                            </div>
+                            ${code.feature ? `<div class="mt-1"><strong>Özellik:</strong> ${code.feature}</div>` : ''}
+                            ${code.note ? `<div class="mt-1"><strong>Not:</strong> ${code.note}</div>` : ''}
+                            <div class="mt-1 d-sm-none">
                             <small class="text-muted">
                                 <i class="fas fa-calendar me-1"></i>
                                 ${new Date(code.created_at).toLocaleDateString('tr-TR')}
                             </small>
+                            </div>
                         </div>
                     </div>
                 </div>

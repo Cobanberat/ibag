@@ -98,11 +98,14 @@
     <div class="row g-3 mb-4">
         <div class="col-12 mb-4">
             <div class="card shadow h-100">
-                <div class="card-header bg-white border-0">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="fa fa-exclamation-triangle text-warning me-2"></i>
                         Kritik Stok Seviyesindeki Ekipmanlar
                     </h5>
+                    <a href="{{ route('admin.stock') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fa fa-eye me-1"></i>Tümünü Gör
+                    </a>
                 </div>
                 <div class="card-body p-0">
                     @if($criticalStocks->count() > 0)
@@ -110,15 +113,16 @@
                             <thead>
                                 <tr>
                                     <th>Ekipman Adı</th>
+                                    <th>Durum</th>
+                                    <th>Mevcut Stok</th>
                                     <th>Kritik Seviye</th>
-                                    <th>Adet Sayısı</th>
                                     <th>Son Güncelleme</th>
                                     <th>Kategori</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($criticalStocks as $stock)
-                                    <tr>
+                                    <tr style="cursor: pointer;" onclick="window.location.href='{{ route('admin.stock') }}'">
                                         <td>{{ $stock['equipment_name'] }}</td>
                                         <td>
                                             @if($stock['critical_level'] == 1)
@@ -132,6 +136,7 @@
                                         <td>
                                             <span class="fw-bold text-danger">{{ $stock['quantity'] }}</span>
                                         </td>
+                                        <td>{{ $stock['critical_threshold'] }}</td>
                                         <td>{{ $stock['last_used'] }}</td>
                                         <td>{{ $stock['category'] }}</td>
                                     </tr>
@@ -152,7 +157,7 @@
                 <div class="card-header bg-white border-0">
                     <h5 class="card-title mb-0">
                         <i class="fa fa-history me-2"></i>
-                        Son İşlemler
+                        Son 5 İşlem
                     </h5>
                 </div>
                 <div class="card-body p-0">

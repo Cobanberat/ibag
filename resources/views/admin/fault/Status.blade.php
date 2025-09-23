@@ -77,9 +77,13 @@
         .priority-low { background: #28a745; color: white; }
 
         .status-pending { background: #6c757d; color: white; }
+        .status-beklemede { background: #6c757d; color: white; }
         .status-in-progress { background: #17a2b8; color: white; }
+        .status-işlemde { background: #17a2b8; color: white; }
         .status-resolved { background: #28a745; color: white; }
+        .status-çözüldü { background: #28a745; color: white; }
         .status-cancelled { background: #dc3545; color: white; }
+        .status-iptal { background: #dc3545; color: white; }
     </style>
     
     <nav aria-label="breadcrumb" class="mb-3">
@@ -308,7 +312,7 @@
         <!-- Bakım Gerekenler Sekmesi -->
         <div class="tab-pane fade" id="bakim" role="tabpanel">
             <div class="card mb-4">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-tools me-2"></i>Bakım Gereken Ekipmanlar</span>
                     <span class="badge bg-dark">{{ count($maintenanceItems ?? []) }}</span>
                 </div>
@@ -321,6 +325,7 @@
                                     <th>Kategori</th>
                                     <th>Son Bakım Tarihi</th>
                                     <th>Bakım Periyodu</th>
+                                    <th>Kalan Gün</th>
                                     <th>Durum</th>
                                     <th>İşlemler</th>
                                 </tr>
@@ -330,43 +335,97 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @if($item->photo_path)
-                                                    <img src="{{ asset('storage/' . $item->photo_path) }}" 
-                                                         alt="{{ $item->equipment->name ?? 'Ekipman' }}" 
+                                                @php
+                                                    // Bakım verisi için farklı yapı kontrolü
+                                                    $imageUrl = null;
+                                                    $equipmentName = 'Bilinmeyen';
+                                                    $equipmentCode = 'Kod yok';
+                                                    
+                                                    // Eğer equipmentStock ilişkisi varsa
+                                                    if(isset($item->equipmentStock)) {
+                                                        $imageUrl = $item->equipmentStock->equipment_image_url ?? 
+                                                                   ($item->equipmentStock->photo_path ?? null);
+                                                        $equipmentName = $item->equipmentStock->equipment->name ?? 'Bilinmeyen';
+                                                        $equipmentCode = $item->equipmentStock->code ?? 'Kod yok';
+                                                    }
+                                                    // Eğer doğrudan equipment ilişkisi varsa
+                                                    elseif(isset($item->equipment)) {
+                                                        $imageUrl = $item->equipment->equipment_image_url ?? 
+                                                                   ($item->equipment->photo_path ?? null);
+                                                        $equipmentName = $item->equipment->name ?? 'Bilinmeyen';
+                                                        $equipmentCode = $item->code ?? 'Kod yok';
+                                                    }
+                                                    // Eğer doğrudan veri varsa
+                                                    else {
+                                                        $imageUrl = $item->equipment_image_url ?? null;
+                                                        $equipmentName = $item->name ?? 'Bilinmeyen';
+                                                        $equipmentCode = $item->code ?? 'Kod yok';
+                                                    }
+                                                @endphp
+                                                @if($imageUrl)
+                                                    <img src="{{ $imageUrl }}" 
+                                                         alt="{{ $equipmentName }}" 
                                                          class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                                 @else
-                                                    <div class="bg-secondary rounded me-2 d-flex align-items-center justify-content-center" 
+                                                    <div class="bg-warning rounded me-2 d-flex align-items-center justify-content-center" 
                                                          style="width: 40px; height: 40px;">
-                                                        <i class="fas fa-image text-white"></i>
+                                                        <i class="fas fa-tools text-white"></i>
                                                     </div>
                                                 @endif
                                                 <div>
-                                                    <strong>{{ $item->equipment->name ?? 'Bilinmeyen' }}</strong>
-                                                    <br><small class="text-muted">{{ $item->code ?? 'Kod yok' }}</small>
+                                                    <strong>{{ $equipmentName }}</strong>
+                                                    <br><small class="text-muted">{{ $equipmentCode }}</small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ $item->equipment->category->name ?? 'Kategori yok' }}</td>
+                                        <td>
+                                            @if(isset($item->equipmentStock))
+                                                {{ $item->equipmentStock->equipment->category->name ?? 'Kategori yok' }}
+                                            @elseif(isset($item->equipment))
+                                                {{ $item->equipment->category->name ?? 'Kategori yok' }}
+                                            @else
+                                                {{ $item->category_name ?? 'Kategori yok' }}
+                                            @endif
+                                        </td>
                                         <td>{{ $item->last_maintenance_date ? \Carbon\Carbon::parse($item->last_maintenance_date)->format('d.m.Y') : 'Bilinmiyor' }}</td>
                                         <td>{{ $item->maintenance_period ?? 'Belirtilmemiş' }} gün</td>
+                                        <td>
+                                            @php
+                                                $lastMaintenance = $item->last_maintenance_date ? \Carbon\Carbon::parse($item->last_maintenance_date) : null;
+                                                $period = $item->maintenance_period ?? 0;
+                                                $nextMaintenance = $lastMaintenance ? $lastMaintenance->addDays($period) : null;
+                                                $remainingDays = $nextMaintenance ? $nextMaintenance->diffInDays(now(), false) : null;
+                                            @endphp
+                                            @if($remainingDays !== null)
+                                                @if($remainingDays < 0)
+                                                    <span class="badge bg-danger">Gecikmiş ({{ abs($remainingDays) }} gün)</span>
+                                                @elseif($remainingDays <= 7)
+                                                    <span class="badge bg-warning">Yaklaşıyor ({{ $remainingDays }} gün)</span>
+                                                @else
+                                                    <span class="badge bg-success">{{ $remainingDays }} gün</span>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-secondary">Hesaplanamadı</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="badge bg-warning text-dark">Bakım Gerekiyor</span>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-info btn-sm" title="Detay">
+                                                <button class="btn btn-outline-info btn-sm" onclick="showMaintenanceDetail({{ $item->id }})" title="Detay">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                                 <button class="btn btn-success btn-sm" onclick="showMaintenanceCompleteModal({{ $item->id }})" title="Bakım Tamamlandı">
-                                                    <i class="fas fa-tools"></i>
+                                                    <i class="fas fa-check"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4">
-                                            <i class="fas fa-info-circle text-muted me-2"></i>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fas fa-tools text-muted me-2"></i>
                                             Bakım gereken ekipman bulunamadı
                                         </td>
                                     </tr>
@@ -382,7 +441,7 @@
         <div class="tab-pane fade" id="arizali" role="tabpanel">
             <div class="card mb-4">
                 <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-times-circle me-2"></i>Arızalı Ekipmanlar</span>
+                    <span><i class="fas fa-exclamation-triangle me-2"></i>Arızalı Ekipmanlar</span>
                     <span class="badge bg-dark">{{ count($faultyItems ?? []) }}</span>
                 </div>
                 <div class="card-body p-0">
@@ -394,6 +453,7 @@
                                     <th>Kategori</th>
                                     <th>Arıza Tarihi</th>
                                     <th>Arıza Tipi</th>
+                                    <th>Öncelik</th>
                                     <th>Açıklama</th>
                                     <th>Durum</th>
                                     <th>İşlemler</th>
@@ -404,28 +464,74 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @if($item->photo_path)
-                                                    <img src="{{ asset('storage/' . $item->photo_path) }}" 
-                                                         alt="{{ $item->equipment->name ?? 'Ekipman' }}" 
+                                                @php
+                                                    // Arıza verisi için farklı yapı kontrolü
+                                                    $imageUrl = null;
+                                                    $equipmentName = 'Bilinmeyen';
+                                                    $equipmentCode = 'Kod yok';
+                                                    
+                                                    // Eğer equipmentStock ilişkisi varsa
+                                                    if(isset($item->equipmentStock)) {
+                                                        $imageUrl = $item->equipmentStock->equipment_image_url ?? 
+                                                                   ($item->equipmentStock->photo_path ?? null);
+                                                        $equipmentName = $item->equipmentStock->equipment->name ?? 'Bilinmeyen';
+                                                        $equipmentCode = $item->equipmentStock->code ?? 'Kod yok';
+                                                    }
+                                                    // Eğer doğrudan equipment ilişkisi varsa
+                                                    elseif(isset($item->equipment)) {
+                                                        $imageUrl = $item->equipment->equipment_image_url ?? 
+                                                                   ($item->equipment->photo_path ?? null);
+                                                        $equipmentName = $item->equipment->name ?? 'Bilinmeyen';
+                                                        $equipmentCode = $item->code ?? 'Kod yok';
+                                                    }
+                                                    // Eğer doğrudan veri varsa
+                                                    else {
+                                                        $imageUrl = $item->equipment_image_url ?? null;
+                                                        $equipmentName = $item->name ?? 'Bilinmeyen';
+                                                        $equipmentCode = $item->code ?? 'Kod yok';
+                                                    }
+                                                @endphp
+                                                @if($imageUrl)
+                                                    <img src="{{ $imageUrl }}" 
+                                                         alt="{{ $equipmentName }}" 
                                                          class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                                 @else
-                                                    <div class="bg-secondary rounded me-2 d-flex align-items-center justify-content-center" 
+                                                    <div class="bg-danger rounded me-2 d-flex align-items-center justify-content-center" 
                                                          style="width: 40px; height: 40px;">
-                                                        <i class="fas fa-image text-white"></i>
+                                                        <i class="fas fa-exclamation-triangle text-white"></i>
                                                     </div>
                                                 @endif
                                                 <div>
-                                                    <strong>{{ $item->equipment->name ?? 'Bilinmeyen' }}</strong>
-                                                    <br><small class="text-muted">{{ $item->code ?? 'Kod yok' }}</small>
+                                                    <strong>{{ $equipmentName }}</strong>
+                                                    <br><small class="text-muted">{{ $equipmentCode }}</small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ $item->equipment->category->name ?? 'Kategori yok' }}</td>
-                                        <td>{{ $item->fault_date ? \Carbon\Carbon::parse($item->fault_date)->format('d.m.Y') : 'Bilinmiyor' }}</td>
-                                        <td>{{ $item->fault_type ?? 'Belirtilmemiş' }}</td>
                                         <td>
-                                            <div class="text-truncate" style="max-width: 200px;" title="{{ $item->fault_description ?? '' }}">
-                                                {{ Str::limit($item->fault_description ?? 'Açıklama yok', 50) }}
+                                            @if(isset($item->equipmentStock))
+                                                {{ $item->equipmentStock->equipment->category->name ?? 'Kategori yok' }}
+                                            @elseif(isset($item->equipment))
+                                                {{ $item->equipment->category->name ?? 'Kategori yok' }}
+                                            @else
+                                                {{ $item->category_name ?? 'Kategori yok' }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $item->created_at ? $item->created_at->format('d.m.Y H:i') : 'Bilinmiyor' }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ $item->type ?? 'Belirtilmemiş' }}</span>
+                                        </td>
+                                        <td>
+                                            @if($item->priority)
+                                                <span class="badge priority-{{ strtolower($item->priority) }}">
+                                                    {{ $item->priority }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">Belirtilmemiş</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 200px;" title="{{ $item->description ?? '' }}">
+                                                {{ Str::limit($item->description ?? 'Açıklama yok', 50) }}
                                             </div>
                                         </td>
                                         <td>
@@ -433,19 +539,19 @@
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-info btn-sm" title="Detay">
+                                                <button class="btn btn-outline-info btn-sm" onclick="showFaultDetail({{ $item->id }})" title="Detay">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                                 <button class="btn btn-success btn-sm" onclick="showFaultFixedModal({{ $item->id }})" title="Arıza Giderildi">
-                                                    <i class="fas fa-check"></i>
+                                                    <i class="fas fa-wrench"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">
-                                            <i class="fas fa-info-circle text-muted me-2"></i>
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-exclamation-triangle text-muted me-2"></i>
                                             Arızalı ekipman bulunamadı
                                         </td>
                                     </tr>
@@ -539,6 +645,35 @@
     @include('admin.fault.partials.resolved-fault-detail-modal')
 
     <script>
+        // Modal fonksiyonları
+        function showMaintenanceDetail(id) {
+            // Bakım detay modalı
+            $('#maintenanceDetailModal').modal('show');
+            // Burada AJAX ile veri çekilebilir
+            console.log('Bakım detay modalı açıldı - ID: ' + id);
+        }
+
+        function showFaultDetail(id) {
+            // Arıza detay modalı
+            $('#faultDetailModal').modal('show');
+            // Burada AJAX ile veri çekilebilir
+            console.log('Arıza detay modalı açıldı - ID: ' + id);
+        }
+
+        function showMaintenanceCompleteModal(id) {
+            // Bakım tamamla modalı
+            $('#maintenanceCompleteModal').modal('show');
+            // Burada AJAX ile veri çekilebilir
+            console.log('Bakım tamamla modalı açıldı - ID: ' + id);
+        }
+
+        function showFaultFixedModal(id) {
+            // Arıza giderildi modalı
+            $('#faultFixedModal').modal('show');
+            // Burada AJAX ile veri çekilebilir
+            console.log('Arıza giderildi modalı açıldı - ID: ' + id);
+        }
+
         // Filtreleme fonksiyonları
         function applyFilters() {
             const category = document.getElementById('filterCategory').value;

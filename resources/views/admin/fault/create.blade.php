@@ -123,19 +123,6 @@
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="reported_date" class="form-label">
-                                        <i class="fas fa-calendar me-1"></i>Bildirim Tarihi <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="datetime-local" class="form-control @error('reported_date') is-invalid @enderror" 
-                                           id="reported_date" name="reported_date" 
-                                           value="{{ old('reported_date', now()->format('Y-m-d\TH:i')) }}" required>
-                                    @error('reported_date')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
                         </div>
 
                         <div class="mb-3">

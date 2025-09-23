@@ -1,8 +1,9 @@
 // Kullanıcı Yönetimi JavaScript
 let currentUserId = null;
 
-// Kullanıcı detayını göster
-function showUserDetail(userId) {
+// Global fonksiyonlar - HTML onclick'lerden erişilebilir olması için
+window.showUserDetail = function(userId) {
+    console.log('showUserDetail called with userId:', userId);
     currentUserId = userId;
     
     // AJAX ile kullanıcı detayını getir
@@ -19,7 +20,7 @@ function showUserDetail(userId) {
                             <div class="text-center mb-3">
                                 <div class="user-avatar" style="background: ${user.avatar_color || '#6366f1'}; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold; margin: 0 auto; position: relative;">
                                     <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap;">
-                                        ${strtoupper(substr(user.name || 'U', 0, 2))}
+                                        ${(user.name || 'U').substring(0, 2).toUpperCase()}
                                     </span>
                                 </div>
                             </div>
@@ -27,14 +28,13 @@ function showUserDetail(userId) {
                             <p><strong>Ad Soyad:</strong> ${user.name}</p>
                             <p><strong>E-posta:</strong> ${user.email}</p>
                             <p><strong>Kullanıcı Adı:</strong> ${user.username || 'Belirtilmemiş'}</p>
-                            <p><strong>Rol:</strong> <span class="badge bg-${user.role === 'admin' ? 'primary' : 'secondary'}">${user.role === 'admin' ? 'Admin' : 'Kullanıcı'}</span></p>
+                            <p><strong>Rol:</strong> <span class="badge bg-${user.role === 'admin' ? 'primary' : user.role === 'ekip_yetkilisi' ? 'info' : 'secondary'}">${user.role === 'admin' ? 'Admin' : user.role === 'ekip_yetkilisi' ? 'Ekip Yetkilisi' : user.role === 'üye' ? 'Üye' : 'Kullanıcı'}</span></p>
                         </div>
                         <div class="col-md-6">
                             <h6 class="fw-bold">Sistem Bilgileri</h6>
                             <p><strong>Durum:</strong> <span class="badge bg-${user.status === 'active' ? 'success' : 'danger'}">${user.status === 'active' ? 'Aktif' : 'Pasif'}</span></p>
                             <p><strong>Kayıt Tarihi:</strong> ${user.created_at}</p>
                             <p><strong>Son Giriş:</strong> ${user.last_login_at}</p>
-                            <p><strong>E-posta Doğrulama:</strong> ${user.email_verified_at}</p>
                         </div>
                     </div>
                 `;
@@ -54,60 +54,15 @@ function showUserDetail(userId) {
         });
 }
 
-// Kullanıcı düzenleme modalını göster
-function editUser(userId) {
-    currentUserId = userId;
-    
-    // AJAX ile kullanıcı bilgilerini getir
-    fetch(`/admin/kullanicilar/${userId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const user = data.user;
-                
-                // Form alanlarını doldur
-                document.getElementById('userId').value = user.id;
-                document.getElementById('userName').value = user.name;
-                document.getElementById('userEmail').value = user.email;
-                document.getElementById('userUsername').value = user.username || '';
-                document.getElementById('userRole').value = user.role;
-                document.getElementById('userPassword').value = '';
-                document.getElementById('userPasswordConfirm').value = '';
-                
-                // Modal başlığını güncelle
-                document.getElementById('userModalLabel').textContent = 'Kullanıcı Düzenle';
-                document.getElementById('saveUserBtn').textContent = 'Güncelle';
-                
-                // Şifre alanlarını opsiyonel yap
-                document.getElementById('userPassword').required = false;
-                document.getElementById('userPasswordConfirm').required = false;
-                
-                // Modalı göster
-                const modal = new bootstrap.Modal(document.getElementById('userModal'));
-                modal.show();
-            } else {
-                alert('Kullanıcı bilgileri alınamadı: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Kullanıcı bilgileri alınırken hata oluştu.');
-        });
+// Kullanıcı düzenleme - modal kaldırıldı, sadece bilgi göster
+window.editUser = function(userId) {
+    console.log('editUser called with userId:', userId);
+    showToast('info', 'Bilgi', 'Kullanıcı düzenleme özelliği kaldırılmıştır.');
 }
 
 // Kullanıcı durumunu değiştir
-function toggleUserStatus(userId) {
-    Swal.fire({
-        title: 'Emin misiniz?',
-        text: 'Kullanıcı durumunu değiştirmek istediğinizden emin misiniz?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Evet, Değiştir!',
-        cancelButtonText: 'İptal'
-    }).then((result) => {
-        if (result.isConfirmed) {
+window.toggleUserStatus = function(userId) {
+    if (confirm('Kullanıcı durumunu değiştirmek istediğinizden emin misiniz?')) {
             fetch(`/admin/kullanicilar/${userId}/status`, {
                 method: 'PATCH',
                 headers: {
@@ -118,47 +73,22 @@ function toggleUserStatus(userId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        title: 'Başarılı!',
-                        text: data.message,
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                showToast('success', 'Başarılı!', data.message);
                     setTimeout(() => location.reload(), 2000);
                 } else {
-                    Swal.fire({
-                        title: 'Hata!',
-                        text: data.message,
-                        icon: 'error'
-                    });
+                showToast('error', 'Hata!', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire({
-                    title: 'Hata!',
-                    text: 'İşlem sırasında hata oluştu.',
-                    icon: 'error'
-                });
-            });
-        }
-    });
+            showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
+        });
+    }
 }
 
 // Kullanıcı sil
-function deleteUser(userId) {
-    Swal.fire({
-        title: 'Emin misiniz?',
-        text: 'Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Evet, Sil!',
-        cancelButtonText: 'İptal'
-    }).then((result) => {
-        if (result.isConfirmed) {
+window.deleteUser = function(userId) {
+    if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
             fetch(`/admin/kullanicilar/${userId}`, {
                 method: 'DELETE',
                 headers: {
@@ -169,36 +99,21 @@ function deleteUser(userId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        title: 'Silindi!',
-                        text: data.message,
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                showToast('success', 'Silindi!', data.message);
                     setTimeout(() => location.reload(), 2000);
                 } else {
-                    Swal.fire({
-                        title: 'Hata!',
-                        text: data.message,
-                        icon: 'error'
-                    });
+                showToast('error', 'Hata!', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire({
-                    title: 'Hata!',
-                    text: 'İşlem sırasında hata oluştu.',
-                    icon: 'error'
-                });
-            });
-        }
-    });
+            showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
+        });
+    }
 }
 
 // KPI filtreleme
-function filterByKpi(type) {
+window.filterByKpi = function(type) {
     const roleFilter = document.getElementById('userFilterRole');
     const statusFilter = document.getElementById('userFilterStatus');
     
@@ -315,10 +230,13 @@ function applyUserFilters() {
     document.getElementById('userCount').textContent = visibleCount;
     
     // Görünür kullanıcı yoksa mesaj göster
+    const noUserDataIllu = document.getElementById('noUserDataIllu');
+    if (noUserDataIllu) {
     if (visibleCount === 0) {
-        document.getElementById('noUserDataIllu').style.display = 'block';
+            noUserDataIllu.style.display = 'block';
     } else {
-        document.getElementById('noUserDataIllu').style.display = 'none';
+            noUserDataIllu.style.display = 'none';
+        }
     }
 }
 
@@ -349,25 +267,11 @@ function bulkDeleteUsers() {
     const userIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     
     if (userIds.length === 0) {
-        Swal.fire({
-            title: 'Uyarı!',
-            text: 'Lütfen silinecek kullanıcıları seçin.',
-            icon: 'warning'
-        });
+        showToast('warning', 'Uyarı!', 'Lütfen silinecek kullanıcıları seçin.');
         return;
     }
     
-    Swal.fire({
-        title: 'Emin misiniz?',
-        text: `${userIds.length} kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Evet, Sil!',
-        cancelButtonText: 'İptal'
-    }).then((result) => {
-        if (result.isConfirmed) {
+    if (confirm(`${userIds.length} kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
             fetch('/admin/kullanicilar/bulk-delete', {
                 method: 'POST',
                 headers: {
@@ -379,84 +283,62 @@ function bulkDeleteUsers() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        title: 'Başarılı!',
-                        text: data.message,
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                showToast('success', 'Başarılı!', data.message);
                     setTimeout(() => location.reload(), 2000);
                 } else {
-                    Swal.fire({
-                        title: 'Hata!',
-                        text: data.message,
-                        icon: 'error'
-                    });
+                showToast('error', 'Hata!', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire({
-                    title: 'Hata!',
-                    text: 'İşlem sırasında hata oluştu.',
-                    icon: 'error'
-                });
-            });
-        }
-    });
-}
-
-// Excel export
-function exportUserExcel() {
-    fetch('/admin/kullanicilar/export/excel')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: 'Başarılı!',
-                    text: data.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                // Burada gerçek Excel export işlemi yapılacak
-            } else {
-                Swal.fire({
-                    title: 'Hata!',
-                    text: data.message,
-                    icon: 'error'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Hata!',
-                text: 'Export sırasında hata oluştu.',
-                icon: 'error'
-            });
+            showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
         });
+    }
 }
 
-// Snackbar göster
-function showSnackbar(message) {
-    const snackbar = document.getElementById('userSnackbar');
-    snackbar.textContent = message;
-    snackbar.style.display = 'block';
+
+// Toast bildirimi göster
+window.showToast = function(type, title, message) {
+    const toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) return;
     
+    const toastId = 'toast-' + Date.now();
+    const iconClass = type === 'success' ? 'fa-check-circle' : 
+                     type === 'error' ? 'fa-exclamation-circle' : 
+                     type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+    
+    const bgClass = type === 'success' ? 'bg-success' : 
+                   type === 'error' ? 'bg-danger' : 
+                   type === 'warning' ? 'bg-warning' : 'bg-info';
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header ${bgClass} text-white">
+                <i class="fas ${iconClass} me-2"></i>
+                <strong class="me-auto">${title}</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // 5 saniye sonra otomatik kapat
     setTimeout(() => {
-        snackbar.style.display = 'none';
-    }, 3000);
+        const toastElement = document.getElementById(toastId);
+        if (toastElement) {
+            const toast = new bootstrap.Toast(toastElement);
+            toast.hide();
+        }
+    }, 5000);
 }
 
-// Yardımcı fonksiyonlar
-function strtoupper(str) {
-    return str.toUpperCase();
-}
-
-function substr(str, start, length) {
-    return str.substring(start, start + length);
+// Snackbar göster (eski fonksiyon - geriye uyumluluk için)
+function showSnackbar(message) {
+    showToast('info', 'Bilgi', message);
 }
 
 // Event listeners
@@ -466,13 +348,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const userFilterStatus = document.getElementById('userFilterStatus');
     const userSearch = document.getElementById('userSearch');
     const clearUserFiltersBtn = document.getElementById('clearUserFiltersBtn');
-    const addUserBtn = document.getElementById('addUserBtn');
-    const addUserBtnEmpty = document.getElementById('addUserBtnEmpty');
     const bulkUserDeleteBtn = document.getElementById('bulkUserDeleteBtn');
     const bulkUserStatusBtn = document.getElementById('bulkUserStatusBtn');
-    const exportUserExcelBtn = document.getElementById('exportUserExcelBtn');
     const selectAllUserRows = document.getElementById('selectAllUserRows');
-    const userForm = document.getElementById('userForm');
     
     // Filtre event listeners
     if (userFilterRole) {
@@ -495,43 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Yeni kullanıcı ekle butonu
-    if (addUserBtn) {
-        addUserBtn.addEventListener('click', function() {
-            // Form alanlarını temizle
-            if (userForm) {
-                userForm.reset();
-                const userIdField = document.getElementById('userId');
-                if (userIdField) userIdField.value = '';
-            }
-            
-            // Modal başlığını güncelle
-            const modalLabel = document.getElementById('userModalLabel');
-            const saveBtn = document.getElementById('saveUserBtn');
-            if (modalLabel) modalLabel.textContent = 'Yeni Kullanıcı Ekle';
-            if (saveBtn) saveBtn.textContent = 'Kaydet';
-            
-            // Şifre alanlarını zorunlu yap
-            const passwordField = document.getElementById('userPassword');
-            const passwordConfirmField = document.getElementById('userPasswordConfirm');
-            if (passwordField) passwordField.required = true;
-            if (passwordConfirmField) passwordConfirmField.required = true;
-            
-            // Modalı göster
-            const modalElement = document.getElementById('userModal');
-            if (modalElement && typeof bootstrap !== 'undefined') {
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-            }
-        });
-    }
-    
-    // Boş veri durumunda yeni kullanıcı ekle
-    if (addUserBtnEmpty) {
-        addUserBtnEmpty.addEventListener('click', function() {
-            if (addUserBtn) addUserBtn.click();
-        });
-    }
+    // Yeni kullanıcı ekle butonu kaldırıldı
     
     // Toplu işlem butonları
     if (bulkUserDeleteBtn) {
@@ -539,18 +381,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (bulkUserStatusBtn) {
         bulkUserStatusBtn.addEventListener('click', function() {
-            Swal.fire({
-                title: 'Bilgi',
-                text: 'Toplu durum değiştirme özelliği yakında eklenecek.',
-                icon: 'info'
-            });
+            showToast('info', 'Bilgi', 'Toplu durum değiştirme özelliği yakında eklenecek.');
         });
     }
     
-    // Excel export
-    if (exportUserExcelBtn) {
-        exportUserExcelBtn.addEventListener('click', exportUserExcel);
-    }
     
     // Tüm satırları seç/kaldır
     if (selectAllUserRows) {
@@ -575,82 +409,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Kullanıcı formu submit
-    if (userForm) {
-        userForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const userId = document.getElementById('userId')?.value;
-            const url = userId ? `/admin/kullanicilar/${userId}` : '/admin/kullanicilar';
-            const method = userId ? 'PUT' : 'POST';
-            
-            // PUT method için _method field ekle
-            if (method === 'PUT') {
-                formData.append('_method', 'PUT');
-            }
-            
-            fetch(url, {
-                method: method === 'PUT' ? 'POST' : 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                            if (data.success) {
-                Swal.fire({
-                    title: 'Başarılı!',
-                    text: data.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                const modalElement = document.getElementById('userModal');
-                if (modalElement && typeof bootstrap !== 'undefined') {
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    if (modal) modal.hide();
-                }
-                setTimeout(() => location.reload(), 2000);
-            } else {
-                if (data.errors) {
-                    let errorMessage = 'Validasyon hataları:\n';
-                    Object.keys(data.errors).forEach(key => {
-                        errorMessage += `- ${data.errors[key][0]}\n`;
-                    });
-                    Swal.fire({
-                        title: 'Validasyon Hatası!',
-                        text: errorMessage,
-                        icon: 'error'
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Hata!',
-                        text: data.message,
-                        icon: 'error'
-                    });
-                }
-            }
-            })
-                    .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Hata!',
-                text: 'İşlem sırasında hata oluştu.',
-                icon: 'error'
-            });
-        });
-        });
-    }
+    // Kullanıcı formu kaldırıldı
     
-    // Klavye kısayolları
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.shiftKey && e.key === 'N') {
-            e.preventDefault();
-            if (addUserBtn) addUserBtn.click();
-        }
-    });
+    // Klavye kısayolları kaldırıldı
     
     // İlk yükleme
     applyUserFilters();

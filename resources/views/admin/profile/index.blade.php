@@ -62,55 +62,33 @@
                                 <div class="stat-label">Toplam İşlem</div>
                                 <div class="stat-value">{{ \App\Models\Assignment::where('user_id', auth()->id())->count() }}</div>
                             </div>
-                            <div class="stat-box">
-                                <div class="stat-icon bg-gradient-orange"><i class="fas fa-clock"></i></div>
-                                <div class="stat-label">Aktiflik</div>
-                                <div class="stat-value">%95</div>
-                            </div>
                         </div>
                     </div>
-                    
                     <!-- Sağ taraf - Düzenlenebilir form -->
                     <div class="col-md-8">
                         <div class="profile-form-section">
                             <h4 class="section-title mb-4"><i class="fas fa-user-edit me-2"></i>Profil Bilgileri</h4>
-                            
                             <form id="profileForm">
+                                @csrf
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="profileName" class="form-label">Ad Soyad</label>
-                                        <input type="text" class="form-control profile-input" id="profileName" value="{{ auth()->user()->name ?? '' }}">
+                                        <label for="profileName" class="form-label">Ad Soyad <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control profile-input" id="profileName" name="name" value="{{ auth()->user()->name ?? '' }}" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="profileEmail" class="form-label">E-posta</label>
-                                        <input type="email" class="form-control profile-input" id="profileEmail" value="{{ auth()->user()->email ?? '' }}">
+                                        <label for="profileEmail" class="form-label">E-posta <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control profile-input" id="profileEmail" name="email" value="{{ auth()->user()->email ?? '' }}" required>
                                     </div>
                                 </div>
                                 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="profilePhone" class="form-label">Telefon</label>
-                                        <input type="tel" class="form-control profile-input" id="profilePhone" value="+90 555 123 4567">
+                                        <label for="profileUsername" class="form-label">Kullanıcı Adı</label>
+                                        <input type="text" class="form-control profile-input" id="profileUsername" name="username" value="{{ auth()->user()->username ?? '' }}">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="profileDepartment" class="form-label">Departman</label>
-                                        <input type="text" class="form-control profile-input" id="profileDepartment" value="Yönetim">
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="profileAddress" class="form-label">Adres</label>
-                                    <textarea class="form-control profile-input" id="profileAddress" rows="3">İstanbul, Türkiye</textarea>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="profileCity" class="form-label">Şehir</label>
-                                        <input type="text" class="form-control profile-input" id="profileCity" value="İstanbul">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="profileCountry" class="form-label">Ülke</label>
-                                        <input type="text" class="form-control profile-input" id="profileCountry" value="Türkiye">
+                                        <label for="profileRole" class="form-label">Rol</label>
+                                        <input type="text" class="form-control" id="profileRole" value="{{ auth()->user()->role_label ?? 'Bilinmiyor' }}" readonly>
                                     </div>
                                 </div>
                                 
@@ -130,18 +108,20 @@
                             <div class="password-section">
                                 <h5 class="section-title mb-3"><i class="fas fa-key me-2"></i>Şifre Değiştir</h5>
                                 <form id="passwordForm">
+                                    @csrf
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <label for="currentPassword" class="form-label">Mevcut Şifre</label>
-                                            <input type="password" class="form-control profile-input" id="currentPassword">
+                                            <label for="currentPassword" class="form-label">Mevcut Şifre <span class="text-danger">*</span></label>
+                                            <input type="password" class="form-control profile-input" id="currentPassword" name="current_password" required>
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="newPassword" class="form-label">Yeni Şifre</label>
-                                            <input type="password" class="form-control profile-input" id="newPassword">
+                                            <label for="newPassword" class="form-label">Yeni Şifre <span class="text-danger">*</span></label>
+                                            <input type="password" class="form-control profile-input" id="newPassword" name="password" required minlength="8">
+                                            <small class="text-muted">En az 8 karakter olmalıdır</small>
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="confirmPassword" class="form-label">Yeni Şifre (Tekrar)</label>
-                                            <input type="password" class="form-control profile-input" id="confirmPassword">
+                                            <label for="confirmPassword" class="form-label">Yeni Şifre (Tekrar) <span class="text-danger">*</span></label>
+                                            <input type="password" class="form-control profile-input" id="confirmPassword" name="password_confirmation" required>
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-gradient-warning">

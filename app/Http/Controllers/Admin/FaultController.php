@@ -73,21 +73,21 @@ class FaultController extends Controller
         $faults = Fault::with(['equipmentStock.equipment.category', 'reporter'])
             ->whereIn('status', ['Beklemede', 'İşlemde'])
             ->orderBy('priority', 'desc')
-            ->orderBy('reported_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
             
         // Bakım gereken ekipmanlar - faults tablosundan
         $maintenanceItems = Fault::with(['equipmentStock.equipment.category'])
             ->where('type', 'bakım')
             ->whereIn('status', ['Beklemede', 'İşlemde'])
-            ->orderBy('reported_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
             
         // Arızalı ekipmanlar - faults tablosundan
         $faultyItems = Fault::with(['equipmentStock.equipment.category'])
             ->where('type', 'arıza')
             ->whereIn('status', ['Beklemede', 'İşlemde'])
-            ->orderBy('reported_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
             
         // Çözülen arızalar
@@ -132,7 +132,7 @@ class FaultController extends Controller
                 'priority' => $fault->priority,
                 'status' => $fault->status,
                 'description' => $fault->description,
-                'reported_date' => $fault->reported_date ? \Carbon\Carbon::parse($fault->reported_date)->format('d.m.Y H:i') : 'Tarih yok',
+                'reported_date' => $fault->created_at ? \Carbon\Carbon::parse($fault->created_at)->format('d.m.Y H:i') : 'Tarih yok',
                 'reporter_name' => $fault->reporter->name ?? 'Bilinmeyen',
                 'photo_path' => $fault->photo_path
             ]
@@ -146,8 +146,7 @@ class FaultController extends Controller
             'type' => 'required|in:arıza,bakım,diğer',
             'priority' => 'required|in:normal,yüksek,acil',
             'description' => 'required|string|min:10',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'reported_date' => 'required|date'
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
         try {
@@ -157,7 +156,6 @@ class FaultController extends Controller
             $fault->type = $request->type;
             $fault->priority = $request->priority;
             $fault->description = $request->description;
-            $fault->reported_date = $request->reported_date;
             $fault->status = 'Beklemede';
 
             // Fotoğraf yükleme

@@ -103,8 +103,7 @@ class UserController extends Controller
                     'status' => $user->status,
                     'created_at' => $user->created_at ? Carbon::parse($user->created_at)->format('d.m.Y H:i') : 'Tarih yok',
                     'last_login_at' => $user->last_login_at ? Carbon::parse($user->last_login_at)->format('d.m.Y H:i') : 'Hiç giriş yapmamış',
-                    'avatar_color' => $user->avatar_color,
-                    'email_verified_at' => $user->email_verified_at ? 'Doğrulanmış' : 'Doğrulanmamış'
+                    'avatar_color' => $user->avatar_color
                 ]
             ]);
         } catch (\Exception $e) {
@@ -121,7 +120,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'username' => 'nullable|string|max:255|unique:users,username,' . $id,
-            'role' => 'required|in:user,admin',
+            'role' => 'required|in:admin,ekip_yetkilisi,üye',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 

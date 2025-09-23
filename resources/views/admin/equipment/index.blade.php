@@ -15,17 +15,18 @@
 </nav>
 <div class="container mt-4">
     <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <h2 class="mb-0 fw-bold"><i class="fas fa-cubes me-2 text-primary"></i>Ekipman Yönetimi</h2>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ route('stock.create') }}" class="btn btn-success shadow-sm">
-                <i class="fas fa-plus"></i> Ekipman Ekle
-            </a>
-
-            <button class="btn btn-outline-success ms-2 shadow-sm" id="importExcelBtn">
-                <i class="fas fa-file-excel"></i> Excel İçe Aktar
-            </button>
+        <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+            <div class="d-flex flex-column flex-md-row gap-2">
+                <a href="{{ route('stock.create') }}" class="btn btn-success shadow-sm w-100 w-md-auto">
+                    <i class="fas fa-plus"></i> Ekipman Ekle
+                </a>
+                <button class="btn btn-outline-success shadow-sm w-100 w-md-auto" id="importExcelBtn">
+                    <i class="fas fa-file-excel"></i> Excel İçe Aktar
+                </button>
+            </div>
         </div>
     </div>
     
@@ -65,10 +66,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div> --}}
     <div class="row mb-4 g-2">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <input type="text" class="form-control" placeholder="Ara..." id="searchInput">
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <select class="form-select" id="categoryFilter">
                 <option value="">Tüm Kategoriler</option>
                 @foreach($categories ?? [] as $category)
@@ -76,11 +77,11 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <input type="text" class="form-control" placeholder="Ekipman Kodu" id="codeFilter">
         </div>
-        <div class="col-md-2">
-            <button type="button" class="btn btn-outline-secondary" id="clearFilters">
+        <div class="col-12 col-sm-6 col-md-2">
+            <button type="button" class="btn btn-outline-secondary w-100" id="clearFilters">
                 <i class="fas fa-times"></i> Temizle
             </button>
         </div>

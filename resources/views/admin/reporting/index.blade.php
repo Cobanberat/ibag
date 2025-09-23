@@ -232,23 +232,27 @@
 /* Pagination */
 .pagination-container {
     display: flex;
-    justify-content: between;
+    flex-direction: column;
     align-items: center;
     margin-top: 1rem;
     padding: 1rem;
     background: #f8f9fa;
     border-radius: 0.5rem;
+    gap: 1rem;
 }
 
 .pagination-info {
     font-size: 0.9rem;
     color: #6c757d;
+    text-align: center;
 }
 
 .pagination-controls {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .pagination-btn {
@@ -258,6 +262,7 @@
     border-radius: 0.25rem;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-size: 0.875rem;
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -275,6 +280,82 @@
     color: white;
     border-color: #0d6efd;
 }
+
+@media (min-width: 768px) {
+    .pagination-container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .pagination-info {
+        text-align: left;
+    }
+    
+    .pagination-controls {
+        justify-content: flex-end;
+    }
+}
+
+/* Mobil için ek responsive düzenlemeler */
+@media (max-width: 576px) {
+    .page-header {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .page-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .page-header .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .page-header img {
+        margin-right: 0 !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kpi-card {
+        padding: 0.75rem !important;
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem !important;
+    }
+    
+    .kpi-label {
+        font-size: 0.7rem !important;
+    }
+    
+    .filter-bar {
+        padding: 0.75rem;
+    }
+    
+    .type-filter-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .chart-card {
+        padding: 1rem !important;
+    }
+    
+    .chart-card h6 {
+        font-size: 0.9rem;
+    }
+}
 </style>
 
 <!-- Breadcrumb -->
@@ -282,12 +363,19 @@
     <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
         <li class="breadcrumb-item">
             <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
-                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 24px; height: 24px; margin-right: 8px;">
-                <i class="fa fa-home me-1"></i> Ana Sayfa
+                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" class="d-none d-sm-inline" style="width: 24px; height: 24px; margin-right: 8px;">
+                <i class="fa fa-home me-1"></i> 
+                <span class="d-none d-sm-inline">Ana Sayfa</span>
+                <span class="d-sm-none">Ana</span>
             </a>
         </li>
-        <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Raporlama & Analiz</li>
+        <li class="breadcrumb-item d-none d-md-inline">
+            <a href="/admin/" class="text-decoration-none">Yönetim</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            <span class="d-none d-sm-inline">Raporlama & Analiz</span>
+            <span class="d-sm-none">Raporlama</span>
+        </li>
     </ol>
 </nav>
 
@@ -311,97 +399,133 @@
   <!-- Favori Raporlarım -->
  
   <!-- KPI Kartları (animasyonlu uyarı, mini trend) -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3 position-relative">
-        <div class="kpi-icon" style="color: #0d6efd;"><i class="fas fa-boxes"></i></div>
-        <div class="kpi-value" id="kpiTotal">{{ $stats['total_equipment'] ?? 0 }}</div>
-        <div class="kpi-label">Toplam Ekipman</div>
-        <canvas id="miniTrend1" height="18" style="width:100%;max-width:80px;"></canvas>
+  <div class="row g-2 g-md-3 mb-4">
+    <div class="col-6 col-md-2">
+      <div class="card kpi-card text-center p-2 p-md-3 position-relative">
+        <div class="kpi-icon" style="color: #0d6efd; font-size: 1.5rem;"><i class="fas fa-boxes"></i></div>
+        <div class="kpi-value" id="kpiTotal" style="font-size: 1.8rem;">{{ $stats['total_equipment'] ?? 0 }}</div>
+        <div class="kpi-label" style="font-size: 0.75rem;">Toplam Ekipman</div>
+        <canvas id="miniTrend1" height="18" style="width:100%;max-width:80px;" class="d-none d-lg-block"></canvas>
       </div>
     </div>
-    <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3 position-relative">
-        <div class="kpi-icon" style="color: #28a745;"><i class="fas fa-check-circle"></i></div>
-        <div class="kpi-value" id="kpiActive">{{ $stats['active_equipment'] ?? 0 }}</div>
-        <div class="kpi-label">Aktif</div>
-        <canvas id="miniTrend2" height="18" style="width:100%;max-width:80px;"></canvas>
+    <div class="col-6 col-md-2">
+      <div class="card kpi-card text-center p-2 p-md-3 position-relative">
+        <div class="kpi-icon" style="color: #28a745; font-size: 1.5rem;"><i class="fas fa-check-circle"></i></div>
+        <div class="kpi-value" id="kpiActive" style="font-size: 1.8rem;">{{ $stats['active_equipment'] ?? 0 }}</div>
+        <div class="kpi-label" style="font-size: 0.75rem;">Aktif</div>
+        <canvas id="miniTrend2" height="18" style="width:100%;max-width:80px;" class="d-none d-lg-block"></canvas>
       </div>
     </div>
-    <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3 position-relative {{ ($stats['faulty_equipment'] ?? 0) > 0 ? 'animate__animated animate__flash animate__infinite' : '' }}" id="kpiFaultCard">
-        <div class="kpi-icon" style="color: #dc3545;"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="kpi-value" id="kpiFault">{{ $stats['faulty_equipment'] ?? 0 }}</div>
-        <div class="kpi-label">Arızalı</div>
+    <div class="col-6 col-md-2">
+      <div class="card kpi-card text-center p-2 p-md-3 position-relative {{ ($stats['faulty_equipment'] ?? 0) > 0 ? 'animate__animated animate__flash animate__infinite' : '' }}" id="kpiFaultCard">
+        <div class="kpi-icon" style="color: #dc3545; font-size: 1.5rem;"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="kpi-value" id="kpiFault" style="font-size: 1.8rem;">{{ $stats['faulty_equipment'] ?? 0 }}</div>
+        <div class="kpi-label" style="font-size: 0.75rem;">Arızalı</div>
         @if(($stats['faulty_equipment'] ?? 0) > 0)
-        <span class="position-absolute top-0 end-0 badge bg-danger" style="margin:10px;">Kritik!</span>
+        <span class="position-absolute top-0 end-0 badge bg-danger" style="margin:5px; font-size: 0.6rem;">Kritik!</span>
         @endif
-        <canvas id="miniTrend3" height="18" style="width:100%;max-width:80px;"></canvas>
+        <canvas id="miniTrend3" height="18" style="width:100%;max-width:80px;" class="d-none d-lg-block"></canvas>
       </div>
     </div>
-    <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3">
-        <div class="kpi-icon" style="color: #ffc107;"><i class="fas fa-tools"></i></div>
-        <div class="kpi-value" id="kpiMaintenance">{{ $stats['maintenance_required'] ?? 0 }}</div>
-        <div class="kpi-label">Bakımda</div>
+    <div class="col-6 col-md-2">
+      <div class="card kpi-card text-center p-2 p-md-3">
+        <div class="kpi-icon" style="color: #ffc107; font-size: 1.5rem;"><i class="fas fa-tools"></i></div>
+        <div class="kpi-value" id="kpiMaintenance" style="font-size: 1.8rem;">{{ $stats['maintenance_required'] ?? 0 }}</div>
+        <div class="kpi-label" style="font-size: 0.75rem;">Bakımda</div>
       </div>
     </div>
-    <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3">
-        <div class="kpi-icon" style="color: #17a2b8;"><i class="fas fa-users"></i></div>
-        <div class="kpi-value" id="kpiUsers">{{ $stats['total_users'] ?? 0 }}</div>
-        <div class="kpi-label">Toplam Kullanıcı</div>
+    <div class="col-6 col-md-2">
+      <div class="card kpi-card text-center p-2 p-md-3">
+        <div class="kpi-icon" style="color: #17a2b8; font-size: 1.5rem;"><i class="fas fa-users"></i></div>
+        <div class="kpi-value" id="kpiUsers" style="font-size: 1.8rem;">{{ $stats['total_users'] ?? 0 }}</div>
+        <div class="kpi-label" style="font-size: 0.75rem;">Toplam Kullanıcı</div>
       </div>
     </div>
-    <div class="col-md-2 col-6">
-      <div class="card kpi-card text-center p-3">
-        <div class="kpi-icon" style="color: #28a745;"><i class="fas fa-check-double"></i></div>
-        <div class="kpi-value" id="kpiResolved">{{ $stats['resolved_faults'] ?? 0 }}</div>
-        <div class="kpi-label">Çözülen Arızalar</div>
+    <div class="col-6 col-md-2">
+      <div class="card kpi-card text-center p-2 p-md-3">
+        <div class="kpi-icon" style="color: #28a745; font-size: 1.5rem;"><i class="fas fa-check-double"></i></div>
+        <div class="kpi-value" id="kpiResolved" style="font-size: 1.8rem;">{{ $stats['resolved_faults'] ?? 0 }}</div>
+        <div class="kpi-label" style="font-size: 0.75rem;">Çözülen Arızalar</div>
       </div>
     </div>
   </div>
   <!-- Modern Filtreleme Barı (KPI kartlarının altında) -->
   <div class="filter-bar mt-2 mb-2">
-    <div class="input-group">
-      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-      <input type="text" class="form-control" id="filterDate" placeholder="Tarih Aralığı">
+    <div class="row g-2">
+      <div class="col-12 col-md-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+          <input type="text" class="form-control" id="filterDate" placeholder="Tarih Aralığı">
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="type-filter-group" id="typeFilterGroup">
+          <button class="type-filter-btn" data-type="Bakım" title="Bakım taleplerini göster">
+            <span class="type-ico"><i class="fas fa-tools"></i></span>
+            <span class="d-none d-sm-inline">Bakım</span>
+          </button>
+          <button class="type-filter-btn" data-type="Arıza" title="Arıza bildirimlerini göster">
+            <span class="type-ico"><i class="fas fa-bolt"></i></span>
+            <span class="d-none d-sm-inline">Arıza</span>
+          </button>
+          <button class="type-filter-btn" data-type="Transfer" title="Transfer taleplerini göster">
+            <span class="type-ico"><i class="fas fa-exchange-alt"></i></span>
+            <span class="d-none d-sm-inline">Transfer</span>
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" id="searchInput" placeholder="Tabloda Ara...">
+        </div>
+      </div>
+      <div class="col-12 col-md-2">
+        <div class="d-flex flex-wrap gap-1">
+          <button class="btn btn-outline-primary btn-sm" onclick="printTable()" title="Yazdır">
+            <i class="fas fa-print"></i>
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="copyTable()" title="Kopyala">
+            <i class="fas fa-copy"></i>
+          </button>
+          <button class="btn btn-outline-success btn-sm" onclick="downloadCSV()" title="CSV İndir">
+            <i class="fas fa-file-csv"></i>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="type-filter-group" id="typeFilterGroup">
-      <button class="type-filter-btn" data-type="Bakım" title="Bakım taleplerini göster"><span class="type-ico"><i class="fas fa-tools"></i></span>Bakım</button>
-      <button class="type-filter-btn" data-type="Arıza" title="Arıza bildirimlerini göster"><span class="type-ico"><i class="fas fa-bolt"></i></span>Arıza</button>
-      <button class="type-filter-btn" data-type="Transfer" title="Transfer taleplerini göster"><span class="type-ico"><i class="fas fa-exchange-alt"></i></span>Transfer</button>
-    </div>
-    <div class="input-group">
-      <span class="input-group-text"><i class="fas fa-search"></i></span>
-      <input type="text" class="form-control" id="searchInput" placeholder="Tabloda Ara...">
-    </div>
-    <button class="btn btn-outline-primary" onclick="printTable()"><i class="fas fa-print"></i> Yazdır</button>
-    <button class="btn btn-outline-secondary" onclick="copyTable()"><i class="fas fa-copy"></i> Kopyala</button>
-    <button class="btn btn-outline-success" onclick="downloadCSV()"><i class="fas fa-file-csv"></i> CSV İndir</button>
   </div>
   <div class="mb-3" id="activeFilters"></div>
   <!-- Ekipman Durumu Tablosu -->
   <div class="card modern-card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
       <span><i class="fas fa-boxes me-2"></i>Ekipman Durumu</span>
-      <div>
-        <button class="btn btn-outline-primary btn-sm" onclick="printTable()"><i class="fas fa-print"></i></button>
-        <button class="btn btn-outline-success btn-sm" onclick="downloadCSV()"><i class="fas fa-file-csv"></i></button>
-        <button class="btn btn-outline-info btn-sm" onclick="copyTable()"><i class="fas fa-copy"></i></button>
+      <div class="mt-2 mt-md-0">
+        <button class="btn btn-outline-primary btn-sm me-1" onclick="printTable()">
+          <i class="fas fa-print"></i>
+          <span class="d-none d-sm-inline">Yazdır</span>
+        </button>
+        <button class="btn btn-outline-success btn-sm me-1" onclick="downloadCSV()">
+          <i class="fas fa-file-csv"></i>
+          <span class="d-none d-sm-inline">CSV</span>
+        </button>
+        <button class="btn btn-outline-info btn-sm" onclick="copyTable()">
+          <i class="fas fa-copy"></i>
+          <span class="d-none d-sm-inline">Kopyala</span>
+        </button>
       </div>
     </div>
-    <div class="card-body">
-      <div class="table-container">
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
         <table class="table modern-table table-striped table-hover mb-0" id="equipmentTable">
-          <thead>
+          <thead class="table-light sticky-top">
             <tr>
-              <th>#</th>
+              <th class="d-none d-sm-table-cell">#</th>
               <th>Ekipman Adı</th>
-              <th>Kategori</th>
-              <th>Kod</th>
+              <th class="d-none d-md-table-cell">Kategori</th>
+              <th class="d-none d-lg-table-cell">Kod</th>
               <th>Durum</th>
-              <th>Son Güncelleme</th>
+              <th class="d-none d-sm-table-cell">Son Güncelleme</th>
               <th>İşlemler</th>
             </tr>
           </thead>
@@ -409,10 +533,15 @@
             @forelse($equipmentByCategory as $category)
               @foreach($category['equipment'] as $index => $equipment)
                 <tr>
-                  <td>{{ $loop->iteration }}</td>
-                  <td>{{ $equipment['name'] }}</td>
-                  <td><span class="badge bg-info">{{ $category['name'] }}</span></td>
-                  <td><code>{{ $equipment['code'] ?? 'N/A' }}</code></td>
+                  <td class="d-none d-sm-table-cell">{{ $loop->iteration }}</td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <strong>{{ $equipment['name'] }}</strong>
+                      <small class="text-muted d-sm-none">{{ $category['name'] }} • {{ $equipment['code'] ?? 'N/A' }}</small>
+                    </div>
+                  </td>
+                  <td class="d-none d-md-table-cell"><span class="badge bg-info">{{ $category['name'] }}</span></td>
+                  <td class="d-none d-lg-table-cell"><code>{{ $equipment['code'] ?? 'N/A' }}</code></td>
                   <td>
                     @if($equipment['status'] == 'Aktif')
                       <span class="badge bg-success">Aktif</span>
@@ -424,7 +553,7 @@
                       <span class="badge bg-secondary">{{ $equipment['status'] }}</span>
                     @endif
                   </td>
-                  <td>{{ $equipment['updated_at'] ? \Carbon\Carbon::parse($equipment['updated_at'])->format('d.m.Y H:i') : 'Bilinmiyor' }}</td>
+                  <td class="d-none d-sm-table-cell">{{ $equipment['updated_at'] ? \Carbon\Carbon::parse($equipment['updated_at'])->format('d.m.Y H:i') : 'Bilinmiyor' }}</td>
                   <td>
                     <button class="btn btn-sm btn-outline-info" onclick="showEquipmentDetail({{ $equipment['id'] }})">
                       <i class="fas fa-eye"></i>
@@ -463,25 +592,31 @@
 
   <!-- Arıza Bildirimleri Tablosu -->
   <div class="card modern-card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
       <span><i class="fas fa-exclamation-triangle me-2"></i>Arıza Bildirimleri</span>
-      <div>
-        <button class="btn btn-outline-primary btn-sm" onclick="printFaultTable()"><i class="fas fa-print"></i></button>
-        <button class="btn btn-outline-success btn-sm" onclick="downloadFaultCSV()"><i class="fas fa-file-csv"></i></button>
+      <div class="mt-2 mt-md-0">
+        <button class="btn btn-outline-primary btn-sm me-1" onclick="printFaultTable()">
+          <i class="fas fa-print"></i>
+          <span class="d-none d-sm-inline">Yazdır</span>
+        </button>
+        <button class="btn btn-outline-success btn-sm" onclick="downloadFaultCSV()">
+          <i class="fas fa-file-csv"></i>
+          <span class="d-none d-sm-inline">CSV</span>
+        </button>
       </div>
     </div>
-    <div class="card-body">
-      <div class="table-container">
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
         <table class="table modern-table table-striped table-hover mb-0" id="faultTable">
-          <thead>
+          <thead class="table-light sticky-top">
             <tr>
-              <th>#</th>
+              <th class="d-none d-sm-table-cell">#</th>
               <th>Ekipman</th>
-              <th>Arıza Tipi</th>
-              <th>Öncelik</th>
-              <th>Bildiren</th>
+              <th class="d-none d-md-table-cell">Arıza Tipi</th>
+              <th class="d-none d-lg-table-cell">Öncelik</th>
+              <th class="d-none d-sm-table-cell">Bildiren</th>
               <th>Durum</th>
-              <th>Tarih</th>
+              <th class="d-none d-md-table-cell">Tarih</th>
               <th>İşlemler</th>
             </tr>
           </thead>
@@ -489,11 +624,16 @@
             @forelse($recentActivities as $activity)
               @if($activity['type'] == 'fault')
                 <tr>
-                  <td>{{ $loop->iteration }}</td>
-                  <td>{{ $activity['description'] }}</td>
-                  <td><span class="badge bg-warning">Arıza</span></td>
-                  <td><span class="badge bg-danger">Yüksek</span></td>
-                  <td>{{ $activity['user'] }}</td>
+                  <td class="d-none d-sm-table-cell">{{ $loop->iteration }}</td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <strong>{{ $activity['description'] }}</strong>
+                      <small class="text-muted d-sm-none">{{ $activity['user'] }} • {{ $activity['date'] }}</small>
+                    </div>
+                  </td>
+                  <td class="d-none d-md-table-cell"><span class="badge bg-warning">Arıza</span></td>
+                  <td class="d-none d-lg-table-cell"><span class="badge bg-danger">Yüksek</span></td>
+                  <td class="d-none d-sm-table-cell">{{ $activity['user'] }}</td>
                   <td>
                     @if($activity['status'] == 'Çözüldü')
                       <span class="badge bg-success">Çözüldü</span>
@@ -503,7 +643,7 @@
                       <span class="badge bg-info">{{ $activity['status'] }}</span>
                     @endif
                   </td>
-                  <td>{{ $activity['date'] }}</td>
+                  <td class="d-none d-md-table-cell">{{ $activity['date'] }}</td>
                   <td>
                     <button class="btn btn-sm btn-outline-info" onclick="showFaultDetail({{ $loop->iteration }})">
                       <i class="fas fa-eye"></i>
@@ -545,23 +685,23 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <span><i class="fas fa-users me-2"></i>Kullanıcı Aktiviteleri</span>
     </div>
-    <div class="card-body">
-      <div class="table-container">
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
         <table class="table modern-table table-striped table-hover mb-0" id="userActivityTable">
-          <thead>
+          <thead class="table-light sticky-top">
             <tr>
-            <th>#</th>
+              <th class="d-none d-sm-table-cell">#</th>
               <th>Kullanıcı</th>
-              <th>Rol</th>
-              <th>Zimmet Sayısı</th>
-              <th>Son Giriş</th>
+              <th class="d-none d-md-table-cell">Rol</th>
+              <th class="d-none d-lg-table-cell">Zimmet Sayısı</th>
+              <th class="d-none d-sm-table-cell">Son Giriş</th>
               <th>Durum</th>
             </tr>
           </thead>
           <tbody>
             @forelse($userActivity as $user)
               <tr>
-                <td>{{ $loop->iteration }}</td>
+                <td class="d-none d-sm-table-cell">{{ $loop->iteration }}</td>
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
@@ -569,11 +709,12 @@
                     </div>
                     <div>
                       <div class="fw-bold">{{ $user['name'] }}</div>
-                      <small class="text-muted">{{ $user['email'] }}</small>
+                      <small class="text-muted d-sm-none">{{ $user['email'] }}</small>
+                      <small class="text-muted d-none d-sm-inline">{{ $user['email'] }}</small>
                     </div>
                   </div>
                 </td>
-                <td>
+                <td class="d-none d-md-table-cell">
                   @if($user['role'] == 'Admin')
                     <span class="badge bg-danger">{{ $user['role'] }}</span>
                   @elseif($user['role'] == 'Ekip Yetkilisi')
@@ -582,8 +723,8 @@
                     <span class="badge bg-info">{{ $user['role'] }}</span>
                   @endif
                 </td>
-                <td><span class="badge bg-primary">{{ $user['assignments'] }}</span></td>
-                <td>{{ $user['last_login'] }}</td>
+                <td class="d-none d-lg-table-cell"><span class="badge bg-primary">{{ $user['assignments'] }}</span></td>
+                <td class="d-none d-sm-table-cell">{{ $user['last_login'] }}</td>
                 <td>
                   <span class="badge bg-success">Aktif</span>
                 </td>
@@ -643,33 +784,38 @@
   </div>
   <!-- Grafikler -->
   <div class="row mb-4">
-    <div class="col-md-6 mb-4">
+    <!-- Üst satır: Aylık Arıza Trendi ve Ekipman Durumu Dağılımı -->
+    <div class="col-12 col-lg-8 mb-4">
       <div class="card chart-card p-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="mb-0"><i class="fas fa-chart-line"></i> Aylık Arıza Trendi</h6>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2">
+          <h6 class="mb-2 mb-md-0"><i class="fas fa-chart-line"></i> Aylık Arıza Trendi</h6>
           <select class="form-select form-select-sm w-auto" id="chartTypeSelect">
             <option value="line">Çizgi</option>
             <option value="bar">Bar</option>
             <option value="doughnut">Donut</option>
           </select>
         </div>
-        <canvas id="lineChart"></canvas>
-        <div class="mt-2">
-          <button class="btn btn-outline-info btn-sm" onclick="comparePeriods()"><i class="fas fa-random"></i> Dönem Karşılaştır</button>
-          <button class="btn btn-outline-secondary btn-sm" onclick="filterFromChart()"><i class="fas fa-filter"></i> Grafikten Filtrele</button>
+        <div style="position: relative; height: 300px;">
+          <canvas id="lineChart"></canvas>
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-4">
+    <div class="col-12 col-lg-4 mb-4">
       <div class="card chart-card p-3">
         <h6><i class="fas fa-chart-pie"></i> Ekipman Durumu Dağılımı</h6>
-        <canvas id="pieChart"></canvas>
+        <div style="position: relative; height: 300px;">
+          <canvas id="pieChart"></canvas>
+        </div>
       </div>
     </div>
-    <div class="col-md-3 mb-4">
+    
+    <!-- Alt satır: Kategori Bazında Ekipman (tam genişlik) -->
+    <div class="col-12 mb-4">
       <div class="card chart-card p-3">
         <h6><i class="fas fa-chart-bar"></i> Kategori Bazında Ekipman</h6>
-        <canvas id="barChart"></canvas>
+        <div style="position: relative; height: 400px;">
+          <canvas id="barChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -763,13 +909,97 @@ const barChart = new Chart(document.getElementById('barChart'), {
   },
   options: {responsive:true, plugins:{legend:{display:true}}}
 });
-// Yeni fonksiyonlar
+// Modal fonksiyonları
 function showEquipmentDetail(equipmentId) {
-  showSnackbar('Ekipman detayı gösteriliyor: ' + equipmentId);
+  // Ekipman detay modalı aç
+  $('#talepDetailModal').modal('show');
+  $('#talepDetailModalLabel').text('Ekipman Detayı');
+  
+  // AJAX ile gerçek veri çek
+  fetch(`/admin/ekipmanlar/${equipmentId}`)
+    .then(response => response.json())
+    .then(result => {
+      const data = result.data || result;
+      const equipment = data.equipment || data;
+      $('#talepDetailBody').html(`
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Ekipman Bilgileri</h6>
+            <p><strong>ID:</strong> ${data.id || equipmentId}</p>
+            <p><strong>Ad:</strong> ${equipment.name || 'Bilinmiyor'}</p>
+            <p><strong>Kod:</strong> ${equipment.code || 'N/A'}</p>
+            <p><strong>Durum:</strong> <span class="badge bg-${equipment.status === 'Aktif' ? 'success' : equipment.status === 'Arızalı' ? 'danger' : 'warning'}">${equipment.status || 'Bilinmiyor'}</span></p>
+            <p><strong>Son Güncelleme:</strong> ${data.updated_at ? new Date(data.updated_at).toLocaleDateString('tr-TR') : 'Bilinmiyor'}</p>
+          </div>
+          <div class="col-md-6">
+            <h6>İstatistikler</h6>
+            <p><strong>Kategori:</strong> ${equipment.category ? equipment.category.name : 'Belirtilmemiş'}</p>
+            <p><strong>Kritik Seviye:</strong> ${equipment.critical_level || 'Belirtilmemiş'}</p>
+            <p><strong>Stok Miktarı:</strong> ${data.quantity || '0'}</p>
+            <p><strong>Oluşturulma:</strong> ${data.created_at ? new Date(data.created_at).toLocaleDateString('tr-TR') : 'Bilinmiyor'}</p>
+          </div>
+        </div>
+      `);
+    })
+    .catch(error => {
+      console.error('Veri çekme hatası:', error);
+      $('#talepDetailBody').html(`
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i> Ekipman detayları yüklenirken hata oluştu.
+        </div>
+      `);
+    });
+  
+  // İşlem geçmişini temizle
+  $('#talepLogList').html('<li class="list-group-item text-muted">İşlem geçmişi yükleniyor...</li>');
 }
 
 function showFaultDetail(faultId) {
-  showSnackbar('Arıza detayı gösteriliyor: ' + faultId);
+  // Arıza detay modalı aç
+  $('#talepDetailModal').modal('show');
+  $('#talepDetailModalLabel').text('Arıza Detayı');
+  
+  // AJAX ile gerçek veri çek
+  fetch(`/admin/fault/${faultId}`)
+    .then(response => response.json())
+    .then(result => {
+      const data = result.fault || result;
+      $('#talepDetailBody').html(`
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Arıza Bilgileri</h6>
+            <p><strong>ID:</strong> ${faultId}</p>
+            <p><strong>Durum:</strong> <span class="badge bg-${data.status === 'Çözüldü' ? 'success' : data.status === 'Beklemede' ? 'warning' : 'info'}">${data.status || 'Bilinmiyor'}</span></p>
+            <p><strong>Öncelik:</strong> <span class="badge bg-${data.priority === 'Yüksek' ? 'danger' : data.priority === 'Orta' ? 'warning' : 'info'}">${data.priority || 'Belirtilmemiş'}</span></p>
+            <p><strong>Bildiren:</strong> ${data.reporter_name || 'Bilinmiyor'}</p>
+          </div>
+          <div class="col-md-6">
+            <h6>Teknik Detaylar</h6>
+            <p><strong>Arıza Tipi:</strong> ${data.type || 'Belirtilmemiş'}</p>
+            <p><strong>Bildirim Tarihi:</strong> ${data.reported_date || 'Bilinmiyor'}</p>
+            <p><strong>Ekipman:</strong> ${data.equipment_name || 'Belirtilmemiş'}</p>
+            <p><strong>Kategori:</strong> ${data.category_name || 'Belirtilmemiş'}</p>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Açıklama</h6>
+            <p class="text-muted">${data.description || 'Açıklama bulunmuyor'}</p>
+          </div>
+        </div>
+      `);
+    })
+    .catch(error => {
+      console.error('Veri çekme hatası:', error);
+      $('#talepDetailBody').html(`
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i> Arıza detayları yüklenirken hata oluştu.
+        </div>
+      `);
+    });
+  
+  // İşlem geçmişini temizle
+  $('#talepLogList').html('<li class="list-group-item text-muted">İşlem geçmişi yükleniyor...</li>');
 }
 
 function printFaultTable() {
@@ -804,14 +1034,11 @@ function downloadFaultCSV() {
     a.click();
     window.URL.revokeObjectURL(url);
     
-    showSnackbar('Arıza raporu CSV olarak indirildi');
+    // Snackbar kaldırıldı - gereksiz bildirim
 }
 
 // Genel fonksiyonlar
 window.onload = function() {
-  // Sayfa yüklendiğinde çalışacak kodlar
-  showSnackbar('Raporlama sayfası yüklendi');
-  
   // Pagination'ı başlat
   initPagination();
 };
@@ -843,36 +1070,11 @@ function showSnackbar(msg) {
   setTimeout(()=>sb.style.display='none', 3000);
 }
 
-// Mini trend grafikler
-new Chart(document.getElementById('miniTrend1'), {
-  type:'line',
-  data:{labels:['',''],datasets:[{data:[110,120],borderColor:'#6366f1',tension:.4}]},
-  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
-});
+// Mini trend grafikler - gerçek verilerle doldurulacak
+// Bu grafikler şu anda gizli (d-none d-lg-block) ve gerçek verilerle doldurulabilir
 
-new Chart(document.getElementById('miniTrend2'), {
-  type:'line',
-  data:{labels:['',''],datasets:[{data:[100,98],borderColor:'#28a745',tension:.4}]},
-  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
-});
 
-new Chart(document.getElementById('miniTrend3'), {
-  type:'line',
-  data:{labels:['',''],datasets:[{data:[5,7],borderColor:'#dc3545',tension:.4}]},
-  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
-});
-
-// Grafik fonksiyonları
-function filterFromChart() { 
-  showSnackbar('Grafikten filtre uygulandı!'); 
-}
-
-function comparePeriods() { 
-  showSnackbar('Dönem karşılaştırma özelliği!'); 
-}
-
-// Canlı veri simülasyonu
-setTimeout(()=>showSnackbar('Yeni veri geldi!'), 5000);
+// Canlı veri simülasyonu - kaldırıldı
 
 // Filtreleme fonksiyonları
 let currentFilters = {
@@ -894,7 +1096,7 @@ document.getElementById('filterDate').addEventListener('change', function() {
     const dateRange = this.value;
     currentFilters.dateRange = dateRange;
     applyFilters();
-    showSnackbar('Tarih filtresi uygulandı');
+    // Snackbar kaldırıldı - gereksiz bildirim
 });
 
 // Tip filtresi butonları
@@ -912,7 +1114,7 @@ document.querySelectorAll('.type-filter-btn').forEach(btn => {
         }
         
         applyFilters();
-        showSnackbar(`${type} filtresi ${this.classList.contains('selected') ? 'eklendi' : 'kaldırıldı'}`);
+        // Snackbar kaldırıldı - gereksiz bildirim
     });
 });
 
@@ -1033,7 +1235,7 @@ function clearAllFilters() {
     pagination.equipment.currentPage = 1;
     updateActiveFilters();
     updatePagination('equipment');
-    showSnackbar('Tüm filtreler temizlendi');
+    // Snackbar kaldırıldı - gereksiz bildirim
 }
 
 // Tablo araçları - geliştirilmiş
@@ -1064,7 +1266,7 @@ function downloadCSV() {
     a.click();
     window.URL.revokeObjectURL(url);
     
-    showSnackbar('CSV dosyası indirildi');
+    // Snackbar kaldırıldı - gereksiz bildirim
 }
 
 function copyTable() {
@@ -1083,9 +1285,9 @@ function copyTable() {
     });
     
     navigator.clipboard.writeText(text).then(() => {
-        showSnackbar('Tablo kopyalandı');
+        // Snackbar kaldırıldı - gereksiz bildirim
     }).catch(() => {
-        showSnackbar('Kopyalama başarısız');
+        // Snackbar kaldırıldı - gereksiz bildirim
     });
 }
 
@@ -1098,6 +1300,10 @@ function initPagination() {
 
 function updatePagination(tableType) {
     const table = document.getElementById(tableType + 'Table');
+    if (!table) {
+        console.warn(`Table ${tableType}Table not found`);
+        return;
+    }
     const rows = table.querySelectorAll('tbody tr');
     
     // Eğer filtreleme aktifse, tüm satırları say (pagination yok)

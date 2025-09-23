@@ -15,35 +15,70 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // KPI verilerini hesapla
-        $stats = $this->getDashboardStats();
-        
-        // Son işlemleri getir
-        $recentActivities = $this->getRecentActivities();
-        
-        // Kritik stok seviyesindeki ekipmanları getir
-        $criticalStocks = $this->getCriticalStocks();
-        
-        // Bugünkü işlemleri getir
-        $todayStats = $this->getTodayStats();
-        
-        // Kullanıcı bilgilerini getir
         $user = auth()->user();
         
-        // Bildirimleri getir
+        // Rol bazlı dashboard verileri
+        if ($user->isAdmin()) {
+            return $this->getAdminDashboard();
+        } elseif ($user->isTeamLeader()) {
+            return $this->getTeamLeaderDashboard();
+        } else {
+            return $this->getMemberDashboard();
+        }
+    }
+    
+    private function getAdminDashboard()
+    {
+        // Admin için tam yetki ile tüm veriler
+        $stats = $this->getDashboardStats();
+        $recentActivities = $this->getRecentActivities();
+        $criticalStocks = $this->getCriticalStocks();
+        $todayStats = $this->getTodayStats();
         $notifications = $this->getNotifications();
-        
-        // Hava durumu bilgisi (şimdilik statik, API entegrasyonu yapılabilir)
         $weather = $this->getWeatherInfo();
         
-        return view('admin.home.index', compact(
+        return view('admin.home.admin', compact(
             'stats', 
             'recentActivities', 
             'criticalStocks', 
             'todayStats',
-            'user',
             'notifications',
             'weather'
+        ));
+    }
+    
+    private function getTeamLeaderDashboard()
+    {
+        // Ekip yetkilisi için ekip yönetimi odaklı veriler
+        $stats = $this->getTeamLeaderStats();
+        $recentActivities = $this->getTeamLeaderActivities();
+        $criticalStocks = $this->getCriticalStocks();
+        $teamStats = $this->getTeamStats();
+        $notifications = $this->getTeamLeaderNotifications();
+        
+        return view('admin.home.team-leader', compact(
+            'stats', 
+            'recentActivities', 
+            'criticalStocks', 
+            'teamStats',
+            'notifications'
+        ));
+    }
+    
+    private function getMemberDashboard()
+    {
+        // Üye için kişisel odaklı veriler
+        $user = auth()->user();
+        $myAssignments = $this->getMyAssignments($user);
+        $recentEquipment = $this->getMyRecentEquipment($user);
+        $myStats = $this->getMyStats($user);
+        $quickActions = $this->getMemberQuickActions();
+        
+        return view('admin.home.member', compact(
+            'myAssignments',
+            'recentEquipment',
+            'myStats',
+            'quickActions'
         ));
     }
     
@@ -52,7 +87,26 @@ class HomeController extends Controller
         $totalEquipment = Equipment::count();
         $activeUsers = User::count();
         $pendingFaults = 0; // Fault modeli henüz oluşturulmamış
-        $criticalStocks = EquipmentStock::where('quantity', '<=', 5)->count();
+        
+        // Gerçek kritik stok sayısını hesapla (Equipment tablosundaki critical_level ile)
+        $criticalStocks = Equipment::with('stocks')
+            ->whereHas('stocks', function($query) {
+                $query->where('quantity', '>', 0);
+            })
+            ->get()
+            ->filter(function ($equipment) {
+                $totalQuantity = $equipment->stocks->sum('quantity');
+                $criticalLevel = $equipment->critical_level ?? 0;
+                
+                // Kritik seviye 0 ise varsayılan 1 kabul et
+                if ($criticalLevel <= 0) {
+                    $criticalLevel = 1;
+                }
+                
+                // Stok miktarı kritik seviyenin altındaysa kritik
+                return $totalQuantity < $criticalLevel;
+            })
+            ->count();
         
         // Bugünkü artışları hesapla
         $todayEquipment = Equipment::whereDate('created_at', today())->count();
@@ -72,13 +126,13 @@ class HomeController extends Controller
     
     private function getRecentActivities()
     {
-        // Son 10 işlemi getir (ekipman ekleme, arıza bildirimi, vs.)
+        // Son 5 işlemi getir (ekipman ekleme, arıza bildirimi, vs.)
         $activities = collect();
         
         // Son eklenen ekipmanlar
         $recentEquipment = Equipment::with('category')
             ->latest()
-            ->limit(5)
+            ->limit(3)
             ->get()
             ->map(function ($equipment) {
                 return [
@@ -119,7 +173,7 @@ class HomeController extends Controller
             ->merge($recentFaults)
             ->merge($recentUsers)
             ->sortByDesc('date')
-            ->take(10)
+            ->take(5)
             ->values();
         
         return $activities;
@@ -127,28 +181,48 @@ class HomeController extends Controller
     
     private function getCriticalStocks()
     {
-        return EquipmentStock::with(['equipment', 'equipment.category'])
-            ->where('quantity', '<=', 5)
-            ->orderBy('quantity', 'asc')
-            ->limit(10)
+        return Equipment::with(['category', 'stocks'])
+            ->whereHas('stocks', function($query) {
+                $query->where('quantity', '>', 0);
+            })
             ->get()
-            ->map(function ($stock) {
+            ->filter(function ($equipment) {
+                $totalQuantity = $equipment->stocks->sum('quantity');
+                $criticalLevel = $equipment->critical_level ?? 0;
+                
+                // Kritik seviye 0 ise varsayılan 1 kabul et
+                if ($criticalLevel <= 0) {
+                    $criticalLevel = 1;
+                }
+                
+                // Stok miktarı kritik seviyenin altındaysa kritik
+                return $totalQuantity < $criticalLevel;
+            })
+            ->map(function ($equipment) {
+                $totalQuantity = $equipment->stocks->sum('quantity');
+                $criticalLevel = $equipment->critical_level ?? 1;
+                
                 return [
-                    'equipment_name' => $stock->equipment->name ?? 'Bilinmiyor',
-                    'critical_level' => $this->getCriticalLevel($stock->quantity),
-                    'quantity' => $stock->quantity,
-                    'last_used' => $stock->updated_at ? $stock->updated_at->format('d-m-Y') : 'Bilinmiyor',
-                    'category' => $stock->equipment->category->name ?? 'Kategori Yok'
+                    'equipment_name' => $equipment->name,
+                    'critical_level' => $this->getCriticalLevel($totalQuantity, $criticalLevel),
+                    'quantity' => $totalQuantity,
+                    'critical_threshold' => $criticalLevel,
+                    'last_used' => $equipment->updated_at ? $equipment->updated_at->format('d-m-Y') : 'Bilinmiyor',
+                    'category' => $equipment->category->name ?? 'Kategori Yok',
+                    'equipment_id' => $equipment->id
                 ];
-            });
+            })
+            ->sortBy('quantity')
+            ->take(15)
+            ->values();
     }
     
-    private function getCriticalLevel($quantity)
+    private function getCriticalLevel($quantity, $criticalLevel)
     {
-        if ($quantity <= 1) return 1; // Kritik
-        if ($quantity <= 3) return 2; // Dikkat
-        if ($quantity <= 5) return 3; // Uyarı
-        return 4; // Normal
+        if ($quantity <= 0) return 1; // Tükendi - Kritik
+        if ($quantity < $criticalLevel * 0.5) return 1; // Kritik seviyenin yarısından az - Kritik
+        if ($quantity < $criticalLevel) return 2; // Kritik seviyenin altında - Dikkat
+        return 3; // Normal
     }
     
     private function getTodayStats()
@@ -227,6 +301,143 @@ class HomeController extends Controller
             'condition' => 'Parçalı Bulutlu',
             'icon' => 'fa-cloud-sun'
         ];
+    }
+    
+    // Üye rolü için özel metodlar
+    private function getMyAssignments($user)
+    {
+        return Assignment::with(['items.equipment', 'items.equipment.category'])
+            ->where('user_id', $user->id)
+            ->where('status', 1) // 1 = Aktif (Geldi)
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(function ($assignment) {
+                $firstItem = $assignment->items->first();
+                return [
+                    'id' => $assignment->id,
+                    'equipment_name' => $firstItem->equipment->name ?? 'Bilinmiyor',
+                    'category' => $firstItem->equipment->category->name ?? 'Kategori Yok',
+                    'assigned_date' => $assignment->created_at->format('d-m-Y'),
+                    'status' => $assignment->status ? 'Aktif' : 'Pasif',
+                    'notes' => $assignment->note ?? 'Not yok'
+                ];
+            });
+    }
+    
+    private function getMyRecentEquipment($user)
+    {
+        return Assignment::with(['items.equipment', 'items.equipment.category'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(function ($assignment) {
+                $firstItem = $assignment->items->first();
+                return [
+                    'id' => $assignment->id,
+                    'equipment_name' => $firstItem->equipment->name ?? 'Bilinmiyor',
+                    'category' => $firstItem->equipment->category->name ?? 'Kategori Yok',
+                    'assigned_date' => $assignment->created_at->format('d-m-Y H:i'),
+                    'status' => $assignment->status ? 'Aktif' : 'Pasif',
+                    'status_badge' => $this->getAssignmentStatusBadge($assignment->status)
+                ];
+            });
+    }
+    
+    private function getMyStats($user)
+    {
+        $totalAssignments = Assignment::where('user_id', $user->id)->count();
+        $activeAssignments = Assignment::where('user_id', $user->id)->where('status', 1)->count();
+        $completedAssignments = Assignment::where('user_id', $user->id)->where('status', 0)->count();
+        $thisMonthAssignments = Assignment::where('user_id', $user->id)
+            ->whereMonth('created_at', now()->month)
+            ->count();
+        
+        return [
+            'total_assignments' => $totalAssignments,
+            'active_assignments' => $activeAssignments,
+            'completed_assignments' => $completedAssignments,
+            'this_month_assignments' => $thisMonthAssignments
+        ];
+    }
+    
+    private function getMemberQuickActions()
+    {
+        return [
+            [
+                'title' => 'Zimmet Al',
+                'description' => 'Yeni ekipman zimmeti al',
+                'icon' => 'fas fa-plus-circle',
+                'color' => 'success',
+                'url' => route('admin.zimmetAl')
+            ],
+            [
+                'title' => 'Teslim Et',
+                'description' => 'Ekipmanı teslim et',
+                'icon' => 'fas fa-hand-holding',
+                'color' => 'warning',
+                'url' => route('admin.teslimEt')
+            ],
+            [
+                'title' => 'Arıza Bildir',
+                'description' => 'Ekipman arızası bildir',
+                'icon' => 'fas fa-exclamation-triangle',
+                'color' => 'danger',
+                'url' => route('admin.fault.create')
+            ],
+            [
+                'title' => 'Profilim',
+                'description' => 'Hesap bilgilerini düzenle',
+                'icon' => 'fas fa-user-circle',
+                'color' => 'info',
+                'url' => route('admin.profile')
+            ]
+        ];
+    }
+    
+    private function getAssignmentStatusBadge($status)
+    {
+        // status boolean: 1 = Aktif (Geldi), 0 = Pasif (Gitti)
+        if ($status) {
+            return 'bg-success'; // Aktif
+        } else {
+            return 'bg-secondary'; // Pasif
+        }
+    }
+    
+    // Ekip yetkilisi için metodlar
+    private function getTeamLeaderStats()
+    {
+        $totalEquipment = Equipment::count();
+        $teamMembers = User::where('role', 'üye')->count();
+        $criticalStocks = $this->getCriticalStocks()->count();
+        $pendingAssignments = Assignment::where('status', 0)->count(); // 0 = Gitti (Beklemede)
+        
+        return [
+            'total_equipment' => $totalEquipment,
+            'team_members' => $teamMembers,
+            'critical_stocks' => $criticalStocks,
+            'pending_assignments' => $pendingAssignments
+        ];
+    }
+    
+    private function getTeamLeaderActivities()
+    {
+        // Ekip yetkilisi için ekip odaklı aktiviteler
+        return collect();
+    }
+    
+    private function getTeamStats()
+    {
+        // Ekip istatistikleri
+        return [];
+    }
+    
+    private function getTeamLeaderNotifications()
+    {
+        // Ekip yetkilisi için özel bildirimler
+        return collect();
     }
     
 }

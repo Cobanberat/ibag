@@ -14,29 +14,47 @@
 </nav>
 
   @vite(['resources/css/category.css'])
+<style>
+.table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+</style>
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h3 class="fw-bold mb-0">Kategoriler</h3>
 </div>
-<div class="filter-bar mb-2">
-    <input type="text" class="form-control form-control-sm" id="categorySearch" placeholder="Kategori ara..." style="width: 300px;">
-    <button class="btn btn-sm btn-outline-secondary" id="clearFilters"><i class="fas fa-times"></i> Temizle</button>
-    <button class="btn btn-add-category p-2 ms-auto" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-        <i class="fas fa-plus"></i> Yeni Kategori
-    </button>
+<div class="row mb-4 g-2">
+    <div class="col-12 col-md-6">
+        <input type="text" class="form-control form-control-sm" id="categorySearch" placeholder="Kategori ara...">
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+        <button class="btn btn-sm btn-outline-secondary w-100" id="clearFilters">
+            <i class="fas fa-times"></i> Temizle
+        </button>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+        <button class="btn btn-add-category w-100" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+            <i class="fas fa-plus"></i> Yeni Kategori
+        </button>
+    </div>
 </div>
-<table class="table table-hover mb-0" id="categoryTable" style="font-size:0.95em;">
-    <thead>
-        <tr> 
-            <th><input type="checkbox" id="selectAll"></th>
-            <th>Kategori</th>
-            <th>Açıklama</th>
-            <th>Ürün Sayısı</th>
-            <th>Eklenme Tarihi</th>
-            <th>Renk</th>
-            <th>İşlemler</th>
-        </tr>
-    </thead>
-    <tbody id="categoryTableBody">
+<div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+    <table class="table table-hover mb-0" id="categoryTable" style="font-size:0.95em;">
+        <thead class="table-light sticky-top">
+            <tr> 
+                <th><input type="checkbox" id="selectAll"></th>
+                <th>Kategori</th>
+                <th>Açıklama</th> 
+                <th>Ürün Sayısı</th>
+                <th>Eklenme Tarihi</th>
+                <th>Renk</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody id="categoryTableBody">
         @forelse($categories as $category)
             <tr data-id="{{ $category->id }}" style="background-color: {{ $category->color ?? '#0d6efd' }}20;">
                 <td><input type="checkbox" class="category-checkbox" value="{{ $category->id }}"></td>
@@ -53,12 +71,14 @@
                     <span style="background:{{ $category->color ?? '#0d6efd' }};width:18px;height:18px;display:inline-block;border-radius:4px;"></span>
                 </td>
                 <td class="category-actions">
-                    <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="editCategory({{ $category->id }})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="deleteCategory({{ $category->id }})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="editCategory({{ $category->id }})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" style="padding:0.32em 0.7em;border-radius:1.2em;" onclick="deleteCategory({{ $category->id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         @empty
@@ -69,8 +89,9 @@
                 </td>
             </tr>
         @endforelse
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 p-2">
     <button class="btn btn-danger btn-sm p-2" id="deleteSelected"><i class="fas fa-trash-alt me-1"></i> Seçili Kategorileri Sil</button>
     <div class="d-flex align-items-center gap-3">
@@ -92,7 +113,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addCategoryModalLabel"><i class="fas fa-plus-circle me-2"></i>Yeni Kategori Ekle</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
       <div class="modal-body">
         <form id="addCategoryForm">

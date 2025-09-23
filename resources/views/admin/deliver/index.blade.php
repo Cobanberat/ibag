@@ -3,33 +3,59 @@
 
 @section('content')
 <div class="container-fluid">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fa fa-home"></i> Anasayfa</a></li>
-            <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Teslim İşlemleri</li>
-        </ol>
-    </nav>
+    <!-- Breadcrumb -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
+                            <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 20px; height: 20px; margin-right: 6px;">
+                            <i class="fa fa-home me-1"></i> 
+                            <span class="d-none d-sm-inline">Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/admin/" class="text-decoration-none d-none d-md-inline">Yönetim</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-undo me-1"></i>
+                        <span class="d-none d-sm-inline">Teslim İşlemleri</span>
+                        <span class="d-sm-none">Teslim</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="h3 mb-0 text-gradient">
-                        <i class="fas fa-boxes me-2"></i>Zimmet Yönetimi
-                    </h2>
-                    <p class="text-muted mb-0">Aktif ve geçmiş zimmetleri yönetin</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <div class="bg-primary bg-opacity-10 px-3 py-2 rounded-pill">
-                        <small class="text-primary fw-bold">
-                            <i class="fas fa-clock me-1"></i>Aktif: {{ $assignments->where('status', 0)->count() }}
-                        </small>
-                    </div>
-                    <div class="bg-success bg-opacity-10 px-3 py-2 rounded-pill">
-                        <small class="text-success fw-bold">
-                            <i class="fas fa-check me-1"></i>Teslim: {{ $assignments->where('status', 1)->count() }}
-                        </small>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-2 text-primary">
+                                <i class="fas fa-boxes me-2"></i>
+                                Zimmet Yönetimi
+                            </h1>
+                            <p class="text-muted mb-0">Aktif ve geçmiş zimmetleri yönetin</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                                <div class="bg-primary bg-opacity-10 px-3 py-2 rounded-pill text-center">
+                                    <small class="text-primary fw-bold">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span class="d-none d-sm-inline">Aktif: </span>{{ $assignments->where('status', 0)->count() }}
+                                    </small>
+                                </div>
+                                <div class="bg-success bg-opacity-10 px-3 py-2 rounded-pill text-center">
+                                    <small class="text-success fw-bold">
+                                        <i class="fas fa-check me-1"></i>
+                                        <span class="d-none d-sm-inline">Teslim: </span>{{ $assignments->where('status', 1)->count() }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -46,7 +72,7 @@
                         <h6 class="mb-0 fw-bold text-dark">Filtreler</h6>
                     </div>
                     <form id="filterForm" class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <label class="form-label fw-bold text-dark">
                                 <i class="fas fa-search me-1 text-primary"></i>Arama
                             </label>
@@ -57,7 +83,7 @@
                                 <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Zimmet ID, not veya ekipman ara...">
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-6 col-md-3 col-lg-2">
                             <label class="form-label fw-bold text-dark">
                                 <i class="fas fa-filter me-1 text-primary"></i>Durum
                             </label>
@@ -67,24 +93,28 @@
                                 <option value="1">Teslim Edildi</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-6 col-md-3 col-lg-2">
                             <label class="form-label fw-bold text-dark">
                                 <i class="fas fa-calendar me-1 text-primary"></i>Başlangıç
                             </label>
                             <input type="date" class="form-control" id="dateFrom">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-6 col-md-3 col-lg-2">
                             <label class="form-label fw-bold text-dark">
                                 <i class="fas fa-calendar me-1 text-primary"></i>Bitiş
                             </label>
                             <input type="date" class="form-control" id="dateTo">
                         </div>
-                        <div class="col-md-3 d-flex align-items-end gap-2">
-                            <button type="button" class="btn btn-primary px-4" id="filterBtn">
-                                <i class="fas fa-filter me-1"></i>Filtrele
+                        <div class="col-6 col-md-3 col-lg-3 d-flex flex-column flex-sm-row align-items-end gap-2">
+                            <button type="button" class="btn btn-primary px-3 px-sm-4 w-100 w-sm-auto" id="filterBtn">
+                                <i class="fas fa-filter me-1"></i>
+                                <span class="d-none d-sm-inline">Filtrele</span>
+                                <span class="d-sm-none">Filtre</span>
                             </button>
-                            <button type="button" class="btn btn-outline-secondary px-4" id="clearBtn">
-                                <i class="fas fa-times me-1"></i>Temizle
+                            <button type="button" class="btn btn-outline-secondary px-3 px-sm-4 w-100 w-sm-auto" id="clearBtn">
+                                <i class="fas fa-times me-1"></i>
+                                <span class="d-none d-sm-inline">Temizle</span>
+                                <span class="d-sm-none">Temizle</span>
                             </button>
                         </div>
                     </form>
@@ -100,17 +130,19 @@
                 <div class="card-body p-0">
                     <ul class="nav nav-pills nav-fill" id="assignmentTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active d-flex align-items-center justify-content-center py-3" id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                                <i class="fas fa-clock me-2"></i>
-                                <span>Aktif Zimmetler</span>
-                                <span class="badge bg-white text-primary ms-2" id="activeCount">{{ $assignments->where('status', 0)->count() }}</span>
+                            <button class="nav-link active d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; z-index: 2;">
+                                <i class="fas fa-clock me-1 me-sm-2"></i>
+                                <span class="d-none d-sm-inline">Aktif Zimmetler</span>
+                                <span class="d-sm-none">Aktif</span>
+                                <span class="badge bg-white text-primary ms-1 ms-sm-2" id="activeCount">{{ $assignments->where('status', 0)->count() }}</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link d-flex align-items-center justify-content-center py-3" id="history-tab" data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
-                                <i class="fas fa-history me-2"></i>
-                                <span>Geçmiş Zimmetler</span>
-                                <span class="badge bg-white text-danger ms-2" id="historyCount">{{ $assignments->where('status', 1)->count() }}</span>
+                            <button class="nav-link d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="history-tab" data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; z-index: 1;">
+                                <i class="fas fa-history me-1 me-sm-2"></i>
+                                <span class="d-none d-sm-inline">Geçmiş Zimmetler</span>
+                                <span class="d-sm-none">Geçmiş</span>
+                                <span class="badge bg-white text-danger ms-1 ms-sm-2" id="historyCount">{{ $assignments->where('status', 1)->count() }}</span>
                             </button>
                         </li>
                     </ul>
@@ -125,19 +157,21 @@
         <div class="tab-pane fade show active" id="active" role="tabpanel">
             <div class="row" id="activeAssignments">
                 @forelse($assignments->where('status', 0) as $assignment)
-                    <div class="col-lg-4 col-md-6 mb-4" data-id="{{ $assignment->id }}" data-note="{{ $assignment->note }}" data-date="{{ $assignment->created_at->format('Y-m-d') }}">
+                    <div class="col-12 col-sm-6 col-lg-4 mb-4" data-id="{{ $assignment->id }}" data-note="{{ $assignment->note }}" data-date="{{ $assignment->created_at->format('Y-m-d') }}">
                         <div class="card h-100 border-0 shadow-lg assignment-card" style="border-radius: 20px; overflow: hidden;">
-                            <div class="card-header text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem;">
-                                <div>
+                            <div class="card-header text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 1.5rem;">
+                                <div class="mb-2 mb-sm-0">
                                     <h6 class="mb-1 fw-bold fs-5">Zimmet #{{ $assignment->id }}</h6>
                                     <small class="opacity-90">{{ $assignment->created_at ? $assignment->created_at->format('d.m.Y H:i') : '-' }}</small>
                                 </div>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-light text-primary rounded-pill px-3" onclick="openDetailModal({{ $assignment->id }})" title="Detay Görüntüle" style="border-radius: 20px !important;">
-                                        <i class="fas fa-eye me-1"></i>Detay
+                                <div class="btn-group d-flex w-100 w-sm-auto" role="group">
+                                    <button class="btn btn-sm btn-light text-primary rounded-pill px-2 px-sm-3 flex-fill" onclick="openDetailModal({{ $assignment->id }})" title="Detay Görüntüle" style="border-radius: 20px !important;">
+                                        <i class="fas fa-eye me-1"></i>
+                                        <span class="d-none d-sm-inline">Detay</span>
                                     </button>
-                                    <button class="btn btn-sm btn-success rounded-pill px-3" onclick="openReturnModal({{ $assignment->id }})" title="Teslim Et" style="border-radius: 20px !important;">
-                                        <i class="fas fa-undo me-1"></i>Teslim
+                                    <button class="btn btn-sm btn-success rounded-pill px-2 px-sm-3 flex-fill" onclick="openReturnModal({{ $assignment->id }})" title="Teslim Et" style="border-radius: 20px !important;">
+                                        <i class="fas fa-undo me-1"></i>
+                                        <span class="d-none d-sm-inline">Teslim</span>
                                     </button>
                                 </div>
                             </div>
@@ -193,15 +227,16 @@
         <div class="tab-pane fade" id="history" role="tabpanel">
             <div class="row" id="historyAssignments">
                 @forelse($assignments->where('status', 1) as $assignment)
-                    <div class="col-lg-4 col-md-6 mb-4" data-id="{{ $assignment->id }}" data-note="{{ $assignment->note }}" data-date="{{ $assignment->updated_at->format('Y-m-d') }}">
+                    <div class="col-12 col-sm-6 col-lg-4 mb-4" data-id="{{ $assignment->id }}" data-note="{{ $assignment->note }}" data-date="{{ $assignment->updated_at->format('Y-m-d') }}">
                         <div class="card h-100 border-0 shadow-lg assignment-card" style="border-radius: 20px; overflow: hidden;">
-                            <div class="card-header text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.5rem;">
-                                <div>
+                            <div class="card-header text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1rem 1.5rem;">
+                                <div class="mb-2 mb-sm-0">
                                     <h6 class="mb-1 fw-bold fs-5">Zimmet #{{ $assignment->id }}</h6>
                                     <small class="opacity-90">{{ $assignment->updated_at ? $assignment->updated_at->format('d.m.Y H:i') : '-' }}</small>
                                 </div>
-                                <button class="btn btn-sm btn-light text-danger rounded-pill px-3" onclick="openDetailModal({{ $assignment->id }})" title="Detay Görüntüle" style="border-radius: 20px !important;">
-                                    <i class="fas fa-eye me-1"></i>Detay
+                                <button class="btn btn-sm btn-light text-danger rounded-pill px-2 px-sm-3 w-100 w-sm-auto" onclick="openDetailModal({{ $assignment->id }})" title="Detay Görüntüle" style="border-radius: 20px !important;">
+                                    <i class="fas fa-eye me-1"></i>
+                                    <span class="d-none d-sm-inline">Detay</span>
                                 </button>
                             </div>
                             <div class="card-body d-flex flex-column" style="padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
@@ -376,6 +411,7 @@
     border-radius: 0;
     position: relative;
     overflow: hidden;
+    border: 2px solid transparent;
 }
 
 .nav-pills .nav-link::before {
@@ -387,6 +423,7 @@
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     transition: left 0.5s;
+    z-index: 1;
 }
 
 .nav-pills .nav-link:hover::before {
@@ -394,8 +431,39 @@
 }
 
 .nav-pills .nav-link.active {
-    transform: scale(1.05);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.3);
+    z-index: 3;
+}
+
+.nav-pills .nav-link:not(.active) {
+    opacity: 0.8;
+    transform: scale(0.98);
+}
+
+.nav-pills .nav-link:not(.active):hover {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Tab Content Transition */
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    transition: all 0.3s ease;
+}
+
+.tab-pane.fade:not(.show) {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.tab-pane.fade.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 /* Button Styles */
@@ -504,8 +572,24 @@
     margin: 2rem 0;
 }
 
+/* Responsive Breadcrumb */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #6c757d;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+    .container-fluid {
+        padding: 0 15px;
+    }
+    
     .assignment-card:hover {
         transform: translateY(-4px) scale(1.01);
     }
@@ -518,6 +602,90 @@
     .btn-group .btn {
         font-size: 0.8rem;
         padding: 0.5rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .h3 {
+        font-size: 1.25rem;
+    }
+    
+    .text-end {
+        text-align: left !important;
+        margin-top: 1rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+    
+    .btn {
+        font-size: 0.875rem;
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+    }
+    
+    .input-group-text {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .assignment-card {
+        margin-bottom: 1rem;
+    }
+    
+    .assignment-card .card-header {
+        padding: 0.75rem !important;
+    }
+    
+    .assignment-card .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin: 0.25rem 0;
+        width: 100%;
+    }
+    
+    .nav-pills .nav-link {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+    }
+    
+    .fs-5 {
+        font-size: 1rem !important;
+    }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .col-lg-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
     }
 }
 
@@ -849,10 +1017,8 @@ function openReturnModal(assignmentId) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Teslim işlemi başarılı!', 'success');
-                        setTimeout(() => {
-                            window.location.href = window.location.pathname + '?success=1';
-                        }, 1500);
+                        // Önce sayfa yenile
+                        window.location.href = window.location.pathname + '?success=1';
                     } else {
                         showToast(data.message || 'Bilinmeyen hata oluştu', 'error');
                     }
@@ -873,8 +1039,8 @@ function filterAssignments() {
     const dateFrom = document.getElementById('dateFrom').value;
     const dateTo = document.getElementById('dateTo').value;
     
-    const activeCards = document.querySelectorAll('#activeAssignments .col-lg-4');
-    const historyCards = document.querySelectorAll('#historyAssignments .col-lg-4');
+    const activeCards = document.querySelectorAll('#activeAssignments .col-12');
+    const historyCards = document.querySelectorAll('#historyAssignments .col-12');
     
     let activeCount = 0;
     let historyCount = 0;
@@ -955,7 +1121,7 @@ function clearFilters() {
     document.getElementById('dateTo').value = '';
     
     // Tüm kartları göster
-    document.querySelectorAll('#activeAssignments .col-lg-4, #historyAssignments .col-lg-4').forEach(card => {
+    document.querySelectorAll('#activeAssignments .col-12, #historyAssignments .col-12').forEach(card => {
         card.style.display = 'block';
     });
     
@@ -984,6 +1150,48 @@ document.addEventListener('DOMContentLoaded', function() {
             filterAssignments();
         }
     });
+    
+    // Tab geçişleri için event listeners
+    const activeTab = document.getElementById('active-tab');
+    const historyTab = document.getElementById('history-tab');
+    
+    if (activeTab) {
+        activeTab.addEventListener('click', function() {
+            // Aktif tab'a geçiş
+            this.classList.add('active');
+            this.style.zIndex = '3';
+            historyTab.classList.remove('active');
+            historyTab.style.zIndex = '1';
+            
+            // İçerik geçişi
+            const activeContent = document.getElementById('active');
+            const historyContent = document.getElementById('history');
+            
+            if (activeContent && historyContent) {
+                activeContent.classList.add('show', 'active');
+                historyContent.classList.remove('show', 'active');
+            }
+        });
+    }
+    
+    if (historyTab) {
+        historyTab.addEventListener('click', function() {
+            // Geçmiş tab'a geçiş
+            this.classList.add('active');
+            this.style.zIndex = '3';
+            activeTab.classList.remove('active');
+            activeTab.style.zIndex = '1';
+            
+            // İçerik geçişi
+            const activeContent = document.getElementById('active');
+            const historyContent = document.getElementById('history');
+            
+            if (activeContent && historyContent) {
+                historyContent.classList.add('show', 'active');
+                activeContent.classList.remove('show', 'active');
+            }
+        });
+    }
     
     // Fotoğraf butonları için event delegation
     document.addEventListener('click', function(e) {
