@@ -129,9 +129,7 @@
 }
 
 .table-hover tbody tr:hover {
-    background-color: rgba(0,123,255,0.05);
-    transform: scale(1.01);
-    transition: all 0.2s ease;
+    background-color: transparent;
 }
 
 /* Badge Styles */

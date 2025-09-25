@@ -45,24 +45,81 @@ window.showUserDetail = function(userId) {
                 const modal = new bootstrap.Modal(document.getElementById('userDetailModal'));
                 modal.show();
             } else {
-                alert('Kullanıcı detayı alınamadı: ' + data.message);
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'Kullanıcı detayı alınamadı: ' + data.message,
+                    icon: 'error'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Kullanıcı detayı alınırken hata oluştu.');
+            Swal.fire({
+                title: 'Hata!',
+                text: 'Kullanıcı detayı alınırken hata oluştu.',
+                icon: 'error'
+            });
         });
 }
 
-// Kullanıcı düzenleme - modal kaldırıldı, sadece bilgi göster
+// Kullanıcı düzenleme - modal ile düzenle
 window.editUser = function(userId) {
     console.log('editUser called with userId:', userId);
-    showToast('info', 'Bilgi', 'Kullanıcı düzenleme özelliği kaldırılmıştır.');
+    currentUserId = userId;
+    
+    // Kullanıcı bilgilerini getir
+    fetch(`/admin/kullanicilar/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.user;
+                
+                // Form alanlarını doldur
+                document.getElementById('edit_name').value = user.name || '';
+                document.getElementById('edit_email').value = user.email || '';
+                document.getElementById('edit_username').value = user.username || '';
+                document.getElementById('edit_role').value = user.role || '';
+                document.getElementById('edit_status').value = user.status || 'active';
+                document.getElementById('edit_avatar_color').value = user.avatar_color || '#0d6efd';
+                
+                // Şifre alanlarını temizle
+                document.getElementById('edit_password').value = '';
+                document.getElementById('edit_password_confirmation').value = '';
+                
+                // Modalı göster
+                const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                modal.show();
+            } else {
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'Kullanıcı bilgileri alınamadı: ' + data.message,
+                    icon: 'error'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Hata!',
+                text: 'Kullanıcı bilgileri alınırken hata oluştu.',
+                icon: 'error'
+            });
+        });
 }
 
 // Kullanıcı durumunu değiştir
 window.toggleUserStatus = function(userId) {
-    if (confirm('Kullanıcı durumunu değiştirmek istediğinizden emin misiniz?')) {
+    Swal.fire({
+        title: 'Durum Değiştir',
+        text: 'Kullanıcı durumunu değiştirmek istediğinizden emin misiniz?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Evet, değiştir!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
             fetch(`/admin/kullanicilar/${userId}/status`, {
                 method: 'PATCH',
                 headers: {
@@ -73,22 +130,48 @@ window.toggleUserStatus = function(userId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                showToast('success', 'Başarılı!', data.message);
-                    setTimeout(() => location.reload(), 2000);
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
                 } else {
-                showToast('error', 'Hata!', data.message);
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.message,
+                        icon: 'error'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-            showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
-        });
-    }
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'İşlem sırasında hata oluştu.',
+                    icon: 'error'
+                });
+            });
+        }
+    });
 }
 
 // Kullanıcı sil
 window.deleteUser = function(userId) {
-    if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+    Swal.fire({
+        title: 'Kullanıcıyı Sil',
+        text: 'Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
             fetch(`/admin/kullanicilar/${userId}`, {
                 method: 'DELETE',
                 headers: {
@@ -99,17 +182,33 @@ window.deleteUser = function(userId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                showToast('success', 'Silindi!', data.message);
-                    setTimeout(() => location.reload(), 2000);
+                    Swal.fire({
+                        title: 'Silindi!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
                 } else {
-                showToast('error', 'Hata!', data.message);
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.message,
+                        icon: 'error'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-            showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
-        });
-    }
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'İşlem sırasında hata oluştu.',
+                    icon: 'error'
+                });
+            });
+        }
+    });
 }
 
 // KPI filtreleme
@@ -267,11 +366,25 @@ function bulkDeleteUsers() {
     const userIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     
     if (userIds.length === 0) {
-        showToast('warning', 'Uyarı!', 'Lütfen silinecek kullanıcıları seçin.');
+        Swal.fire({
+            title: 'Uyarı!',
+            text: 'Lütfen silinecek kullanıcıları seçin.',
+            icon: 'warning'
+        });
         return;
     }
     
-    if (confirm(`${userIds.length} kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
+    Swal.fire({
+        title: 'Toplu Silme',
+        text: `${userIds.length} kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
             fetch('/admin/kullanicilar/bulk-delete', {
                 method: 'POST',
                 headers: {
@@ -283,17 +396,33 @@ function bulkDeleteUsers() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                showToast('success', 'Başarılı!', data.message);
-                    setTimeout(() => location.reload(), 2000);
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
                 } else {
-                showToast('error', 'Hata!', data.message);
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.message,
+                        icon: 'error'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-            showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
-        });
-    }
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'İşlem sırasında hata oluştu.',
+                    icon: 'error'
+                });
+            });
+        }
+    });
 }
 
 
@@ -341,6 +470,117 @@ function showSnackbar(message) {
     showToast('info', 'Bilgi', message);
 }
 
+// Kullanıcı kaydetme fonksiyonu
+function saveUser() {
+    if (!currentUserId) {
+        Swal.fire({
+            title: 'Hata!',
+            text: 'Kullanıcı ID bulunamadı.',
+            icon: 'error'
+        });
+        return;
+    }
+
+    const form = document.getElementById('editUserForm');
+    const formData = new FormData(form);
+    
+    // Şifre kontrolü
+    const password = formData.get('password');
+    const passwordConfirmation = formData.get('password_confirmation');
+    
+    console.log('Password:', password);
+    console.log('Password Confirmation:', passwordConfirmation);
+    
+    if (password && password !== passwordConfirmation) {
+        Swal.fire({
+            title: 'Hata!',
+            text: 'Şifreler eşleşmiyor!',
+            icon: 'error'
+        });
+        return;
+    }
+    
+    if (password && password.length < 8) {
+        Swal.fire({
+            title: 'Hata!',
+            text: 'Şifre en az 8 karakter olmalıdır!',
+            icon: 'error'
+        });
+        return;
+    }
+
+    // Şifre boşsa formdan çıkar
+    if (!password) {
+        formData.delete('password');
+        formData.delete('password_confirmation');
+    }
+    
+    // Form verilerini console'a yazdır
+    console.log('Form Data:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+    }
+
+    // Loading göster
+    Swal.fire({
+        title: 'Kaydediliyor...',
+        text: 'Lütfen bekleyin',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(`/admin/kullanicilar/${currentUserId}`, {
+        method: 'PUT',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.close();
+        if (data.success) {
+            Swal.fire({
+                title: 'Başarılı!',
+                text: data.message,
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            // Hata detaylarını göster
+            let errorMessage = data.message;
+            if (data.errors) {
+                errorMessage += '\n\nDetaylar:\n';
+                for (const field in data.errors) {
+                    errorMessage += `• ${field}: ${data.errors[field].join(', ')}\n`;
+                }
+            }
+            
+            Swal.fire({
+                title: 'Hata!',
+                text: errorMessage,
+                icon: 'error',
+                width: '600px'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.close();
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Hata!',
+            text: 'İşlem sırasında hata oluştu.',
+            icon: 'error'
+        });
+    });
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Element kontrolü yap
@@ -351,6 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const bulkUserDeleteBtn = document.getElementById('bulkUserDeleteBtn');
     const bulkUserStatusBtn = document.getElementById('bulkUserStatusBtn');
     const selectAllUserRows = document.getElementById('selectAllUserRows');
+    const saveUserBtn = document.getElementById('saveUserBtn');
     
     // Filtre event listeners
     if (userFilterRole) {
@@ -382,6 +623,49 @@ document.addEventListener('DOMContentLoaded', function() {
     if (bulkUserStatusBtn) {
         bulkUserStatusBtn.addEventListener('click', function() {
             showToast('info', 'Bilgi', 'Toplu durum değiştirme özelliği yakında eklenecek.');
+        });
+    }
+    
+    // Modal kaydet butonu
+    if (saveUserBtn) {
+        saveUserBtn.addEventListener('click', saveUser);
+    }
+    
+    // Modal şifre göster/gizle butonları
+    const toggleEditPassword = document.getElementById('toggleEditPassword');
+    const editPassword = document.getElementById('edit_password');
+    
+    if (toggleEditPassword && editPassword) {
+        toggleEditPassword.addEventListener('click', function() {
+            const type = editPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            editPassword.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+
+    const toggleEditPasswordConfirmation = document.getElementById('toggleEditPasswordConfirmation');
+    const editPasswordConfirmation = document.getElementById('edit_password_confirmation');
+    
+    if (toggleEditPasswordConfirmation && editPasswordConfirmation) {
+        toggleEditPasswordConfirmation.addEventListener('click', function() {
+            const type = editPasswordConfirmation.getAttribute('type') === 'password' ? 'text' : 'password';
+            editPasswordConfirmation.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+    
+    // E-posta değiştiğinde kullanıcı adını otomatik doldur
+    const editEmail = document.getElementById('edit_email');
+    const editUsername = document.getElementById('edit_username');
+    
+    if (editEmail && editUsername) {
+        editEmail.addEventListener('blur', function() {
+            if (!editUsername.value && this.value) {
+                const username = this.value.split('@')[0];
+                editUsername.value = username;
+            }
         });
     }
     

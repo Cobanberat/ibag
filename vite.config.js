@@ -38,6 +38,7 @@ export default defineConfig({
                 'resources/js/works.js',
                 'resources/js/requests.js',
                 'resources/js/profile.js',
+                'resources/js/fault-management.js',
             ],
             refresh: true,
         }),
@@ -47,7 +48,7 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5174,
         cors: {
-            origin: ['http://192.168.1.202:8000', 'http://192.168.1.202:5174', 'http://127.0.0.1:8000', 'http://localhost:8000'],
+            origin: ['http://192.168.1.202:8000', 'http://192.168.1.202:5174', 'http://127.0.0.1:8000', 'http://localhost:8000',],
             credentials: true,
         },
         hmr: {

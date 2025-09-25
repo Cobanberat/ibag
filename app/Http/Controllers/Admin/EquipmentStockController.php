@@ -1505,4 +1505,36 @@ class EquipmentStockController extends Controller
             ]);
         }
     }
+
+    /**
+     * Get equipment info for search functionality
+     */
+    public function getEquipmentInfoForSearch($id)
+    {
+        try {
+            $equipment = Equipment::find($id);
+            
+            if (!$equipment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ekipman bulunamadı'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'equipment' => [
+                    'id' => $equipment->id,
+                    'name' => $equipment->name,
+                    'code' => $equipment->code,
+                    'category' => $equipment->category ? $equipment->category->name : null
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ekipman bilgisi alınırken hata oluştu: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

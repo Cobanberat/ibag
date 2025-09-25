@@ -21,10 +21,20 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            
+            // Kullanıcı durumunu kontrol et
+            if ($user->status !== 'active') {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Hesabınız pasif durumda. Lütfen yönetici ile iletişime geçin.',
+                ]);
+            }
+            
             $request->session()->regenerate();
             
             // Kullanıcının son giriş zamanını güncelle
-            Auth::user()->update(['last_login_at' => now()]);
+            $user->update(['last_login_at' => now()]);
             
             // Admin dashboard'a yönlendir
             return redirect()->intended(route('admin.dashboard'));

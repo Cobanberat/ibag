@@ -736,5 +736,4 @@
     </script>
     
     <!-- Arıza Yönetimi JavaScript -->
-    @vite('resources/js/fault-management.js')
 @endsection

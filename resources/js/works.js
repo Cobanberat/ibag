@@ -25,16 +25,44 @@ $(document).ready(function () {
         const stock = parseInt(selectedOption?.dataset.stock || 1);
         const equipmentName = selectedOption?.text || 'Ekipman';
 
-        // Template'den içerik al
+        // Ekipman durumunu kontrol et
+        const statusMatch = equipmentName.match(/\s-\s(.+)$/);
+        const equipmentStatus = statusMatch ? statusMatch[1].trim() : '';
+
+        // Arızalı veya bakımda ekipmanlar için özel işlem
+        if (equipmentStatus.toLowerCase().includes('arızalı') || 
+            equipmentStatus.toLowerCase().includes('faulty') ||
+            equipmentStatus.toLowerCase().includes('bakımda') ||
+            equipmentStatus.toLowerCase().includes('maintenance')) {
+            
+            // Miktar alanını devre dışı bırak
+            qtyInput.value = 0;
+            qtyInput.readOnly = true;
+            qtyInput.disabled = true;
+            
+            // Fotoğraf alanını kapat ve durum mesajı göster
+            photosDiv.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>${equipmentStatus}</strong> - Bu ekipman zimmet alınamaz
+                </div>
+            `;
+            photosDiv.style.display = 'block';
+            return;
+        }
+
+        // Normal ekipmanlar için template'den içerik al
         let templateId;
         if (individual) {
             qtyInput.value = 1;
             qtyInput.min = 1;
             qtyInput.max = 1;
             qtyInput.readOnly = true;
+            qtyInput.disabled = false;
             templateId = 'photo-template-individual';
         } else {
             qtyInput.readOnly = false;
+            qtyInput.disabled = false;
             qtyInput.min = 1;
             qtyInput.max = stock;
             if (parseInt(qtyInput.value) > stock) qtyInput.value = stock;
@@ -261,7 +289,6 @@ $(document).ready(function () {
                 video.onloadedmetadata = function() {
                 console.log('Video metadata yüklendi');
                     startQrDetection(selectElement, video);
-                    showToast('Kamera başlatıldı! QR kodu kameraya doğru tutun.', 'success');
                 };
             })
             .catch(function(error) {
@@ -327,7 +354,6 @@ $(document).ready(function () {
                             selectEquipmentByQr(selectElement, code.data);
                             stopCamera();
                             bootstrap.Modal.getInstance(document.getElementById('qrScannerModal')).hide();
-                            alert('Ekipman seçildi!');
                             return;
                         }
                     } catch (error) {
@@ -344,7 +370,6 @@ $(document).ready(function () {
                         selectEquipmentByQr(selectElement, randomCode);
                         stopCamera();
                         bootstrap.Modal.getInstance(document.getElementById('qrScannerModal')).hide();
-                        alert('Ekipman seçildi!');
                         return;
                     }
                 }
@@ -400,22 +425,53 @@ $(document).ready(function () {
             // JSON değilse direkt kodu kullan
         }
 
-        // Ekipman koduna göre seçenekleri ara
-        let found = false;
-        selectElement.find('option').each(function() {
-            const optionText = $(this).text();
-            const optionCode = $(this).data('code');
-            
-            if (optionCode && optionCode.includes(equipmentCode)) {
-                selectElement.val($(this).val()).trigger('change');
-                found = true;
-                return false; // Döngüyü durdur
-            }
-        });
-
-        if (!found) {
-            showToast('QR kod ile eşleşen ekipman bulunamadı!', 'error');
-        }
+        // Tüm ekipmanları API'den al ve kontrol et
+        fetch('/admin/zimmet/all-equipment')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const allEquipment = data.data;
+                    let found = false;
+                    
+                    // QR kod ile eşleşen ekipmanı bul
+                    allEquipment.forEach(equipment => {
+                        if (equipment.code && equipment.code.includes(equipmentCode)) {
+                            found = true;
+                            
+                            // Arızalı veya bakımda ekipmanları kontrol et
+                            if (equipment.status.toLowerCase().includes('arızalı') || 
+                                equipment.status.toLowerCase().includes('faulty') ||
+                                equipment.status.toLowerCase().includes('bakımda') ||
+                                equipment.status.toLowerCase().includes('maintenance')) {
+                                
+                                // Durum mesajını göster
+                                let statusMessage = '';
+                                if (equipment.status.toLowerCase().includes('arızalı') || equipment.status.toLowerCase().includes('faulty')) {
+                                    statusMessage = 'Bu ekipman arızalı durumda! Zimmet alınamaz.';
+                                } else if (equipment.status.toLowerCase().includes('bakımda') || equipment.status.toLowerCase().includes('maintenance')) {
+                                    statusMessage = 'Bu ekipman bakımda! Zimmet alınamaz.';
+                                }
+                                
+                                showToast(statusMessage, 'warning');
+                                return;
+                            }
+                            
+                            // Normal durumda seçim yap
+                            selectElement.val(equipment.id).trigger('change');
+                        }
+                    });
+                    
+                    if (!found) {
+                        showToast('QR kod ile eşleşen ekipman bulunamadı!', 'error');
+                    }
+                } else {
+                    showToast('Ekipman bilgileri alınamadı!', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('QR kod kontrol hatası:', error);
+                showToast('QR kod kontrol edilirken hata oluştu!', 'error');
+            });
     }
 
 
@@ -448,5 +504,91 @@ $(document).ready(function () {
         toast.addEventListener('hidden.bs.toast', function() {
             toast.remove();
         });
+    }
+
+    // Form submit kontrolü - Arızalı ekipman kontrolü
+    const assignmentForm = document.getElementById('assignmentForm');
+    if (assignmentForm) {
+        assignmentForm.addEventListener('submit', function(e) {
+            // Form validation kontrolü
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Ekipman seçimi kontrolü
+            $('.equipment-select').each(function(index) {
+                const select = $(this);
+                const selectedValue = select.val();
+                
+                if (!selectedValue || selectedValue === '') {
+                    isValid = false;
+                    errorMessage = 'Lütfen tüm ekipmanları seçin!';
+                    select.addClass('is-invalid');
+                    return false;
+                } else {
+                    select.removeClass('is-invalid');
+                }
+            });
+            
+            // Miktar kontrolü
+            $('.equipment-qty').each(function(index) {
+                const qty = $(this);
+                const qtyValue = parseInt(qty.val());
+                
+                if (!qtyValue || qtyValue < 1) {
+                    isValid = false;
+                    errorMessage = 'Lütfen geçerli miktar girin!';
+                    qty.addClass('is-invalid');
+                    return false;
+                } else {
+                    qty.removeClass('is-invalid');
+                }
+            });
+            
+            // Fotoğraf kontrolü
+            $('input[name="equipment_photo[]"]').each(function(index) {
+                const photo = $(this);
+                if (photo.length && photo[0].files.length === 0) {
+                    isValid = false;
+                    errorMessage = 'Lütfen tüm ekipmanlar için fotoğraf yükleyin!';
+                    photo.addClass('is-invalid');
+                    return false;
+                } else {
+                    photo.removeClass('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                showToast(errorMessage, 'error');
+                return false;
+            }
+            
+            // Arızalı ekipman kontrolü
+            let hasFaultyEquipment = false;
+            $('.equipment-select').each(function() {
+                const selectedOption = $(this).find('option:selected');
+                const optionText = selectedOption.text();
+                const statusMatch = optionText.match(/\s-\s(.+)$/);
+                const equipmentStatus = statusMatch ? statusMatch[1].trim() : '';
+                
+                if (equipmentStatus.toLowerCase().includes('arızalı') || 
+                    equipmentStatus.toLowerCase().includes('faulty') ||
+                    equipmentStatus.toLowerCase().includes('bakımda') ||
+                    equipmentStatus.toLowerCase().includes('maintenance')) {
+                    hasFaultyEquipment = true;
+                    return false; // Döngüyü durdur
+                }
+            });
+            
+            if (hasFaultyEquipment) {
+                e.preventDefault(); // Form submit'i engelle
+                showToast('Arızalı veya bakımda olan ekipmanlar zimmet alınamaz!', 'error');
+                return false;
+            }
+            
+            // Normal durumda form submit edilsin
+        });
+    } else {
+        console.error('Assignment form not found!');
     }
 });

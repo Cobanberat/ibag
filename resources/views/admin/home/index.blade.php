@@ -117,12 +117,12 @@
                                     <th>Mevcut Stok</th>
                                     <th>Kritik Seviye</th>
                                     <th>Son Güncelleme</th>
-                                    <th>Kategori</th>
+                                    <th>Kategori</th> 
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($criticalStocks as $stock)
-                                    <tr style="cursor: pointer;" onclick="window.location.href='{{ route('admin.stock') }}'">
+                                    <tr onclick="window.location.href='{{ route('admin.stock') }}?equipment_name={{ urlencode($stock['equipment_name']) }}'">
                                         <td>{{ $stock['equipment_name'] }}</td>
                                         <td>
                                             @if($stock['critical_level'] == 1)
@@ -200,6 +200,8 @@
     </div>
     <div id="snackbar" class="position-fixed bottom-0 end-0 m-4 bg-dark text-white px-4 py-2 rounded shadow" style="display:none;z-index:9999;">Mesaj</div>
 </div>
+
+
 @vite('resources/js/home.js')
 
 

@@ -202,6 +202,7 @@ class HomeController extends Controller
                 $totalQuantity = $equipment->stocks->sum('quantity');
                 $criticalLevel = $equipment->critical_level ?? 1;
                 
+                
                 return [
                     'equipment_name' => $equipment->name,
                     'critical_level' => $this->getCriticalLevel($totalQuantity, $criticalLevel),

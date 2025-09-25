@@ -58,10 +58,25 @@ class EquipmentStock extends Model
         return 'Aktif';
     }
     
-    // Stok durumu (sadece stok miktarı için)
+    // Stok durumu (stok miktarına göre)
     public function getStockStatusAttribute()
     {
-        return $this->status; // Aktif, Kullanımda, Yok, Sıfır
+        // Eğer ekipman arızalı veya bakımda ise, stok durumunu göster
+        if ($this->status === 'Arızalı' || $this->status === 'Bakımda') {
+            return $this->status;
+        }
+        
+        // Stok miktarına göre durum belirle
+        $totalQuantity = $this->total_quantity ?? 0;
+        $criticalLevel = $this->critical_level ?? 0;
+        
+        if ($totalQuantity <= 0) {
+            return 'Tükendi';
+        } elseif ($totalQuantity <= $criticalLevel) {
+            return 'Az';
+        } else {
+            return 'Yeterli';
+        }
     }
 
     // QR kod oluştur
@@ -151,17 +166,36 @@ class EquipmentStock extends Model
 
     public function getStatusBadgeAttribute()
     {
-        if ($this->quantity <= 0) {
-            return 'empty';
-        } elseif ($this->equipment->critical_level && $this->quantity <= $this->equipment->critical_level) {
-            return 'low';
+        // Eğer ekipman arızalı veya bakımda ise, stok durumunu göster
+        if ($this->status === 'Arızalı' || $this->status === 'Bakımda') {
+            return 'fault';
         }
-        return 'sufficient';
+        
+        // Stok miktarına göre durum belirle
+        $totalQuantity = $this->total_quantity ?? 0;
+        $criticalLevel = $this->critical_level ?? 0;
+        
+        if ($totalQuantity <= 0) {
+            return 'empty';
+        } elseif ($totalQuantity <= $criticalLevel) {
+            return 'low';
+        } else {
+            return 'sufficient';
+        }
     }
 
     public function getTotalQuantityAttribute()
     {
-        return $this->quantity;
+        // Eğer individual_tracking true ise, bu stok kaydının quantity'si
+        // Eğer false ise, aynı code'a sahip tüm stokların toplamı
+        if ($this->equipment && $this->equipment->individual_tracking) {
+            return $this->quantity;
+        } else {
+            // Aynı code'a sahip tüm stokların toplamı
+            return self::where('code', $this->code)
+                ->where('equipment_id', $this->equipment_id)
+                ->sum('quantity');
+        }
     }
 
     public function getUnitTypeLabelAttribute()

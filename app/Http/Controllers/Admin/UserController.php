@@ -121,7 +121,10 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'username' => 'nullable|string|max:255|unique:users,username,' . $id,
             'role' => 'required|in:admin,ekip_yetkilisi,üye',
-            'password' => 'nullable|string|min:8|confirmed',
+            'status' => 'nullable|in:active,inactive',
+            'avatar_color' => 'nullable|string|max:7',
+            'password' => 'nullable|string|min:8',
+            'password_confirmation' => 'nullable|string|min:8|same:password',
         ]);
 
         if ($validator->fails()) {
@@ -138,6 +141,8 @@ class UserController extends Controller
             $user->email = $request->email;
             $user->username = $request->username;
             $user->role = $request->role;
+            $user->status = $request->status ?: $user->status;
+            $user->avatar_color = $request->avatar_color ?: $user->avatar_color;
             
             if ($request->password) {
                 $user->password = Hash::make($request->password);
@@ -287,25 +292,50 @@ class UserController extends Controller
 
     private function calculateUserStats()
     {
+        // Mevcut veriler
         $totalUsers = User::count();
         $adminUsers = User::where('role', 'admin')->count();
         $activeUsers = User::where('status', 'active')->count();
-        $newThisMonth = User::whereMonth('created_at', Carbon::now()->month)->count();
         
-        // Basit büyüme hesaplaması (son ay vs önceki ay)
-        $lastMonth = User::whereMonth('created_at', Carbon::now()->subMonth()->month)->count();
-        $growth = $lastMonth > 0 ? round((($newThisMonth - $lastMonth) / $lastMonth) * 100, 1) : 0;
+        // Bu ay eklenen kullanıcılar
+        $newThisMonth = User::whereMonth('created_at', Carbon::now()->month)
+                            ->whereYear('created_at', Carbon::now()->year)
+                            ->count();
+        
+        // Geçen ay eklenen kullanıcılar
+        $newLastMonth = User::whereMonth('created_at', Carbon::now()->subMonth()->month)
+                           ->whereYear('created_at', Carbon::now()->subMonth()->year)
+                           ->count();
+        
+        
+        // Büyüme hesaplamaları - sadece yeni eklenen kullanıcılar için
+        $newGrowth = $this->calculateGrowth($newThisMonth, $newLastMonth);
+        
+        // Diğer kartlar için basit büyüme (yeni kullanıcı büyümesi ile aynı)
+        $totalGrowth = $newGrowth;
+        $adminGrowth = $newGrowth;
+        $activeGrowth = $newGrowth;
         
         return [
             'total' => $totalUsers,
             'admin' => $adminUsers,
             'active' => $activeUsers,
             'new_this_month' => $newThisMonth,
-            'growth' => $growth,
-            'admin_growth' => 0, // Basit hesaplama
-            'active_growth' => 0, // Basit hesaplama
-            'new_growth' => $growth
+            'growth' => $totalGrowth,
+            'admin_growth' => $adminGrowth,
+            'active_growth' => $activeGrowth,
+            'new_growth' => $newGrowth
         ];
+    }
+    
+    private function calculateGrowth($current, $previous)
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+        
+        $growth = (($current - $previous) / $previous) * 100;
+        return round($growth, 1);
     }
 
     private function generateAvatarColor()

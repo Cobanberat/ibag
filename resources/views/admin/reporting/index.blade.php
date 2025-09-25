@@ -468,10 +468,6 @@
             <span class="type-ico"><i class="fas fa-bolt"></i></span>
             <span class="d-none d-sm-inline">Arıza</span>
           </button>
-          <button class="type-filter-btn" data-type="Transfer" title="Transfer taleplerini göster">
-            <span class="type-ico"><i class="fas fa-exchange-alt"></i></span>
-            <span class="d-none d-sm-inline">Transfer</span>
-          </button>
         </div>
       </div>
       <div class="col-12 col-md-3">
@@ -482,14 +478,13 @@
       </div>
       <div class="col-12 col-md-2">
         <div class="d-flex flex-wrap gap-1">
-          <button class="btn btn-outline-primary btn-sm" onclick="printTable()" title="Yazdır">
+          <button class="btn btn-outline-primary btn-sm" onclick="printTable()" title="Tabloyu yazdır">
             <i class="fas fa-print"></i>
+            <span class="d-none d-sm-inline ms-1">Yazdır</span>
           </button>
-          <button class="btn btn-outline-secondary btn-sm" onclick="copyTable()" title="Kopyala">
-            <i class="fas fa-copy"></i>
-          </button>
-          <button class="btn btn-outline-success btn-sm" onclick="downloadCSV()" title="CSV İndir">
+          <button class="btn btn-outline-success btn-sm" onclick="downloadCSV()" title="CSV dosyası olarak indir">
             <i class="fas fa-file-csv"></i>
+            <span class="d-none d-sm-inline ms-1">CSV İndir</span>
           </button>
         </div>
       </div>
@@ -501,15 +496,11 @@
     <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
       <span><i class="fas fa-boxes me-2"></i>Ekipman Durumu</span>
       <div class="mt-2 mt-md-0">
-        <button class="btn btn-outline-primary btn-sm me-1" onclick="printTable()">
-          <i class="fas fa-print"></i>
-          <span class="d-none d-sm-inline">Yazdır</span>
-        </button>
-        <button class="btn btn-outline-success btn-sm me-1" onclick="downloadCSV()">
+        <button class="btn btn-outline-success btn-sm me-1" onclick="downloadCSV()" title="Ekipman verilerini CSV olarak indir">
           <i class="fas fa-file-csv"></i>
-          <span class="d-none d-sm-inline">CSV</span>
+          <span class="d-none d-sm-inline">CSV İndir</span>
         </button>
-        <button class="btn btn-outline-info btn-sm" onclick="copyTable()">
+        <button class="btn btn-outline-info btn-sm" onclick="copyTable()" title="Ekipman tablosunu panoya kopyala">
           <i class="fas fa-copy"></i>
           <span class="d-none d-sm-inline">Kopyala</span>
         </button>
@@ -595,13 +586,9 @@
     <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
       <span><i class="fas fa-exclamation-triangle me-2"></i>Arıza Bildirimleri</span>
       <div class="mt-2 mt-md-0">
-        <button class="btn btn-outline-primary btn-sm me-1" onclick="printFaultTable()">
-          <i class="fas fa-print"></i>
-          <span class="d-none d-sm-inline">Yazdır</span>
-        </button>
-        <button class="btn btn-outline-success btn-sm" onclick="downloadFaultCSV()">
+        <button class="btn btn-outline-success btn-sm" onclick="downloadFaultCSV()" title="Arıza verilerini CSV olarak indir">
           <i class="fas fa-file-csv"></i>
-          <span class="d-none d-sm-inline">CSV</span>
+          <span class="d-none d-sm-inline">CSV İndir</span>
         </button>
       </div>
     </div>
@@ -645,7 +632,7 @@
                   </td>
                   <td class="d-none d-md-table-cell">{{ $activity['date'] }}</td>
                   <td>
-                    <button class="btn btn-sm btn-outline-info" onclick="showFaultDetail({{ $loop->iteration }})">
+                    <button class="btn btn-sm btn-outline-info" onclick="showFaultDetail({{ $activity['id'] }})">
                       <i class="fas fa-eye"></i>
                     </button>
                   </td>
@@ -766,18 +753,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
         </div>
         <div class="modal-body">
-          <ul class="nav nav-tabs mb-3" id="talepDetailTabs">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#talepInfo">Bilgi</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#talepLog">İşlem Geçmişi</a></li>
-          </ul>
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="talepInfo">
-              <div id="talepDetailBody"></div>
-            </div>
-            <div class="tab-pane fade" id="talepLog">
-              <ul class="list-group" id="talepLogList"></ul>
-            </div>
-          </div>
+          <div id="talepDetailBody"></div>
         </div>
       </div>
     </div>
@@ -910,6 +886,7 @@ const barChart = new Chart(document.getElementById('barChart'), {
   options: {responsive:true, plugins:{legend:{display:true}}}
 });
 // Modal fonksiyonları
+
 function showEquipmentDetail(equipmentId) {
   // Ekipman detay modalı aç
   $('#talepDetailModal').modal('show');
@@ -927,8 +904,8 @@ function showEquipmentDetail(equipmentId) {
             <h6>Ekipman Bilgileri</h6>
             <p><strong>ID:</strong> ${data.id || equipmentId}</p>
             <p><strong>Ad:</strong> ${equipment.name || 'Bilinmiyor'}</p>
-            <p><strong>Kod:</strong> ${equipment.code || 'N/A'}</p>
-            <p><strong>Durum:</strong> <span class="badge bg-${equipment.status === 'Aktif' ? 'success' : equipment.status === 'Arızalı' ? 'danger' : 'warning'}">${equipment.status || 'Bilinmiyor'}</span></p>
+            <p><strong>Kod:</strong> ${data.code || 'N/A'}</p>
+            <p><strong>Durum:</strong> <span class="badge bg-${data.status === 'Aktif' ? 'success' : data.status === 'Arızalı' ? 'danger' : 'warning'}">${data.status || 'Bilinmiyor'}</span></p>
             <p><strong>Son Güncelleme:</strong> ${data.updated_at ? new Date(data.updated_at).toLocaleDateString('tr-TR') : 'Bilinmiyor'}</p>
           </div>
           <div class="col-md-6">
@@ -949,9 +926,6 @@ function showEquipmentDetail(equipmentId) {
         </div>
       `);
     });
-  
-  // İşlem geçmişini temizle
-  $('#talepLogList').html('<li class="list-group-item text-muted">İşlem geçmişi yükleniyor...</li>');
 }
 
 function showFaultDetail(faultId) {
@@ -960,8 +934,20 @@ function showFaultDetail(faultId) {
   $('#talepDetailModalLabel').text('Arıza Detayı');
   
   // AJAX ile gerçek veri çek
-  fetch(`/admin/fault/${faultId}`)
-    .then(response => response.json())
+  fetch(`/admin/fault/${faultId}`, {
+    method: 'GET',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
     .then(result => {
       const data = result.fault || result;
       $('#talepDetailBody').html(`
@@ -997,14 +983,8 @@ function showFaultDetail(faultId) {
         </div>
       `);
     });
-  
-  // İşlem geçmişini temizle
-  $('#talepLogList').html('<li class="list-group-item text-muted">İşlem geçmişi yükleniyor...</li>');
 }
 
-function printFaultTable() {
-  window.print();
-}
 
 function downloadFaultCSV() {
     const table = document.getElementById('faultTable');
@@ -1048,7 +1028,29 @@ function printTable() {
 }
 
 function copyTable() { 
-  showSnackbar('Tablo kopyalandı!'); 
+  const table = document.getElementById('equipmentTable');
+  const rows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
+  
+  let tableText = 'Ekipman Adı\tKategori\tKod\tDurum\tSon Güncelleme\n';
+  
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 5) {
+      const name = cells[1].textContent.trim();
+      const category = cells[2].textContent.trim();
+      const code = cells[3].textContent.trim();
+      const status = cells[4].textContent.trim();
+      const date = cells[5] ? cells[5].textContent.trim() : '';
+      
+      tableText += `${name}\t${category}\t${code}\t${status}\t${date}\n`;
+    }
+  });
+  
+  navigator.clipboard.writeText(tableText).then(() => {
+    showSnackbar('Tablo panoya kopyalandı!');
+  }).catch(() => {
+    showSnackbar('Kopyalama başarısız!');
+  });
 }
 
 function downloadCSV() { 
@@ -1295,7 +1297,7 @@ function copyTable() {
 function initPagination() {
     updatePagination('equipment');
     updatePagination('fault');
-    updatePagination('user');
+    // updatePagination('user'); // Kullanıcı tablosu yok, kaldırıldı
 }
 
 function updatePagination(tableType) {
@@ -1404,9 +1406,6 @@ function changeFaultPage(direction) {
     updatePagination('fault');
 }
 
-function changeUserPage(direction) {
-    pagination.user.currentPage += direction;
-    updatePagination('user');
-}
+// changeUserPage fonksiyonu kaldırıldı - kullanıcı tablosu yok
 </script>
 @endsection

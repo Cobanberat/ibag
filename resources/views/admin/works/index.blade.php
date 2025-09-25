@@ -252,6 +252,12 @@
         box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
     }
     
+    .equipment-row .form-select.is-invalid,
+    .equipment-row .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
     .qr-scan-btn {
         min-width: 45px;
         height: 38px;

@@ -161,6 +161,7 @@ class ReportingController extends Controller
             ->get()
             ->map(function ($fault) {
                 return [
+                    'id' => $fault->id, // Arıza ID'sini ekle
                     'type' => 'fault',
                     'title' => 'Yeni Arıza Bildirimi',
                     'description' => $fault->equipmentStock->equipment->name . ' - ' . $fault->type,

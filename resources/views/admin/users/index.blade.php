@@ -8,25 +8,47 @@
     <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm align-items-center">
         <li class="breadcrumb-item">
             <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
-                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" style="width: 24px; height: 24px; margin-right: 8px;">
-                <i class="fa fa-home me-1"></i> Ana Sayfa
+                <img src="{{ asset('images/ibag-logo.svg') }}" alt="İBAG Logo" class="d-none d-sm-inline" style="width: 24px; height: 24px; margin-right: 8px;">
+                <i class="fa fa-home me-1"></i> 
+                <span class="d-none d-sm-inline">Ana Sayfa</span>
+                <span class="d-sm-none">Ana</span>
             </a>
         </li>
-        <li class="breadcrumb-item"><a href="/admin/" class="text-decoration-none">Yönetim</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Kullanıcılar</li>
+        <li class="breadcrumb-item d-none d-md-inline">
+            <a href="/admin/" class="text-decoration-none">Yönetim</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-users me-1 d-sm-none"></i>
+            <span class="d-none d-sm-inline">Kullanıcılar</span>
+            <span class="d-sm-none">Kullanıcılar</span>
+        </li>
     </ol>
 </nav>
 
 <div class="container-fluid">
   <!-- Ultra modern başlık -->
   <div class="users-header w-100 position-relative mb-4" style="background:linear-gradient(90deg,#6366f1 0%,#43e97b 100%);color:#fff;border-radius:1.2em;box-shadow:0 4px 24px #d1d9e6;padding:2.5em 2em 2em 2em;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;">
-    <h2 style=" color:white; font-size:2.7rem;font-weight:900;letter-spacing:-1px;line-height:1.1;">👤 Kullanıcılar Yönetimi</h2>
-    <p style="font-size:1.2rem;font-weight:500;opacity:.98;">Sistemdeki tüm kullanıcıları görüntüleyin, yönetin ve analiz edin.</p>
-    <div class="position-absolute top-0 end-0 mt-3 me-3 d-flex gap-2">
-      <a href="{{ route('admin.users.create') }}" class="btn btn-light btn-sm d-flex align-items-center" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;font-weight:600;">
-        <i class="fas fa-user-plus me-1"></i> Yeni Kullanıcı
-      </a>
-      <button class="btn btn-sm" style="background:transparent;border:none;box-shadow:none;" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım"><i class="bi bi-question-circle" style="color:#fff;font-size:1.3em;"></i></button>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start w-100">
+      <div class="flex-grow-1">
+        <h2 class="mb-2" style="color:white; font-size:2.7rem;font-weight:900;letter-spacing:-1px;line-height:1.1;">
+          <span class="d-none d-sm-inline">👤 Kullanıcılar Yönetimi</span>
+          <span class="d-sm-none">👤 Kullanıcılar</span>
+        </h2>
+        <p class="mb-0" style="font-size:1.2rem;font-weight:500;opacity:.98;">
+          <span class="d-none d-md-inline">Sistemdeki tüm kullanıcıları görüntüleyin, yönetin ve analiz edin.</span>
+          <span class="d-md-none">Kullanıcıları yönetin ve analiz edin.</span>
+        </p>
+      </div>
+      <div class="d-flex gap-2 mt-3 mt-md-0">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-light btn-sm d-flex align-items-center" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;font-weight:600;">
+          <i class="fas fa-user-plus me-1"></i> 
+          <span class="d-none d-sm-inline">Yeni Kullanıcı</span>
+          <span class="d-sm-none">Yeni</span>
+        </a>
+        <button class="btn btn-sm" style="background:transparent;border:none;box-shadow:none;" data-bs-toggle="modal" data-bs-target="#helpModal" title="Yardım">
+          <i class="bi bi-question-circle" style="color:#fff;font-size:1.3em;"></i>
+        </button>
+      </div>
     </div>
   </div>
   
@@ -54,7 +76,7 @@
       <div class="user-kpi-icon"><i class="fas fa-user-plus"></i></div>
       <div class="user-kpi-value" id="kpiNewUser">{{ $stats['new_this_month'] ?? 0 }}</div>
       <div class="user-kpi-label">Bu Ay Eklenen</div>
-      <div class="user-kpi-trend down"><i class="bi bi-arrow-down"></i> {{ $stats['new_growth'] ?? 0 }}% azalış</div>
+      <div class="user-kpi-trend up"><i class="bi bi-calendar-check"></i> Bu Ay</div>
     </div>
   </div>
   
@@ -92,14 +114,18 @@
   
   <!-- Sticky header'lı, avatar'lı, aksiyonlu kullanıcı tablosu -->
   <div class="card p-3 mb-4 shadow-lg">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
       <h6 class="fw-bold mb-0" style="font-size:1.15rem;">
-        <i class="fas fa-users"></i> Kullanıcı Listesi
+        <i class="fas fa-users me-2"></i> 
+        <span class="d-none d-sm-inline">Kullanıcı Listesi</span>
+        <span class="d-sm-none">Kullanıcılar</span>
         <span class="badge bg-primary ms-2" id="userCount">{{ count($users ?? []) }}</span>
       </h6>
       <div class="d-flex gap-2">
         <a href="{{ route('admin.users.create') }}" class="btn btn-outline-success btn-sm" title="Yeni Kullanıcı Ekle">
-          <i class="bi bi-plus-circle"></i> Yeni Kullanıcı
+          <i class="bi bi-plus-circle me-1"></i> 
+          <span class="d-none d-sm-inline">Yeni Kullanıcı</span>
+          <span class="d-sm-none">Yeni</span>
         </a>
       </div>
     </div>
@@ -138,10 +164,11 @@
                 <div class="d-flex align-items-center">
                   <div>
                     <strong>{{ $user->name ?? 'İsimsiz' }}</strong>
+                    <div class="d-sm-none text-muted small">{{ $user->email ?? 'E-posta yok' }}</div>
                   </div>
                 </div>
               </td>
-              <td>{{ $user->email ?? 'E-posta yok' }}</td>
+              <td class="d-none d-sm-table-cell">{{ $user->email ?? 'E-posta yok' }}</td>
               <td>
                 @if($user->role === 'admin')
                   <span class="badge bg-primary">Admin</span>
@@ -250,6 +277,117 @@
   </div>
 </div>
 
+<!-- Kullanıcı Düzenleme Modalı -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-primary text-white">
+        <h5 class="modal-title" id="editUserModalLabel">
+          <i class="fas fa-user-edit me-2"></i>Kullanıcı Düzenle
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="editUserForm">
+          @csrf
+          @method('PUT')
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_name" class="form-label">
+                <i class="fas fa-user me-1"></i>Ad Soyad <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control" id="edit_name" name="name" required>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="edit_email" class="form-label">
+                <i class="fas fa-envelope me-1"></i>E-posta <span class="text-danger">*</span>
+              </label>
+              <input type="email" class="form-control" id="edit_email" name="email" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_username" class="form-label">
+                <i class="fas fa-at me-1"></i>Kullanıcı Adı
+              </label>
+              <input type="text" class="form-control" id="edit_username" name="username">
+              <div class="form-text">Boş bırakılırsa e-posta adresi kullanılır</div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="edit_role" class="form-label">
+                <i class="fas fa-user-tag me-1"></i>Rol <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" id="edit_role" name="role" required>
+                <option value="">Rol Seçin</option>
+                <option value="admin">Admin</option>
+                <option value="ekip_yetkilisi">Ekip Yetkilisi</option>
+                <option value="üye">Üye</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_status" class="form-label">
+                <i class="fas fa-toggle-on me-1"></i>Durum
+              </label>
+              <select class="form-select" id="edit_status" name="status">
+                <option value="active">Aktif</option>
+                <option value="inactive">Pasif</option>
+              </select>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="edit_avatar_color" class="form-label">
+                <i class="fas fa-palette me-1"></i>Avatar Rengi
+              </label>
+              <input type="color" class="form-control form-control-color" id="edit_avatar_color" name="avatar_color">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_password" class="form-label">
+                <i class="fas fa-lock me-1"></i>Yeni Şifre
+              </label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="edit_password" name="password" placeholder="Değiştirmek için yeni şifre girin">
+                <button class="btn btn-outline-secondary" type="button" id="toggleEditPassword">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="form-text">Boş bırakılırsa mevcut şifre korunur</div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="edit_password_confirmation" class="form-label">
+                <i class="fas fa-lock me-1"></i>Şifre Tekrar
+              </label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="edit_password_confirmation" name="password_confirmation" placeholder="Yeni şifreyi tekrar girin">
+                <button class="btn btn-outline-secondary" type="button" id="toggleEditPasswordConfirmation">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> İptal
+        </button>
+        <button type="button" class="btn btn-primary" id="saveUserBtn">
+          <i class="fas fa-save me-1"></i> Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Yardım Modalı -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -276,6 +414,33 @@
     </div>
   </div>
 </div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(90deg, #0d6efd 60%, #0dcaf0 100%) !important;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}
+
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}
+
+.modal-lg {
+    max-width: 800px;
+}
+
+@media (max-width: 768px) {
+    .modal-lg {
+        max-width: 95%;
+        margin: 0.5rem;
+    }
+}
+</style>
 
 @vite('resources/js/users.js')
 @endsection

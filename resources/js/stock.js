@@ -1,6 +1,41 @@
 // Debug: JavaScript yüklendi
 console.log('Stock.js yüklendi!');
 
+// URL parametresinden ekipman adını al ve arama kutusuna doldur
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded tetiklendi');
+    
+    // Kısa bir gecikme ekleyerek DOM'un tam yüklenmesini bekleyelim
+    setTimeout(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const equipmentName = urlParams.get('equipment_name');
+        console.log('URL parametreleri:', window.location.search);
+        console.log('Ekipman Adı:', equipmentName);
+        
+        if (equipmentName) {
+            const searchInput = document.getElementById('filterSearch');
+            console.log('Arama kutusu bulundu:', searchInput);
+            
+            if (searchInput) {
+                // Ekipman adını arama kutusuna doldur
+                searchInput.value = decodeURIComponent(equipmentName);
+                console.log('Arama kutusuna değer dolduruldu:', decodeURIComponent(equipmentName));
+                
+                // Input event'ini tetikleyerek filtreleme yapalım
+                const event = new Event('input', { bubbles: true });
+                searchInput.dispatchEvent(event);
+                
+                // Toast bildirimi göster
+                if (typeof showToast === 'function') {
+                    showToast(`"${decodeURIComponent(equipmentName)}" ekipmanı için sonuçlar gösteriliyor`, 'info');
+                }
+            } else {
+                console.log('Arama kutusu bulunamadı!');
+            }
+        }
+    }, 500); // 500ms gecikme
+});
+
 // CSRF token alma fonksiyonu
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -1013,29 +1048,36 @@ function showStockCodesPage(equipmentId, direction = 'none') {
     const endIndex = Math.min(startIndex + data.itemsPerPage, data.codes.length);
     const pageCodes = data.codes.slice(startIndex, endIndex);
     
-    // HTML oluştur
+    // HTML oluştur - Responsive versiyon
     let html = '<div class="row g-2 stock-codes-slide">';
     pageCodes.forEach((code, index) => {
         html += `
-            <div class="col-md-3 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="card border-0 shadow-sm h-100 stock-code-card" style="animation-delay: ${index * 0.1}s;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title mb-0 text-primary">${code.code || 'Kod Yok'}</h6>
-                            <span class="badge bg-info">${code.quantity || 0} adet</span>
+                    <div class="card-body p-2 p-md-3">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-2 gap-1">
+                            <h6 class="card-title mb-0 text-primary small">${code.code || 'Kod Yok'}</h6>
+                            <span class="badge bg-info small">${code.quantity || 0} adet</span>
                         </div>
                         <div class="small text-muted">
-                            <div><strong>Marka:</strong> ${code.brand || '-'}</div>
-                            <div><strong>Model:</strong> ${code.model || '-'}</div>
-                            <div><strong>Beden:</strong> ${code.size || '-'}</div>
-                            ${code.feature ? `<div><strong>Özellik:</strong> ${code.feature}</div>` : ''}
-                            ${code.note ? `<div><strong>Not:</strong> ${code.note}</div>` : ''}
-                        </div>
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>
-                                ${new Date(code.created_at).toLocaleDateString('tr-TR')}
-                            </small>
+                            <div class="d-flex flex-column flex-sm-row gap-1">
+                                <div class="flex-fill">
+                                    <div><strong>Marka:</strong> ${code.brand || '-'}</div>
+                                    <div><strong>Model:</strong> ${code.model || '-'}</div>
+                                </div>
+                                <div class="flex-fill">
+                                    <div><strong>Beden:</strong> ${code.size || '-'}</div>
+                                    <div class="d-none d-sm-block"><strong>Tarih:</strong> ${new Date(code.created_at).toLocaleDateString('tr-TR')}</div>
+                                </div>
+                            </div>
+                            ${code.feature ? `<div class="mt-1"><strong>Özellik:</strong> ${code.feature}</div>` : ''}
+                            ${code.note ? `<div class="mt-1"><strong>Not:</strong> ${code.note}</div>` : ''}
+                            <div class="mt-1 d-sm-none">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${new Date(code.created_at).toLocaleDateString('tr-TR')}
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1184,14 +1226,14 @@ function deleteStock(stockId) {
     });
 }
 
-// Stok tablosunu render etme
+// Stok tablosunu render etme - Responsive versiyon
 function renderStockTable(stocks) {
     const tbody = document.getElementById('stockTableBody');
     
     if (stocks.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center py-4">
+                <td colspan="11" class="text-center py-4">
                     <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
                     <p class="text-muted">Stok bulunamadı</p>
                 </td>
@@ -1208,68 +1250,114 @@ function renderStockTable(stocks) {
         const barClass = stock.bar_class || 'bg-success';
         const percentage = stock.percentage || 0;
         
-        // Status badge HTML'i
+        // Status badge HTML'i - Manuel hesaplama
         let statusBadge = '';
-        if (stock.status_badge === 'empty') {
-            statusBadge = '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>';
-        } else if (stock.status_badge === 'low') {
-            statusBadge = '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>';
+        
+        if (stock.status === 'Arızalı') {
+            statusBadge = '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Arızalı</span>';
+        } else if (stock.status === 'Bakımda') {
+            statusBadge = '<span class="badge bg-warning"><i class="fas fa-tools"></i> Bakımda</span>';
         } else {
-            statusBadge = '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>';
+            // Stok miktarına göre durum belirle
+            const totalQuantity = stock.total_quantity || 0;
+            const criticalLevel = stock.critical_level || 0;
+            
+            if (totalQuantity <= 0) {
+                statusBadge = '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>';
+            } else if (totalQuantity <= criticalLevel) {
+                statusBadge = '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>';
+            } else {
+                statusBadge = '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>';
+            }
         }
 
         return `
             <tr class="${rowClass}" data-id="${stock.id}">
-                <td><input type="checkbox" class="stock-checkbox" value="${stock.id}"></td>
+                <td class="d-none d-md-table-cell"><input type="checkbox" class="stock-checkbox" value="${stock.id}"></td>
                 <td>
-                    <span class="fw-bold">${stock.name || '-'}</span>
-                    <br><small class="text-muted">${stock.code || '-'}</small>
+                    <div class="d-flex flex-column">
+                        <span class="fw-bold">${stock.name || '-'}</span>
+                        <small class="text-muted d-md-none">${stock.category?.name || '-'}</small>
+                        <div class="d-flex gap-1 mt-1 d-md-none">
+                            <span class="badge bg-info small">${stock.unit_type_label || 'Adet'}</span>
+                            ${stock.individual_tracking ? 
+                                '<span class="badge bg-primary small"><i class="fas fa-user"></i></span>' : 
+                                '<span class="badge bg-secondary small"><i class="fas fa-layer-group"></i></span>'
+                            }
+                        </div>
+                    </div>
                 </td>
-                <td>${stock.category?.name || '-'}</td>
-                <td>
+                <td class="d-none d-sm-table-cell">${stock.category?.name || '-'}</td>
+                <td class="d-none d-md-table-cell">
                     <span class="badge bg-info">${stock.unit_type_label || 'Adet'}</span>
                 </td>
-                <td>${totalQuantity}</td>
-                <td>${criticalLevel}</td>
                 <td>
+                    <div class="d-flex flex-column">
+                        <span class="fw-bold">${totalQuantity}</span>
+                        <small class="text-muted d-sm-none">Kritik: ${criticalLevel}</small>
+                    </div>
+                </td>
+                <td class="d-none d-sm-table-cell">${criticalLevel}</td>
+                <td class="d-none d-md-table-cell">
                     ${stock.individual_tracking ? 
-                        '<span class="badge bg-primary"><i class="fas fa-user"></i> Ayrı Takip</span>' : 
-                        '<span class="badge bg-secondary"><i class="fas fa-layer-group"></i> Toplu Takip</span>'
+                        '<span class="badge bg-primary"><i class="fas fa-user"></i></span>' : 
+                        '<span class="badge bg-secondary"><i class="fas fa-layer-group"></i></span>'
                     }
                 </td>
-                <td>
+                <td class="d-none d-lg-table-cell">
                     <div class="progress" style="height: 10px;">
                         <div class="progress-bar ${barClass}" style="width: ${percentage}%"></div>
                     </div>
                 </td>
-                <td>${statusBadge}</td>
+                <td class="d-none d-xl-table-cell">${statusBadge}</td>
                 <td class="category-actions">
-                    <button class="btn btn-outline-info btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="toggleStockDetails(${stock.id})" title="Detayları Göster/Gizle">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="editStock(${stock.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-outline-success btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockIn(${stock.id})">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="btn btn-outline-warning btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="stockOut(${stock.id})">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" style="padding:0.45em 1em;border-radius:1.2em;" onclick="deleteStock(${stock.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="d-flex flex-wrap gap-1">
+                        ${stock.status === 'Arızalı' ? 
+                            `<button class="btn btn-outline-danger btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="viewFault(${stock.id})" title="Arıza Detayı">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="repairEquipment(${stock.id})" title="Tamir Et">
+                                <i class="fas fa-wrench"></i>
+                            </button>` :
+                            stock.status === 'Bakımda' ?
+                            `<button class="btn btn-outline-warning btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="viewMaintenance(${stock.id})" title="Bakım Detayı">
+                                <i class="fas fa-tools"></i>
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="completeMaintenance(${stock.id})" title="Bakımı Tamamla">
+                                <i class="fas fa-check"></i>
+                            </button>` :
+                            `<button class="btn btn-outline-info btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="toggleStockDetails(${stock.id})" title="Detayları Göster/Gizle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="editStock(${stock.id})" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="stockIn(${stock.id})" title="Stok Girişi">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="stockOut(${stock.id})" title="Stok Çıkışı">
+                                <i class="fas fa-minus"></i>
+                            </button>`
+                        }
+                        <button class="btn btn-outline-danger btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="deleteStock(${stock.id})" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
+            <!-- Detay satırı (gizli) -->
             <tr class="stock-detail-row" id="detailRow${stock.id}" style="display: none;">
-                <td colspan="10" class="p-0">
-                    <div class="bg-light p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                <td colspan="11" class="p-0">
+                    <div class="bg-light p-2 p-md-3">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
                             <h6 class="mb-0 text-primary">
-                                <i class="fas fa-barcode me-2"></i>${stock.name} - Stok Kodları
+                                <i class="fas fa-barcode me-2"></i>
+                                <span class="d-none d-sm-inline">${stock.name} - Stok Kodları</span>
+                                <span class="d-sm-none">Stok Kodları</span>
                             </h6>
                             <button class="btn btn-sm btn-outline-secondary" onclick="toggleStockDetails(${stock.id})">
-                                <i class="fas fa-times"></i> Kapat
+                                <i class="fas fa-times me-1"></i>
+                                <span class="d-none d-sm-inline">Kapat</span>
                             </button>
                         </div>
                         <div id="stockCodes${stock.id}" class="stock-codes-container">
@@ -1282,13 +1370,17 @@ function renderStockTable(stocks) {
                         </div>
                         <!-- Carousel Controls -->
                         <div id="carouselControls${stock.id}" style="display: none;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <button class="btn btn-sm btn-outline-primary carousel-btn" onclick="previousPage(${stock.id})" id="prevBtn${stock.id}" disabled>
-                                    <i class="fas fa-chevron-left"></i> Önceki
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-2 gap-2">
+                                <button class="btn btn-sm btn-outline-primary carousel-btn w-100 w-sm-auto" onclick="previousPage(${stock.id})" id="prevBtn${stock.id}" disabled>
+                                    <i class="fas fa-chevron-left me-1"></i>
+                                    <span class="d-none d-sm-inline">Önceki</span>
+                                    <span class="d-sm-none">Önceki</span>
                                 </button>
                                 <span class="text-muted small page-info" id="pageInfo${stock.id}">1 / 1</span>
-                                <button class="btn btn-sm btn-outline-primary carousel-btn" onclick="nextPage(${stock.id})" id="nextBtn${stock.id}" disabled>
-                                    Sonraki <i class="fas fa-chevron-right"></i>
+                                <button class="btn btn-sm btn-outline-primary carousel-btn w-100 w-sm-auto" onclick="nextPage(${stock.id})" id="nextBtn${stock.id}" disabled>
+                                    <span class="d-none d-sm-inline">Sonraki</span>
+                                    <span class="d-sm-none">Sonraki</span>
+                                    <i class="fas fa-chevron-right ms-1"></i>
                                 </button>
                             </div>
                             <!-- Dots indicator -->
@@ -1303,9 +1395,10 @@ function renderStockTable(stocks) {
     }).join('');
 }
 
-// Pagination güncelleme
+// Pagination güncelleme - Responsive versiyon
 function updatePagination(pagination) {
     const paginationContainer = document.getElementById('pagination');
+    const paginationText = document.getElementById('paginationText');
     
     if (!paginationContainer) return;
 
@@ -1316,7 +1409,8 @@ function updatePagination(pagination) {
         paginationHTML += `
             <li class="page-item">
                 <a class="page-link" href="#" onclick="loadStockData(${pagination.current_page - 1}); return false;">
-                    <i class="fas fa-chevron-left"></i>
+                    <i class="fas fa-chevron-left me-1"></i>
+                    <span class="d-none d-sm-inline">Önceki</span>
                 </a>
             </li>
         `;
@@ -1342,7 +1436,8 @@ function updatePagination(pagination) {
         paginationHTML += `
             <li class="page-item">
                 <a class="page-link" href="#" onclick="loadStockData(${pagination.current_page + 1}); return false;">
-                    <i class="fas fa-chevron-right"></i>
+                    <span class="d-none d-sm-inline">Sonraki</span>
+                    <i class="fas fa-chevron-right ms-1"></i>
                 </a>
             </li>
         `;
@@ -1351,11 +1446,10 @@ function updatePagination(pagination) {
     paginationContainer.innerHTML = paginationHTML;
     
     // Sayfa bilgisi güncelleme
-    const infoText = document.querySelector('.text-muted.small');
-    if (infoText) {
+    if (paginationText) {
         const startItem = (pagination.current_page - 1) * pagination.per_page + 1;
         const endItem = Math.min(pagination.current_page * pagination.per_page, pagination.total);
-        infoText.textContent = `Toplam ${pagination.total} stoktan ${startItem}-${endItem} arası gösteriliyor`;
+        paginationText.textContent = `Toplam ${pagination.total} stoktan ${startItem}-${endItem} arası gösteriliyor`;
     }
 }
 
@@ -1756,7 +1850,7 @@ window.showToast = showToast;
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Sayfa yüklendiğinde verileri yükle
+    // Sayfa yüklendiğinde verileri JavaScript'ten yükle
     loadStockData(1);
     
     // Filtreleme ve arama

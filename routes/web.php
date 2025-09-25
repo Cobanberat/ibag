@@ -41,6 +41,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         Route::get('/stock/{id}/info', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.stock.info');
         Route::get('/stock/{id}/codes', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentCodes'])->name('admin.stock.codes');
         Route::get('/stock/{id}/detailed-codes', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getDetailedStockCodes'])->name('admin.stock.detailed-codes');
+        Route::get('/stock/get-equipment-info/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfoForSearch'])->name('admin.stock.get-equipment-info');
         Route::post('/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
         Route::post('/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
         Route::get('/stock/excel-template', [App\Http\Controllers\Admin\EquipmentStockController::class, 'downloadExcelTemplate'])->name('admin.stock.excel-template');
@@ -108,6 +109,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Zimmet İşlemleri (Tüm roller)
     Route::get('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'create'])->name('admin.zimmetAl');
     Route::post('/zimmet', [App\Http\Controllers\Admin\AssignmentController::class, 'store'])->name('admin.zimmetAl.store');
+    Route::get('/zimmet/all-equipment', [App\Http\Controllers\Admin\AssignmentController::class, 'getAllEquipmentForQr'])->name('admin.zimmetAl.allEquipment');
     Route::get('/teslim', [App\Http\Controllers\Admin\AssignmentController::class, 'myAssignments'])->name('admin.teslimEt');
     Route::get('/teslim-al/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'showAssignment'])->name('admin.teslimAl.show');
     Route::put('/teslim-al/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'completeAssignment'])->name('admin.teslimAl');

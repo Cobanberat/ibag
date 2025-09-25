@@ -16,15 +16,42 @@ class AssignmentController extends Controller
     {
         $pageTitle = "Yeni Zimmet";
 
-        // Sadece kullanılabilir ekipmanları getir
+        // Sadece kullanılabilir ekipmanları getir (arızalı ve bakımda olanları gizle)
         $equipmentStocks = EquipmentStock::with(['equipment.category'])
-            ->whereIn('status', ['Sıfır', 'sıfır', 'Aktif', 'aktif', 'available', 'Available'])
+            ->whereHas('equipment') // Sadece ekipmanı olan stokları getir
+            ->whereNotIn('status', ['Arızalı', 'arızalı', 'Faulty', 'faulty', 'Bakımda', 'bakımda', 'Maintenance', 'maintenance'])
+            ->orderByRaw("CASE 
+                WHEN status IN ('Aktif', 'aktif', 'Available', 'available', 'Sıfır', 'sıfır') THEN 1 
+                WHEN status IN ('Kullanımda', 'kullanımda', 'In Use', 'in use') THEN 2 
+                ELSE 3 
+            END")
             ->orderBy('id', 'asc')
             ->get();
 
         $equipments = Equipment::with('category')->orderBy('name')->get();
 
         return view('admin.works.index', compact('pageTitle', 'equipmentStocks', 'equipments'));
+    }
+
+    // QR kod ile ekipman kontrolü için tüm ekipmanları getir
+    public function getAllEquipmentForQr()
+    {
+        $allEquipmentStocks = EquipmentStock::with(['equipment.category'])
+            ->whereHas('equipment')
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'data' => $allEquipmentStocks->map(function($stock) {
+                return [
+                    'id' => $stock->equipment->id,
+                    'name' => $stock->equipment->name,
+                    'code' => $stock->code,
+                    'status' => $stock->status,
+                    'individual_tracking' => $stock->equipment->individual_tracking
+                ];
+            })
+        ]);
     }
 
     // Zimmet kaydetme
