@@ -861,16 +861,112 @@ function showImageModal(imageSrc, title) {
 
 // Zaman çizelgesi göster
 function showTimeline(assignmentId) {
-    // Bu fonksiyon AJAX ile timeline verilerini yükleyebilir
+    // Loading göster
     document.getElementById('timelineContent').innerHTML = `
         <div class="text-center py-4">
-            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
-            <p class="text-muted">Zaman çizelgesi özelliği yakında eklenecek</p>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <p class="text-muted mt-2">Zaman çizelgesi yükleniyor...</p>
         </div>
     `;
     
     const timelineModal = new bootstrap.Modal(document.getElementById('timelineModal'));
     timelineModal.show();
+    
+    // AJAX ile timeline verilerini çek
+    fetch(`/admin/assignments/${assignmentId}/timeline`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                populateTimeline(data.timeline);
+            } else {
+                showTimelineError(data.message || 'Zaman çizelgesi yüklenemedi');
+            }
+        })
+        .catch(error => {
+            console.error('Timeline yükleme hatası:', error);
+            showTimelineError('Bağlantı hatası: ' + error.message);
+        });
+}
+
+function populateTimeline(timeline) {
+    const content = document.getElementById('timelineContent');
+    
+    if (!timeline || timeline.length === 0) {
+        content.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Bu ekipman için geçmiş kullanım kaydı bulunamadı</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let timelineHtml = '<div class="timeline">';
+    
+    timeline.forEach((item, index) => {
+        const isLast = index === timeline.length - 1;
+        const iconClass = getTimelineIcon(item.type);
+        const badgeClass = getTimelineBadgeClass(item.type);
+        
+        timelineHtml += `
+            <div class="timeline-item ${isLast ? 'last' : ''}">
+                <div class="timeline-marker">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <h6 class="mb-1">${item.title}</h6>
+                        <span class="badge ${badgeClass}">${item.type_label}</span>
+                    </div>
+                    <div class="timeline-body">
+                        <p class="mb-1"><strong>Kullanıcı:</strong> ${item.user_name}</p>
+                        <p class="mb-1"><strong>Tarih:</strong> ${item.date}</p>
+                        ${item.description ? `<p class="mb-1"><strong>Açıklama:</strong> ${item.description}</p>` : ''}
+                        ${item.note ? `<p class="mb-1"><strong>Not:</strong> ${item.note}</p>` : ''}
+                        ${item.damage_note ? `<p class="mb-1 text-warning"><strong>Arıza Notu:</strong> ${item.damage_note}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    timelineHtml += '</div>';
+    content.innerHTML = timelineHtml;
+}
+
+function getTimelineIcon(type) {
+    const icons = {
+        'assignment': 'fas fa-sign-out-alt',
+        'return': 'fas fa-sign-in-alt',
+        'fault': 'fas fa-exclamation-triangle',
+        'maintenance': 'fas fa-wrench',
+        'status_change': 'fas fa-edit',
+        'equipment_detail': 'fas fa-cube'
+    };
+    return icons[type] || 'fas fa-circle';
+}
+
+function getTimelineBadgeClass(type) {
+    const classes = {
+        'assignment': 'bg-primary',
+        'return': 'bg-success',
+        'fault': 'bg-danger',
+        'maintenance': 'bg-warning',
+        'status_change': 'bg-info',
+        'equipment_detail': 'bg-secondary'
+    };
+    return classes[type] || 'bg-secondary';
+}
+
+function showTimelineError(message) {
+    document.getElementById('timelineContent').innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+            <p class="text-danger">${message}</p>
+        </div>
+    `;
 }
 
 // Excel export
@@ -1003,5 +1099,83 @@ function printTable(type) {
     border-radius: 1rem;
     border: none;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Timeline Styles */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #4facfe, #00f2fe);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    padding-left: 20px;
+}
+
+.timeline-item.last::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 20px;
+    width: 2px;
+    height: calc(100% - 20px);
+    background: #fff;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -23px;
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    background: #4facfe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 8px;
+    z-index: 2;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 4px solid #4facfe;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.timeline-header h6 {
+    color: #2c3e50;
+    margin: 0;
+    flex: 1;
+}
+
+.timeline-body p {
+    margin-bottom: 5px;
+    color: #6c757d;
+}
+
+.timeline-body p:last-child {
+    margin-bottom: 0;
 }
 </style>

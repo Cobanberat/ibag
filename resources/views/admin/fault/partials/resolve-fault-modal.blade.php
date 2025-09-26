@@ -9,9 +9,11 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
             <div class="modal-body">
-                <form id="resolveFaultForm" action="{{ route('admin.fault.resolve', ':id') }}" method="POST" enctype="multipart/form-data">
+                <form id="resolveFaultForm" action="/admin/fault/resolve" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="fault_id" id="resolveFaultId">
+                    <input type="hidden" name="equipment_stock_id" id="resolveEquipmentStockId">
+                    <input type="hidden" name="type" value="arıza">
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -30,22 +32,6 @@
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="resolution_cost" class="form-label">Çözüm Maliyeti (₺)</label>
-                                <input type="number" class="form-control" id="resolution_cost" name="resolution_cost" 
-                                       step="0.01" min="0" placeholder="0.00">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="resolution_time" class="form-label">Çözüm Süresi (Saat)</label>
-                                <input type="number" class="form-control" id="resolution_time" name="resolution_time" 
-                                       step="0.5" min="0" placeholder="0.0">
-                            </div>
-                        </div>
-                    </div>
                     
                     <div class="mb-3" id="maintenance_date_section" style="display: none;">
                         <label for="next_maintenance_date" class="form-label">Sonraki Bakım Tarihi</label>

@@ -12,7 +12,7 @@
                 <form id="maintenanceCompleteForm" action="{{ route('admin.fault.resolve') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="equipment_stock_id" id="maintenanceEquipmentId">
-                    <input type="hidden" name="type" value="maintenance">
+                    <input type="hidden" name="type" value="bakım">
                     
                     <div class="row">
                         <div class="col-md-6">

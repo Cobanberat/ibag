@@ -81,7 +81,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
             Route::get('/{id}', [App\Http\Controllers\Admin\FaultController::class, 'show'])->name('fault.show');
             Route::post('/resolve', [App\Http\Controllers\Admin\FaultController::class, 'resolve'])->name('fault.resolve');
             Route::patch('/{id}/status', [App\Http\Controllers\Admin\FaultController::class, 'updateStatus'])->name('fault.updateStatus');
-            Route::get('/{id}/resolved', [App\Http\Controllers\Admin\FaultController::class, 'getResolvedFault'])->name('fault.resolved');
+            Route::get('/resolved/{id}', [App\Http\Controllers\Admin\FaultController::class, 'showResolved'])->name('fault.resolved');
         });
     });
 
@@ -117,6 +117,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/assignments/item/{id}/photos', [App\Http\Controllers\Admin\AssignmentController::class, 'itemPhotos'])->name('admin.assignments.item.photos');
     Route::post('/assignments/item/{id}/return', [App\Http\Controllers\Admin\AssignmentController::class, 'returnItem'])->name('admin.assignments.item.return');
     Route::post('/finish/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'finishAssignment'])->name('assignments.finish');
+    Route::get('/assignments/{id}/timeline', [App\Http\Controllers\Admin\AssignmentController::class, 'getTimeline'])->name('admin.assignments.timeline');
 
     // Giden-Gelen İşlemleri - Admin ve Ekip Yetkilisi
     Route::middleware(['role:admin,ekip_yetkilisi'])->group(function () {

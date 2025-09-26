@@ -729,6 +729,25 @@
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
+
+/* Form Validation Styles */
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
 </style>
 
 <script>
@@ -945,8 +964,11 @@ function openReturnModal(assignmentId) {
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-camera me-1"></i>Teslim Fotoğrafı:
                                 </label>
-                                <input type="file" name="return_photos[${item.id}]" class="form-control" accept="image/*">
-                                <small class="text-muted">Teslim edilen ekipmanın fotoğrafını çekin</small>
+                                <input type="file" name="return_photos[${item.id}]" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Desteklenen formatlar: JPG, PNG, GIF, WebP | Maksimum boyut: 5MB
+                                </small>
                             </div>
                             
                             <div class="alert alert-warning mb-3">
@@ -1004,21 +1026,81 @@ function openReturnModal(assignmentId) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
+                // Form validasyonu
+                let isValid = true;
+                let errorMessage = '';
+                
+                // Kullanılan miktar kontrolü
+                const usedQtyInputs = form.querySelectorAll('input[name^="used_qty"]');
+                usedQtyInputs.forEach(input => {
+                    const value = parseInt(input.value);
+                    const max = parseInt(input.getAttribute('max'));
+                    if (isNaN(value) || value < 0 || value > max) {
+                        isValid = false;
+                        errorMessage = 'Lütfen geçerli miktar girin!';
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                
+                // Fotoğraf formatı kontrolü
+                const photoInputs = form.querySelectorAll('input[type="file"]');
+                photoInputs.forEach(input => {
+                    if (input.files.length > 0) {
+                        const file = input.files[0];
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        const maxSize = 5 * 1024 * 1024; // 5MB
+                        
+                        if (!allowedTypes.includes(file.type)) {
+                            isValid = false;
+                            errorMessage = `Desteklenmeyen dosya formatı: ${file.name}`;
+                            input.classList.add('is-invalid');
+                        } else if (file.size > maxSize) {
+                            isValid = false;
+                            errorMessage = `Dosya boyutu çok büyük: ${file.name}`;
+                            input.classList.add('is-invalid');
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    }
+                });
+                
+                if (!isValid) {
+                    showToast(errorMessage, 'error');
+                    return;
+                }
+                
+                // FormData'yı form'dan direkt oluştur
                 const formData = new FormData(this);
                 
+                // CSRF token ve method ekle
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                formData.append('_method', 'PUT');
+                
+                // Debug için form data'yı kontrol et
+                console.log('Form Data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+                
                 fetch(this.action, {
-                    method: 'PUT',
+                    method: 'POST', // Laravel'de PUT request için POST kullanıyoruz
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Önce sayfa yenile
+                        showToast('Teslim işlemi başarılı!', 'success');
+                        // Modal'ı kapat ve sayfayı yenile
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('returnModal'));
+                        modal.hide();
+                        setTimeout(() => {
                         window.location.href = window.location.pathname + '?success=1';
+                        }, 1000);
                     } else {
                         showToast(data.message || 'Bilinmeyen hata oluştu', 'error');
                     }

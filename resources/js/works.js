@@ -506,6 +506,62 @@ $(document).ready(function () {
         });
     }
 
+    // Resim formatı ve boyut kontrolü
+    function validateImageFile(file) {
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        // Dosya tipi kontrolü
+        if (!allowedTypes.includes(file.type)) {
+            return {
+                valid: false,
+                message: `Desteklenmeyen dosya formatı! Desteklenen formatlar: JPG, PNG, GIF, WebP. Seçilen dosya: ${file.name}`
+            };
+        }
+        
+        // Dosya boyutu kontrolü
+        if (file.size > maxSize) {
+            return {
+                valid: false,
+                message: `Dosya boyutu çok büyük! Maksimum 5MB olmalı. Seçilen dosya: ${(file.size / 1024 / 1024).toFixed(2)}MB`
+            };
+        }
+        
+        return { valid: true };
+    }
+
+    // Resim input değişiklik kontrolü
+    $('#equipment-list').on('change', 'input[name="equipment_photo[]"]', function() {
+        const file = this.files[0];
+        const input = $(this);
+        
+        if (file) {
+            const validation = validateImageFile(file);
+            
+            if (!validation.valid) {
+                // Hatalı dosyayı temizle
+                this.value = '';
+                input.addClass('is-invalid');
+                
+                // Hata mesajını göster
+                showToast(validation.message, 'error');
+                
+                // Input altına hata mesajı ekle
+                let errorDiv = input.siblings('.invalid-feedback');
+                if (errorDiv.length === 0) {
+                    errorDiv = $('<div class="invalid-feedback"></div>');
+                    input.after(errorDiv);
+                }
+                errorDiv.text(validation.message);
+            } else {
+                // Geçerli dosya
+                input.removeClass('is-invalid');
+                input.siblings('.invalid-feedback').remove();
+                showToast('Fotoğraf başarıyla seçildi!', 'success');
+            }
+        }
+    });
+
     // Form submit kontrolü - Arızalı ekipman kontrolü
     const assignmentForm = document.getElementById('assignmentForm');
     if (assignmentForm) {
@@ -544,16 +600,27 @@ $(document).ready(function () {
                 }
             });
             
-            // Fotoğraf kontrolü
+            // Fotoğraf kontrolü - Format ve boyut dahil
             $('input[name="equipment_photo[]"]').each(function(index) {
                 const photo = $(this);
-                if (photo.length && photo[0].files.length === 0) {
+                const file = photo[0].files[0];
+                
+                if (!file) {
                     isValid = false;
                     errorMessage = 'Lütfen tüm ekipmanlar için fotoğraf yükleyin!';
                     photo.addClass('is-invalid');
                     return false;
                 } else {
-                    photo.removeClass('is-invalid');
+                    // Dosya formatı ve boyut kontrolü
+                    const validation = validateImageFile(file);
+                    if (!validation.valid) {
+                        isValid = false;
+                        errorMessage = validation.message;
+                        photo.addClass('is-invalid');
+                        return false;
+                    } else {
+                        photo.removeClass('is-invalid');
+                    }
                 }
             });
             

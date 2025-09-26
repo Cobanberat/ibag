@@ -179,11 +179,22 @@ class AssignmentController extends Controller
         if ($request->hasFile('return_photos')) {
             $request->validate([
                 'return_photos' => 'array',
-                'return_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+                'return_photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120' // 5MB
             ]);
         }
 
         $assignment = Assignment::findOrFail($id);
+        
+        // Debug: Gelen verileri logla
+        \Log::info('Return Assignment Debug', [
+            'assignment_id' => $id,
+            'used_qty' => $request->used_qty,
+            'return_photos' => $request->hasFile('return_photos') ? 'Files present' : 'No files',
+            'all_files' => $request->allFiles(),
+            'all_input' => $request->all(),
+            'method' => $request->method(),
+            'content_type' => $request->header('Content-Type')
+        ]);
         
         foreach ($assignment->items as $item) {
             // Kullanılan miktarı al - array'den direkt al
@@ -198,7 +209,27 @@ class AssignmentController extends Controller
             $filePath = null;
             if ($request->hasFile("return_photos.{$item->id}")) {
                 $file = $request->file("return_photos.{$item->id}");
+                
+                // Storage klasörünü oluştur
+                if (!Storage::disk('public')->exists('equipment_returns')) {
+                    Storage::disk('public')->makeDirectory('equipment_returns');
+                }
+                
                 $filePath = $file->store('equipment_returns', 'public');
+                
+                // Debug: Fotoğraf yüklendi
+                \Log::info('Photo uploaded for item', [
+                    'item_id' => $item->id,
+                    'file_path' => $filePath,
+                    'file_size' => $file->getSize()
+                ]);
+            } else {
+                // Debug: Fotoğraf yüklenmedi
+                \Log::info('No photo for item', [
+                    'item_id' => $item->id,
+                    'has_file_key' => $request->hasFile("return_photos.{$item->id}"),
+                    'all_files' => array_keys($request->allFiles())
+                ]);
             }
 
             // AssignmentItem tablosuna kaydet
@@ -377,6 +408,87 @@ class AssignmentController extends Controller
             'success' => true,
             'message' => 'Zimmet işlemi tamamlandı.'
         ]);
+    }
+
+    public function getTimeline($id)
+    {
+        try {
+            $assignment = Assignment::with(['user', 'items.equipment.category'])->findOrFail($id);
+            $timeline = [];
+            
+            // Zimmet alma işlemi
+            $timeline[] = [
+                'type' => 'assignment',
+                'type_label' => 'Zimmet Alındı',
+                'title' => 'Ekipman Zimmet Alındı',
+                'user_name' => $assignment->user->name ?? 'Bilinmeyen',
+                'date' => $assignment->created_at->format('d.m.Y H:i'),
+                'description' => $assignment->items->count() . ' adet ekipman zimmet alındı',
+                'note' => $assignment->note
+            ];
+            
+            // Ekipman detayları
+            foreach ($assignment->items as $item) {
+                $timeline[] = [
+                    'type' => 'equipment_detail',
+                    'type_label' => 'Ekipman Detayı',
+                    'title' => $item->equipment->name ?? 'Bilinmeyen Ekipman',
+                    'user_name' => $assignment->user->name ?? 'Bilinmeyen',
+                    'date' => $assignment->created_at->format('d.m.Y H:i'),
+                    'description' => 'Kategori: ' . ($item->equipment->category->name ?? 'Kategori yok'),
+                    'note' => 'Miktar: ' . ($item->quantity ?? 1) . ' adet'
+                ];
+            }
+            
+            // Teslim işlemi (eğer tamamlandıysa)
+            if ($assignment->status == 1) {
+                $timeline[] = [
+                    'type' => 'return',
+                    'type_label' => 'Teslim Edildi',
+                    'title' => 'Ekipman Teslim Edildi',
+                    'user_name' => $assignment->user->name ?? 'Bilinmeyen',
+                    'date' => $assignment->updated_at->format('d.m.Y H:i'),
+                    'description' => 'Zimmet işlemi tamamlandı',
+                    'note' => $assignment->note,
+                    'damage_note' => $assignment->damage_note
+                ];
+            }
+            
+            // Arıza kayıtları (eğer varsa)
+            $faults = \App\Models\Fault::where('equipment_stock_id', $assignment->items->first()->equipment_stock_id ?? null)
+                ->with(['reporter', 'resolver'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            foreach ($faults as $fault) {
+                $timeline[] = [
+                    'type' => 'fault',
+                    'type_label' => 'Arıza Bildirimi',
+                    'title' => ucfirst($fault->type) . ' Bildirimi',
+                    'user_name' => $fault->reporter->name ?? 'Bilinmeyen',
+                    'date' => $fault->created_at->format('d.m.Y H:i'),
+                    'description' => $fault->description,
+                    'note' => $fault->resolution_note,
+                    'damage_note' => $fault->status === 'giderildi' ? 'Çözüldü' : 'Beklemede'
+                ];
+            }
+            
+            // Tarihe göre sırala
+            usort($timeline, function($a, $b) {
+                return strtotime($a['date']) - strtotime($b['date']);
+            });
+            
+            return response()->json([
+                'success' => true,
+                'timeline' => $timeline
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Zaman çizelgesi yüklenirken hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }

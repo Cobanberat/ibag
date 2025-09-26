@@ -71,7 +71,7 @@ class FaultController extends Controller
         
         // Bekleyen arızalar
         $faults = Fault::with(['equipmentStock.equipment.category', 'reporter'])
-            ->whereIn('status', ['Beklemede', 'İşlemde'])
+            ->whereIn('status', ['beklemede', 'işlemde'])
             ->orderBy('priority', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -79,26 +79,26 @@ class FaultController extends Controller
         // Bakım gereken ekipmanlar - faults tablosundan
         $maintenanceItems = Fault::with(['equipmentStock.equipment.category'])
             ->where('type', 'bakım')
-            ->whereIn('status', ['Beklemede', 'İşlemde'])
+            ->whereIn('status', ['beklemede', 'işlemde'])
             ->orderBy('created_at', 'desc')
             ->get();
             
         // Arızalı ekipmanlar - faults tablosundan
         $faultyItems = Fault::with(['equipmentStock.equipment.category'])
             ->where('type', 'arıza')
-            ->whereIn('status', ['Beklemede', 'İşlemde'])
+            ->whereIn('status', ['beklemede', 'işlemde'])
             ->orderBy('created_at', 'desc')
             ->get();
             
         // Çözülen arızalar
         $resolvedFaults = Fault::with(['equipmentStock.equipment.category', 'reporter', 'resolver'])
-            ->where('status', 'Çözüldü')
+            ->where('status', 'giderildi')
             ->orderBy('resolved_date', 'desc')
             ->get();
             
         // İstatistikler
         $stats = [
-            'bekleyen' => Fault::whereIn('status', ['Beklemede', 'İşlemde'])->count(),
+            'bekleyen' => Fault::whereIn('status', ['beklemede', 'işlemde'])->count(),
             'bakim' => $maintenanceItems->count(),
             'arizali' => $faultyItems->count(),
             'cozulen' => $resolvedFaults->count()
@@ -135,6 +135,33 @@ class FaultController extends Controller
                 'reported_date' => $fault->created_at ? \Carbon\Carbon::parse($fault->created_at)->format('d.m.Y H:i') : 'Tarih yok',
                 'reporter_name' => $fault->reporter->name ?? 'Bilinmeyen',
                 'photo_path' => $fault->photo_path
+            ]
+        ]);
+    }
+
+    public function showResolved($id)
+    {
+        $fault = Fault::with(['equipmentStock.equipment.category', 'reporter', 'resolver'])
+            ->where('id', $id)
+            ->whereNotNull('resolved_date')
+            ->firstOrFail();
+            
+        return response()->json([
+            'success' => true,
+            'fault' => [
+                'equipment_name' => $fault->equipmentStock->equipment->name ?? 'Bilinmeyen',
+                'equipment_code' => $fault->equipmentStock->code ?? 'Kod yok',
+                'category_name' => $fault->equipmentStock->equipment->category->name ?? 'Kategori yok',
+                'type' => $fault->type,
+                'priority' => $fault->priority,
+                'status' => $fault->status,
+                'description' => $fault->description,
+                'reported_date' => $fault->created_at ? \Carbon\Carbon::parse($fault->created_at)->format('d.m.Y H:i') : 'Tarih yok',
+                'reporter_name' => $fault->reporter->name ?? 'Bilinmeyen',
+                'resolved_date' => $fault->resolved_date ? \Carbon\Carbon::parse($fault->resolved_date)->format('d.m.Y H:i') : 'Tarih yok',
+                'resolver_name' => $fault->resolver->name ?? 'Bilinmeyen',
+                'resolution_note' => $fault->resolution_note ?? 'Açıklama yok',
+                'resolved_photo_path' => $fault->resolved_photo_path
             ]
         ]);
     }
@@ -199,15 +226,33 @@ class FaultController extends Controller
 
     public function resolve(Request $request)
     {
-        $request->validate([
-            'equipment_stock_id' => 'required|exists:stock_depo,id',
-            'type' => 'required|in:arıza,bakım,diğer',
-            'resolution_note' => 'required|string|min:10',
-            'resolved_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'resolution_cost' => 'nullable|numeric|min:0',
-            'resolution_time' => 'nullable|numeric|min:0',
-            'next_maintenance_date' => 'nullable|date'
-        ]);
+        try {
+            $request->validate([
+                'equipment_stock_id' => 'required|exists:stock_depo,id',
+                'type' => 'required|in:arıza,bakım,diğer',
+                'resolution_note' => 'required|string|min:10|max:1000',
+                'resolved_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'next_maintenance_date' => 'nullable|date|after:today'
+            ], [
+                'equipment_stock_id.required' => 'Ekipman seçimi zorunludur.',
+                'equipment_stock_id.exists' => 'Seçilen ekipman bulunamadı.',
+                'type.required' => 'İşlem tipi seçimi zorunludur.',
+                'type.in' => 'Geçersiz işlem tipi.',
+                'resolution_note.required' => 'Çözüm açıklaması zorunludur.',
+                'resolution_note.min' => 'Çözüm açıklaması en az 10 karakter olmalıdır.',
+                'resolution_note.max' => 'Çözüm açıklaması en fazla 1000 karakter olabilir.',
+                'resolved_photo.image' => 'Yüklenen dosya resim formatında olmalıdır.',
+                'resolved_photo.mimes' => 'Resim dosyası jpeg, png veya jpg formatında olmalıdır.',
+                'resolved_photo.max' => 'Resim dosyası en fazla 2MB olabilir.',
+                'next_maintenance_date.date' => 'Geçerli bir tarih formatı giriniz.',
+                'next_maintenance_date.after' => 'Sonraki bakım tarihi bugünden sonra olmalıdır.'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasyon hatası: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
+        }
 
         try {
             $equipmentStock = EquipmentStock::findOrFail($request->equipment_stock_id);
@@ -218,16 +263,14 @@ class FaultController extends Controller
             
             // Fault kaydını güncelle
             $fault = Fault::where('equipment_stock_id', $request->equipment_stock_id)
-                ->whereIn('status', ['Beklemede', 'İşlemde'])
+                ->whereIn('status', ['beklemede', 'işlemde'])
                 ->first();
                 
             if ($fault) {
-                $fault->status = 'Çözüldü';
+                $fault->status = 'giderildi';
                 $fault->resolution_note = $request->resolution_note;
                 $fault->resolved_date = now();
                 $fault->resolved_by = Auth::id();
-                $fault->resolution_cost = $request->resolution_cost;
-                $fault->resolution_time = $request->resolution_time;
                 
                 // Çözüm fotoğrafı yükleme
                 if ($request->hasFile('resolved_photo')) {
@@ -296,7 +339,7 @@ class FaultController extends Controller
     {
         $fault = Fault::with(['equipmentStock.equipment.category', 'resolver'])
             ->where('id', $id)
-            ->where('status', 'Çözüldü')
+            ->where('status', 'giderildi')
             ->firstOrFail();
             
         return response()->json([

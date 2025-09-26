@@ -13,9 +13,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                <button type="button" class="btn btn-success" onclick="showResolveModal(currentFaultId)">
-                    <i class="fas fa-check me-2"></i>Çöz
-                </button>
             </div>
         </div>
     </div>

@@ -182,8 +182,11 @@
             <label class="form-label fw-bold">
                 <i class="fas fa-camera me-1"></i>Fotoğraf:
             </label>
-            <input type="file" name="equipment_photo[]" class="form-control" accept="image/*" required>
-            <small class="text-muted">Ekipmanın mevcut durumunu gösteren fotoğraf çekin</small>
+            <input type="file" name="equipment_photo[]" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" required>
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Desteklenen formatlar: JPG, PNG, GIF, WebP | Maksimum boyut: 5MB
+            </small>
         </div>
     </template>
 
@@ -196,8 +199,11 @@
             <label class="form-label fw-bold">
                 <i class="fas fa-camera me-1"></i>Fotoğraf:
             </label>
-            <input type="file" name="equipment_photo[]" class="form-control" accept="image/*" required>
-            <small class="text-muted">Ekipmanın mevcut durumunu gösteren fotoğraf çekin</small>
+            <input type="file" name="equipment_photo[]" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" required>
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Desteklenen formatlar: JPG, PNG, GIF, WebP | Maksimum boyut: 5MB
+            </small>
         </div>
     </template>
 
@@ -271,6 +277,19 @@
         border-top: 1px solid #e9ecef;
         padding-top: 1rem;
         margin-top: 1rem;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
     }
     
     #equipment-list {
