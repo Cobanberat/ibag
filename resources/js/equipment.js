@@ -1,9 +1,13 @@
+// Global değişken - aktif dosya input'unu takip etmek için
+let activeFileInput = null;
+
 // Equipment sayfası için basit filtreleme sistemi
 document.addEventListener('DOMContentLoaded', function() {
     // Filtreleme için event listener'ları ekle
     const searchInput = document.getElementById('searchInput');
     const categoryFilter = document.getElementById('categoryFilter');
     const codeFilter = document.getElementById('codeFilter');
+    const perPageSelect = document.getElementById('perPageSelect');
     const clearFiltersBtn = document.getElementById('clearFilters');
 
     // Arama filtresi
@@ -21,12 +25,24 @@ document.addEventListener('DOMContentLoaded', function() {
         codeFilter.addEventListener('input', filterTable);
     }
 
+    // Sayfa başına kayıt sayısı değişikliği
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', function() {
+            const perPage = this.value;
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('per_page', perPage);
+            currentUrl.searchParams.set('page', '1'); // İlk sayfaya dön
+            window.location.href = currentUrl.toString();
+        });
+    }
+
     // Filtreleri temizle butonu
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', function() {
             if (searchInput) searchInput.value = '';
             if (categoryFilter) categoryFilter.value = '';
             if (codeFilter) codeFilter.value = '';
+            if (perPageSelect) perPageSelect.value = '15';
             filterTable();
         });
     }
@@ -203,7 +219,17 @@ function initInlineEditing() {
 function startEditing(cell) {
     const field = cell.getAttribute('data-field');
     const id = cell.getAttribute('data-id');
-    const currentValue = cell.textContent.trim();
+    let currentValue;
+    
+    // Resim hücresi için özel işlem
+    if (field === 'photo') {
+        currentValue = cell.innerHTML; // HTML içeriğini sakla
+    } else {
+        currentValue = cell.textContent.trim();
+    }
+    
+    // Orijinal değeri sakla
+    cell.setAttribute('data-original-value', currentValue);
     
     // Eğer zaten düzenleme modundaysa, çık
     if (cell.querySelector('input, select, textarea')) {
@@ -253,6 +279,44 @@ function startEditing(cell) {
             input.value = currentValue === '-' ? '' : currentValue;
             break;
             
+        case 'photo':
+            // Dosya seçim input'u oluştur
+            activeFileInput = document.createElement('input');
+            activeFileInput.type = 'file';
+            activeFileInput.accept = 'image/*';
+            activeFileInput.className = 'form-control form-control-sm';
+            activeFileInput.style.fontSize = '0.8rem';
+            
+            // Dosya seçildiğinde otomatik kaydet
+            activeFileInput.addEventListener('change', function() {
+                console.log('File input change event:', {
+                    filesCount: this.files.length,
+                    fileName: this.files.length > 0 ? this.files[0].name : 'none'
+                });
+                
+                if (this.files.length > 0) {
+                    // Loading göster
+                    cell.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin text-primary"></i><br><small class="text-muted">Yükleniyor...</small></div>';
+                    
+                    // Dosya input'unu sakla ve saveEdit'i çağır
+                    setTimeout(() => {
+                        saveEdit(cell, field, id, null);
+                    }, 100);
+                } else {
+                    // Dosya seçilmediyse eski haline dön
+                    cancelEdit(cell, currentValue);
+                }
+            });
+            
+            // Input'u hücreye ekle
+            cell.innerHTML = '';
+            cell.appendChild(activeFileInput);
+            
+            // Focus ver ve input'u seç
+            activeFileInput.focus();
+            
+            return; // Normal input oluşturma işlemini atla
+            
         default:
             return; // Düzenlenemez alan
     }
@@ -287,7 +351,105 @@ function startEditing(cell) {
 }
 
 function saveEdit(cell, field, id, newValue) {
-    // AJAX ile güncelleme yap
+    // Resim yükleme için özel işlem
+    if (field === 'photo') {
+        // Global activeFileInput'u kullan
+        const fileInput = activeFileInput;
+        
+        console.log('Photo upload attempt:', {
+            hasActiveInput: !!activeFileInput,
+            hasFiles: activeFileInput ? activeFileInput.files.length : 0
+        });
+        
+        if (!fileInput || !fileInput.files.length) {
+            // Dosya seçilmediyse iptal et
+            console.log('No file selected, cancelling');
+            cancelEdit(cell, cell.getAttribute('data-original-value') || '-');
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Dosya validasyonu
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Desteklenmeyen dosya formatı! Sadece JPG, PNG, GIF, WebP kabul edilir.', 'error');
+            return;
+        }
+        
+        if (file.size > maxSize) {
+            showToast('Dosya boyutu çok büyük! Maksimum 5MB olmalıdır.', 'error');
+            return;
+        }
+        
+        // FormData ile dosya yükle
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('field', field);
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        
+        console.log('Sending photo upload request:', {
+            equipmentId: id,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type
+        });
+        
+        fetch(`/admin/equipment-stock/${id}/update-field`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                // Başarılı güncelleme - yeni resmi göster
+                const newImageUrl = data.image_url || '/images/placeholder.png';
+                cell.innerHTML = `<img src="${newImageUrl}" alt="Ekipman Resmi" class="img-fluid rounded" style="max-width: 50px; max-height: 50px; object-fit: cover; cursor: pointer;" onclick="showImageModal('${newImageUrl}', 'Ekipman')">`;
+                cell.style.backgroundColor = '#d4edda';
+                
+                // 2 saniye sonra normal renge dön
+                setTimeout(() => {
+                    cell.style.backgroundColor = '';
+                }, 2000);
+                
+                showToast('Resim başarıyla yüklendi!', 'success');
+            } else {
+                // Hata durumu
+                cancelEdit(cell, cell.getAttribute('data-original-value') || '-');
+                showToast('Resim yükleme başarısız: ' + (data.message || 'Bilinmeyen hata'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Resim yükleme hatası:', error);
+            cancelEdit(cell, cell.getAttribute('data-original-value') || '-');
+            showToast('Resim yükleme başarısız!', 'error');
+        })
+        .finally(() => {
+            // İşlem tamamlandıktan sonra flag'i sıfırla
+            const input = cell.querySelector('input, select, textarea');
+            if (input) {
+                input.isSaving = false;
+            }
+            
+            // Resim yükleme için input'u temizle
+            if (field === 'photo' && activeFileInput) {
+                if (activeFileInput.parentNode) {
+                    activeFileInput.parentNode.removeChild(activeFileInput);
+                }
+                activeFileInput = null;
+            }
+        });
+        
+        return;
+    }
+    
+    // Normal text alanları için AJAX ile güncelleme yap
     fetch(`/admin/equipment-stock/${id}/update-field`, {
         method: 'POST',
         headers: {
@@ -334,7 +496,21 @@ function saveEdit(cell, field, id, newValue) {
 }
 
 function cancelEdit(cell, originalValue) {
-    cell.innerHTML = originalValue || '-';
+    const field = cell.getAttribute('data-field');
+    
+    if (field === 'photo') {
+        // Resim hücresi için özel işlem
+        if (originalValue && originalValue !== '-') {
+            // Orijinal resim varsa göster
+            cell.innerHTML = originalValue;
+        } else {
+            // Resim yoksa '-' göster
+            cell.innerHTML = '<span class="text-muted">-</span>';
+        }
+    } else {
+        // Diğer hücreler için normal işlem
+        cell.innerHTML = originalValue || '-';
+    }
 }
 
 // Toast mesaj gösterme fonksiyonu

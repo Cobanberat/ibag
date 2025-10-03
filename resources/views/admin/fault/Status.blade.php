@@ -644,10 +644,16 @@
             const status = document.getElementById('filterStatus').value;
             const search = document.getElementById('filterSearch').value.toLowerCase();
 
-            // Tüm tablolarda filtreleme yap
-            filterTable('pendingTableBody', category, priority, status, search);
-            filterTable('bakimTableBody', category, priority, status, search);
-            filterTable('arizaliTableBody', category, priority, status, search);
+            // Aktif sekmedeki tabloyu filtrele
+            const activeTab = document.querySelector('.nav-link.active');
+            if (activeTab) {
+                const targetId = activeTab.getAttribute('data-bs-target');
+                if (targetId === '#gereken') {
+                    filterTable('pendingTableBody', category, priority, status, search);
+                } else if (targetId === '#gecmis') {
+                    filterHistoryTable(category, priority, status, search);
+                }
+            }
         }
 
         function filterTable(tableBodyId, category, priority, status, search) {
@@ -702,6 +708,56 @@
             });
         }
 
+        function filterHistoryTable(category, priority, status, search) {
+            // Geçmiş işlemler tablosunu bul
+            const historyTable = document.querySelector('#gecmis .table tbody');
+            if (!historyTable) return;
+
+            const rows = historyTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                let show = true;
+
+                // Kategori filtresi - ekipman adında kategori arama
+                if (category) {
+                    const equipmentName = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
+                    if (!equipmentName.includes(category.toLowerCase())) {
+                        show = false;
+                    }
+                }
+
+                // Öncelik filtresi - geçmiş tabloda öncelik bilgisi yok, bu yüzden atla
+                // Priority filter is skipped for history table as it doesn't have priority column
+
+                // Durum filtresi (6. sütun - Sonuç)
+                if (status) {
+                    const statusText = row.querySelector('td:nth-child(6)')?.textContent.trim().toLowerCase();
+                    const statusMap = {
+                        'beklemede': 'beklemede',
+                        'işlemde': 'işlemde',
+                        'giderildi': 'çözüldü'
+                    };
+                    if (statusText !== statusMap[status]) {
+                        show = false;
+                    }
+                }
+
+                // Arama filtresi - ekipman adı ve işlem tipinde arama
+                if (search) {
+                    const equipmentName = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
+                    const processType = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                    const reporter = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+                    
+                    if (!equipmentName.includes(search) && 
+                        !processType.includes(search) && 
+                        !reporter.includes(search)) {
+                        show = false;
+                    }
+                }
+
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
         // Temizle butonu fonksiyonu
         function clearFilters() {
             document.getElementById('filterCategory').value = '';
@@ -717,6 +773,14 @@
         document.getElementById('filterStatus').addEventListener('change', applyFilters);
         document.getElementById('filterSearch').addEventListener('input', applyFilters);
         document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+        // Tab switching event listeners
+        document.querySelectorAll('.nav-link[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function() {
+                // Tab değiştiğinde filtreleri uygula
+                applyFilters();
+            });
+        });
 
     // Form submit handlers
         function handleResolveFault(event) {

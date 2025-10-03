@@ -481,12 +481,21 @@ function saveUser() {
         return;
     }
 
-    const form = document.getElementById('editUserForm');
-    const formData = new FormData(form);
+    // Form verilerini topla
+    const formData = {
+        name: document.getElementById('edit_name').value,
+        email: document.getElementById('edit_email').value,
+        username: document.getElementById('edit_username').value,
+        role: document.getElementById('edit_role').value,
+        status: document.getElementById('edit_status').value,
+        avatar_color: document.getElementById('edit_avatar_color').value,
+        password: document.getElementById('edit_password').value,
+        password_confirmation: document.getElementById('edit_password_confirmation').value
+    };
     
     // Şifre kontrolü
-    const password = formData.get('password');
-    const passwordConfirmation = formData.get('password_confirmation');
+    const password = formData.password;
+    const passwordConfirmation = formData.password_confirmation;
     
     console.log('Password:', password);
     console.log('Password Confirmation:', passwordConfirmation);
@@ -511,15 +520,12 @@ function saveUser() {
 
     // Şifre boşsa formdan çıkar
     if (!password) {
-        formData.delete('password');
-        formData.delete('password_confirmation');
+        delete formData.password;
+        delete formData.password_confirmation;
     }
     
     // Form verilerini console'a yazdır
-    console.log('Form Data:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key + ': ' + value);
-    }
+    console.log('Form Data:', formData);
 
     // Loading göster
     Swal.fire({
@@ -535,49 +541,36 @@ function saveUser() {
         method: 'PUT',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify(formData)
     })
     .then(response => response.json())
     .then(data => {
         Swal.close();
         if (data.success) {
-            Swal.fire({
-                title: 'Başarılı!',
-                text: data.message,
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
+            showToast('success', 'Başarılı!', data.message);
+            setTimeout(() => {
                 location.reload();
-            });
+            }, 1500);
         } else {
             // Hata detaylarını göster
             let errorMessage = data.message;
             if (data.errors) {
-                errorMessage += '\n\nDetaylar:\n';
+                errorMessage += ' - ';
                 for (const field in data.errors) {
-                    errorMessage += `• ${field}: ${data.errors[field].join(', ')}\n`;
+                    errorMessage += `${field}: ${data.errors[field].join(', ')}; `;
                 }
             }
             
-            Swal.fire({
-                title: 'Hata!',
-                text: errorMessage,
-                icon: 'error',
-                width: '600px'
-            });
+            showToast('error', 'Hata!', errorMessage);
         }
     })
     .catch(error => {
         Swal.close();
         console.error('Error:', error);
-        Swal.fire({
-            title: 'Hata!',
-            text: 'İşlem sırasında hata oluştu.',
-            icon: 'error'
-        });
+        showToast('error', 'Hata!', 'İşlem sırasında hata oluştu.');
     });
 }
 

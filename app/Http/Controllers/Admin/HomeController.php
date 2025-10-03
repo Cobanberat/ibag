@@ -309,7 +309,11 @@ class HomeController extends Controller
     {
         return Assignment::with(['items.equipment', 'items.equipment.category'])
             ->where('user_id', $user->id)
-            ->where('status', 1) // 1 = Aktif (Geldi)
+            ->where(function($query) {
+                $query->where('status', 1)
+                      ->orWhere('status', true)
+                      ->orWhere('status', '1');
+            })
             ->latest()
             ->limit(5)
             ->get()
@@ -320,7 +324,7 @@ class HomeController extends Controller
                     'equipment_name' => $firstItem->equipment->name ?? 'Bilinmiyor',
                     'category' => $firstItem->equipment->category->name ?? 'Kategori Yok',
                     'assigned_date' => $assignment->created_at->format('d-m-Y'),
-                    'status' => $assignment->status ? 'Aktif' : 'Pasif',
+                    'status' => 'Aktif', // Bu metod sadece aktif zimmetleri getiriyor
                     'notes' => $assignment->note ?? 'Not yok'
                 ];
             });
@@ -335,13 +339,18 @@ class HomeController extends Controller
             ->get()
             ->map(function ($assignment) {
                 $firstItem = $assignment->items->first();
+                // Status kontrolünü daha güvenli hale getir
+                $isActive = ($assignment->status == 1 || $assignment->status === true || $assignment->status === '1');
+                $status = $isActive ? 'Aktif' : 'Pasif';
+                $statusBadge = $this->getAssignmentStatusBadge($isActive);
+                
                 return [
                     'id' => $assignment->id,
                     'equipment_name' => $firstItem->equipment->name ?? 'Bilinmiyor',
                     'category' => $firstItem->equipment->category->name ?? 'Kategori Yok',
                     'assigned_date' => $assignment->created_at->format('d-m-Y H:i'),
-                    'status' => $assignment->status ? 'Aktif' : 'Pasif',
-                    'status_badge' => $this->getAssignmentStatusBadge($assignment->status)
+                    'status' => $status,
+                    'status_badge' => $statusBadge
                 ];
             });
     }
@@ -349,8 +358,18 @@ class HomeController extends Controller
     private function getMyStats($user)
     {
         $totalAssignments = Assignment::where('user_id', $user->id)->count();
-        $activeAssignments = Assignment::where('user_id', $user->id)->where('status', 1)->count();
-        $completedAssignments = Assignment::where('user_id', $user->id)->where('status', 0)->count();
+        $activeAssignments = Assignment::where('user_id', $user->id)
+            ->where(function($query) {
+                $query->where('status', 1)
+                      ->orWhere('status', true)
+                      ->orWhere('status', '1');
+            })->count();
+        $completedAssignments = Assignment::where('user_id', $user->id)
+            ->where(function($query) {
+                $query->where('status', 0)
+                      ->orWhere('status', false)
+                      ->orWhere('status', '0');
+            })->count();
         $thisMonthAssignments = Assignment::where('user_id', $user->id)
             ->whereMonth('created_at', now()->month)
             ->count();
@@ -381,13 +400,6 @@ class HomeController extends Controller
                 'url' => route('admin.teslimEt')
             ],
             [
-                'title' => 'Arıza Bildir',
-                'description' => 'Ekipman arızası bildir',
-                'icon' => 'fas fa-exclamation-triangle',
-                'color' => 'danger',
-                'url' => route('admin.fault.create')
-            ],
-            [
                 'title' => 'Profilim',
                 'description' => 'Hesap bilgilerini düzenle',
                 'icon' => 'fas fa-user-circle',
@@ -399,8 +411,9 @@ class HomeController extends Controller
     
     private function getAssignmentStatusBadge($status)
     {
-        // status boolean: 1 = Aktif (Geldi), 0 = Pasif (Gitti)
-        if ($status) {
+        // status kontrolü: 1, true, '1' = Aktif (Geldi), diğerleri = Pasif (Gitti)
+        $isActive = ($status == 1 || $status === true || $status === '1');
+        if ($isActive) {
             return 'bg-success'; // Aktif
         } else {
             return 'bg-secondary'; // Pasif

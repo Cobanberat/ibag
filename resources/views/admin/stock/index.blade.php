@@ -27,9 +27,9 @@
     </div>
 </div>
    <div>
-    <div class="alert alert-warning d-flex align-items-center" role="alert">
+    <div class="alert alert-warning d-flex align-items-center d-none" role="alert" id="criticalStockAlert">
         <i class="fas fa-exclamation-circle me-2"></i>
-        Kritik seviyenin altına düşen ürünler var! Lütfen stokları kontrol edin.
+        <span id="criticalStockMessage">Kritik seviyenin altına düşen ürünler var! Lütfen stokları kontrol edin.</span>
     </div>
     <!-- Filtreler -->
     <div class="row mb-4">
@@ -65,17 +65,29 @@
         </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-3 col-lg-2">
+                            <label class="form-label fw-bold small mb-1">
+                                <i class="fas fa-list me-1 text-primary"></i>Sayfa Başına
+                            </label>
+                            <select class="form-select form-select-sm" id="perPageSelect">
+                                <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 kayıt</option>
+                                <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 kayıt</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 kayıt</option>
+                                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 kayıt</option>
+                                <option value="999999" {{ request('per_page') == 999999 ? 'selected' : '' }}>Tümünü Listele</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
                             <button class="btn btn-sm btn-outline-secondary w-100" id="clearFiltersBtn">
                                 <i class="fas fa-times me-1"></i>
                                 <span class="d-none d-sm-inline">Temizle</span>
                             </button>
                         </div>
                         <div class="col-12 col-sm-6 col-md-3 col-lg-3">
-                            <button class="btn btn-add-equipment d-flex align-items-center justify-content-center gap-2 w-100" data-bs-toggle="modal" data-bs-target="#addProductModal">
-            <i class="fas fa-plus"></i>
+                            <button class="btn btn-sm btn-add-equipment d-flex align-items-center justify-content-center gap-2 w-100" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="fas fa-plus"></i>
                                 <span class="d-none d-sm-inline">Yeni Ekipman Ekle</span>
                                 <span class="d-sm-none">Ekle</span>
-        </button>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -91,7 +103,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="addProductForm">
-                    <div class="modal-body">
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                         <!-- Mod Seçimi -->
                         <div class="mb-4">
                             <div class="form-check form-switch">
@@ -130,10 +142,26 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold" id="quantityLabel">Miktar</label>
-                                        <input type="number" class="form-control" name="quantity" min="1" value="1" required>
+                                        <input type="number" class="form-control" name="quantity" min="1" max="10000" value="1" required>
                                         <small class="form-text text-muted" id="quantityHelp">Ayrı takip ekipmanları için miktar otomatik 1 olur</small>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Seçilen ekipmanın mevcut kodları -->
+                            <div id="quickAddCodeSelect" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Mevcut Kod Seç (Özellikleri Kopyala)</label>
+                                            <select class="form-select" id="quickAddExistingCodesSelect">
+                                                <option value="">Kod seçiniz...</option>
+                                            </select>
+                                            <small class="form-text text-muted">Seçilen koddan marka, model, beden ve özellik bilgileri kopyalanacak</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </div>
 
@@ -172,7 +200,7 @@
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold" id="manualQuantityLabel">Miktar</label>
-                                        <input type="number" class="form-control" name="manual_quantity" min="1" value="1" required>
+                                        <input type="number" class="form-control" name="manual_quantity" min="1" max="10000" value="1" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -199,7 +227,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold" id="modalCriticalLevelLabel">Kritik Seviye</label>
-                                        <input type="number" class="form-control" name="critical_level" id="modalCriticalLevel" min="0" value="3" step="0.01">
+                                        <input type="number" class="form-control" name="critical_level" id="modalCriticalLevel" min="0" max="10000" value="3" step="0.01">
                                         <small class="form-text text-muted" id="modalCriticalLevelHelp">Birim türüne göre kritik seviye</small>
                                     </div>
                                 </div>
@@ -322,7 +350,7 @@
     <div class="card mt-2 p-2" style="border-radius:1.2rem;box-shadow:0 4px 24px #0d6efd11;">
             <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0" id="stockTable" style="font-size:0.95em;">
+                <table class="table table-hover table-striped mb-0" id="stockTable">
                     <thead class="table-light">
                         <tr>
                             <th class="d-none d-md-table-cell"><input type="checkbox" id="selectAll"></th>
@@ -331,9 +359,8 @@
                             <th class="d-none d-md-table-cell">Birim Türü</th>
                             <th>Miktar</th>
                             <th class="d-none d-sm-table-cell">Kritik Seviye</th>
+                            <th class="d-none d-lg-table-cell">Durum</th>
                             <th class="d-none d-md-table-cell">Takip Türü</th>
-                            <th class="d-none d-lg-table-cell">Stok Durumu</th>
-                            <th class="d-none d-xl-table-cell">Durum</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
@@ -458,7 +485,7 @@
                     <div class="col-md-6">
                 <div class="mb-3">
                                                             <label for="operationAmount" class="form-label fw-bold" id="operationAmountLabel">Miktar</label>
-                                <input type="number" class="form-control" id="operationAmount" min="1" required>
+                                <input type="number" class="form-control" id="operationAmount" min="1" max="10000" required>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -530,7 +557,7 @@
                     </div>
                 <div class="mb-3">
                     <label for="editStockCriticalLevel" class="form-label">Kritik Seviye</label>
-                        <input type="number" class="form-control" id="editStockCriticalLevel" min="1" step="0.01" required>
+                        <input type="number" class="form-control" id="editStockCriticalLevel" min="1" max="10000" step="0.01" required>
                         <small class="form-text text-muted" id="editCriticalLevelHelp">Birim türüne göre kritik seviye</small>
                 </div>
                 <div class="mb-3">
@@ -551,632 +578,5 @@
 <!-- KALDIRILDI: Ayrı düzenleme modalı (tek modal mimarisi için) -->
 
 @endsection
-
-<style>
-.btn-add-equipment {
-    background: linear-gradient(135deg, #3b7ddd 0%, #2f64b1 100%);
-    border: none;
-    border-radius: 12px;
-    padding: 12px 24px;
-    color: #ffffff !important;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(59, 125, 221, 0.3);
-}
-
-.btn-add-equipment:hover {
-    background: linear-gradient(135deg, #2f64b1 0%, #1e4a8c 100%);
-    color: #ffffff !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 125, 221, 0.4);
-}
-
-.btn-add-equipment:active {
-    transform: translateY(0);
-}
-
-.btn-add-equipment:focus {
-    box-shadow: 0 0 0 0.2rem rgba(59, 125, 221, 0.25);
-    outline: none;
-}
-
-.btn-add-equipment i {
-    margin-right: 8px;
-    font-size: 1.1rem;
-}
-
-/* Carousel dots styling */
-.dot {
-    height: 8px;
-    width: 8px;
-    margin: 0 4px;
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    transform: scale(1);
-}
-
-.dot.active {
-    background-color: #007bff;
-    transform: scale(1.2);
-}
-
-.dot:hover {
-    background-color: #666;
-    transform: scale(1.1);
-}
-
-/* Carousel transition effects */
-.stock-codes-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.stock-codes-slide {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.stock-codes-slide.slide-out-left {
-    transform: translateX(-100%);
-    opacity: 0;
-}
-
-.stock-codes-slide.slide-out-right {
-    transform: translateX(100%);
-    opacity: 0;
-}
-
-.stock-codes-slide.slide-in-left {
-    transform: translateX(-100%);
-    opacity: 0;
-}
-
-.stock-codes-slide.slide-in-right {
-    transform: translateX(100%);
-    opacity: 0;
-}
-
-/* Button hover effects */
-.carousel-btn {
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.carousel-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.carousel-btn:active {
-    transform: translateY(0);
-}
-
-.carousel-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Page info animation */
-.page-info {
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-/* Card hover effects */
-.stock-code-card {
-    transition: all 0.3s ease;
-    transform: translateY(0);
-}
-
-.stock-code-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* Responsive Stock Codes */
-.stock-codes-container {
-    min-height: 200px;
-}
-
-.stock-code-card .card-body {
-    padding: 0.75rem;
-}
-
-.stock-code-card .card-title {
-    font-size: 0.875rem;
-    line-height: 1.2;
-}
-
-.stock-code-card .badge {
-    font-size: 0.7rem;
-    padding: 0.25em 0.5em;
-}
-
-.stock-code-card .small {
-    font-size: 0.75rem;
-    line-height: 1.3;
-}
-
-/* Mobile Stock Codes */
-@media (max-width: 768px) {
-    .stock-codes-container {
-        min-height: 150px;
-    }
-    
-    .stock-code-card .card-body {
-        padding: 0.5rem;
-    }
-    
-    .stock-code-card .card-title {
-        font-size: 0.8rem;
-    }
-    
-    .stock-code-card .badge {
-        font-size: 0.65rem;
-        padding: 0.2em 0.4em;
-    }
-    
-    .stock-code-card .small {
-        font-size: 0.7rem;
-    }
-    
-    .carousel-btn {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .page-info {
-        font-size: 0.75rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .stock-codes-container {
-        min-height: 120px;
-    }
-    
-    .stock-code-card .card-body {
-        padding: 0.4rem;
-    }
-    
-    .stock-code-card .card-title {
-        font-size: 0.75rem;
-    }
-    
-    .stock-code-card .badge {
-        font-size: 0.6rem;
-        padding: 0.15em 0.3em;
-    }
-    
-    .stock-code-card .small {
-        font-size: 0.65rem;
-    }
-    
-    .carousel-btn {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.4rem;
-    }
-    
-    .page-info {
-        font-size: 0.7rem;
-    }
-    
-    .dot {
-        height: 6px;
-        width: 6px;
-        margin: 0 3px;
-    }
-}
-
-/* Responsive Breadcrumb */
-.breadcrumb {
-    background: transparent;
-    padding: 0;
-    margin: 0;
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-    content: "›";
-    color: #6c757d;
-}
-
-/* İşlemler butonları arası boşluk */
-.category-actions .btn {
-    margin-bottom: 4px;
-    margin-right: 2px;
-}
-
-.category-actions .btn:last-child {
-    margin-right: 0;
-}
-
-/* İşlemler sütunu genişlik ayarı */
-.category-actions {
-    white-space: nowrap;
-    min-width: 150px;
-}
-
-/* Responsive Table */
-.table-responsive {
-    border-radius: 0.5rem;
-}
-
-.table th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-.table tbody tr:hover td {
-    background-color: transparent;
-}
-
-/* Mobile Optimizations */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding: 0 15px;
-    }
-    
-    .btn-add-equipment {
-        font-size: 0.875rem;
-        padding: 8px 16px;
-    }
-    
-    .btn-add-equipment i {
-        margin-right: 4px;
-    }
-    
-    .category-actions {
-        min-width: 120px;
-    }
-    
-    .category-actions .btn {
-        padding: 0.25em 0.5em;
-        font-size: 0.75rem;
-        margin-bottom: 2px;
-        margin-right: 1px;
-    }
-    
-    .table {
-        font-size: 0.8rem;
-    }
-    
-    .pagination {
-        font-size: 1rem;
-    }
-    
-    .pagination .page-link {
-        padding: 0.5rem 0.75rem;
-        font-weight: 500;
-    }
-    
-    .pagination .page-link:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-}
-
-@media (max-width: 576px) {
-    .btn-add-equipment {
-        font-size: 0.8rem;
-        padding: 6px 12px;
-    }
-    
-    .category-actions {
-        min-width: 100px;
-    }
-    
-    .category-actions .btn {
-        padding: 0.2em 0.4em;
-        font-size: 0.7rem;
-    }
-    
-    .table {
-        font-size: 0.75rem;
-    }
-    
-    .badge {
-        font-size: 0.65rem;
-    }
-    
-    .progress {
-        height: 8px;
-    }
-    
-    .pagination {
-        font-size: 0.9rem;
-    }
-    
-    .pagination .page-link {
-        padding: 0.4rem 0.6rem;
-        font-weight: 500;
-    }
-    
-    .pagination .page-link:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-}
-
-/* Tablet Optimizations */
-@media (min-width: 768px) and (max-width: 1024px) {
-    .category-actions {
-        min-width: 180px;
-    }
-    
-    .category-actions .btn {
-        padding: 0.3em 0.6em;
-        font-size: 0.75rem;
-    }
-}
-</style>
-
-<script>
-
-// Stok detaylarını göster/gizle (fallback)
-function toggleStockDetails(stockId) {
-    const detailRow = document.getElementById(`detailRow${stockId}`);
-    const codesContainer = document.getElementById(`stockCodes${stockId}`);
-    
-    if (detailRow.style.display === 'none') {
-        // Detay satırını göster
-        detailRow.style.display = 'table-row';
-        
-        // Eğer kodlar daha önce yüklenmemişse, yükle
-        if (codesContainer.innerHTML.includes('Yükleniyor')) {
-            loadStockCodes(stockId);
-        }
-    } else {
-        // Detay satırını gizle
-        detailRow.style.display = 'none';
-    }
-}
-
-// Stok kodlarını yükle (fallback)
-function loadStockCodes(equipmentId) {
-    const codesContainer = document.getElementById(`stockCodes${equipmentId}`);
-    const carouselControls = document.getElementById(`carouselControls${equipmentId}`);
-    
-    fetch(`/admin/stock/${equipmentId}/detailed-codes`, {
-        method: 'GET',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.codes && data.codes.length > 0) {
-            // Carousel state'i sakla
-            window.stockCarouselData = window.stockCarouselData || {};
-            window.stockCarouselData[equipmentId] = {
-                codes: data.codes,
-                currentPage: 0,
-                itemsPerPage: 4,
-                totalPages: Math.ceil(data.codes.length / 4)
-            };
-            
-            // İlk sayfayı göster
-            showStockCodesPage(equipmentId);
-            
-            // Carousel kontrollerini göster
-            carouselControls.style.display = 'block';
-        } else {
-            codesContainer.innerHTML = `
-                <div class="text-center py-4">
-                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
-                    <p class="text-muted mb-0">Bu ekipman için henüz stok kodu bulunmuyor</p>
-                </div>
-            `;
-        }
-    })
-    .catch(error => {
-        console.error('Error loading stock codes:', error);
-        codesContainer.innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
-                <p class="text-danger mb-0">Kodlar yüklenirken hata oluştu</p>
-            </div>
-        `;
-    });
-}
-
-// Stok kodlarının belirli bir sayfasını göster
-function showStockCodesPage(equipmentId, direction = 'none') {
-    const data = window.stockCarouselData[equipmentId];
-    if (!data) return;
-    
-    const codesContainer = document.getElementById(`stockCodes${equipmentId}`);
-    const pageInfo = document.getElementById(`pageInfo${equipmentId}`);
-    const prevBtn = document.getElementById(`prevBtn${equipmentId}`);
-    const nextBtn = document.getElementById(`nextBtn${equipmentId}`);
-    const dotsContainer = document.getElementById(`dots${equipmentId}`);
-    
-    const startIndex = data.currentPage * data.itemsPerPage;
-    const endIndex = Math.min(startIndex + data.itemsPerPage, data.codes.length);
-    const pageCodes = data.codes.slice(startIndex, endIndex);
-    
-    // HTML oluştur
-    let html = '<div class="row g-2 stock-codes-slide">';
-    pageCodes.forEach((code, index) => {
-        html += `
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="card border-0 shadow-sm h-100 stock-code-card" style="animation-delay: ${index * 0.1}s;">
-                    <div class="card-body p-2 p-md-3">
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-2 gap-1">
-                            <h6 class="card-title mb-0 text-primary small">${code.code || 'Kod Yok'}</h6>
-                            <span class="badge bg-info small">${code.quantity || 0} adet</span>
-                        </div>
-                        <div class="small text-muted">
-                            <div class="d-flex flex-column flex-sm-row gap-1">
-                                <div class="flex-fill">
-                            <div><strong>Marka:</strong> ${code.brand || '-'}</div>
-                            <div><strong>Model:</strong> ${code.model || '-'}</div>
-                                </div>
-                                <div class="flex-fill">
-                            <div><strong>Beden:</strong> ${code.size || '-'}</div>
-                                    <div class="d-none d-sm-block"><strong>Tarih:</strong> ${new Date(code.created_at).toLocaleDateString('tr-TR')}</div>
-                        </div>
-                            </div>
-                            ${code.feature ? `<div class="mt-1"><strong>Özellik:</strong> ${code.feature}</div>` : ''}
-                            ${code.note ? `<div class="mt-1"><strong>Not:</strong> ${code.note}</div>` : ''}
-                            <div class="mt-1 d-sm-none">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>
-                                ${new Date(code.created_at).toLocaleDateString('tr-TR')}
-                            </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    html += '</div>';
-    
-    // Animasyon efekti
-    if (direction !== 'none') {
-        const currentSlide = codesContainer.querySelector('.stock-codes-slide');
-        if (currentSlide) {
-            // Mevcut slide'ı çıkış animasyonu ile gizle
-            currentSlide.classList.add(direction === 'next' ? 'slide-out-left' : 'slide-out-right');
-            
-            setTimeout(() => {
-                codesContainer.innerHTML = html;
-                const newSlide = codesContainer.querySelector('.stock-codes-slide');
-                if (newSlide) {
-                    // Yeni slide'ı giriş animasyonu ile göster
-                    newSlide.classList.add(direction === 'next' ? 'slide-in-right' : 'slide-in-left');
-                    setTimeout(() => {
-                        newSlide.classList.remove('slide-in-left', 'slide-in-right');
-                    }, 50);
-                }
-            }, 250);
-        } else {
-            codesContainer.innerHTML = html;
-        }
-    } else {
-        codesContainer.innerHTML = html;
-    }
-    
-    // Sayfa bilgisini güncelle (animasyonlu)
-    pageInfo.style.opacity = '0';
-    setTimeout(() => {
-        pageInfo.textContent = `${data.currentPage + 1} / ${data.totalPages}`;
-        pageInfo.style.opacity = '1';
-    }, 100);
-    
-    // Butonları güncelle
-    prevBtn.disabled = data.currentPage === 0;
-    nextBtn.disabled = data.currentPage === data.totalPages - 1;
-    
-    // Dots oluştur (animasyonlu)
-    let dotsHtml = '';
-    for (let i = 0; i < data.totalPages; i++) {
-        const isActive = i === data.currentPage ? 'active' : '';
-        dotsHtml += `<span class="dot ${isActive}" onclick="goToPage(${equipmentId}, ${i})"></span>`;
-    }
-    dotsContainer.innerHTML = dotsHtml;
-}
-
-// Önceki sayfa
-function previousPage(equipmentId) {
-    const data = window.stockCarouselData[equipmentId];
-    if (data && data.currentPage > 0) {
-        data.currentPage--;
-        showStockCodesPage(equipmentId, 'prev');
-    }
-}
-
-// Sonraki sayfa
-function nextPage(equipmentId) {
-    const data = window.stockCarouselData[equipmentId];
-    if (data && data.currentPage < data.totalPages - 1) {
-        data.currentPage++;
-        showStockCodesPage(equipmentId, 'next');
-    }
-}
-
-// Belirli bir sayfaya git
-function goToPage(equipmentId, page) {
-    const data = window.stockCarouselData[equipmentId];
-    if (data && page >= 0 && page < data.totalPages) {
-        const direction = page > data.currentPage ? 'next' : 'prev';
-        data.currentPage = page;
-        showStockCodesPage(equipmentId, direction);
-    }
-}
-
-// Arıza detayını görüntüle
-function viewFault(stockId) {
-    window.location.href = `/admin/fault/status?stock_id=${stockId}`;
-}
-
-// Ekipmanı tamir et
-function repairEquipment(stockId) {
-    if (confirm('Bu ekipmanı tamir edildi olarak işaretlemek istediğinizden emin misiniz?')) {
-        // AJAX ile tamir işlemi
-        fetch(`/admin/stock/${stockId}/repair`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Hata: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Bir hata oluştu');
-        });
-    }
-}
-
-// Bakım detayını görüntüle
-function viewMaintenance(stockId) {
-    window.location.href = `/admin/fault/status?stock_id=${stockId}&type=bakım`;
-}
-
-// Bakımı tamamla
-function completeMaintenance(stockId) {
-    if (confirm('Bu ekipmanın bakımını tamamlandı olarak işaretlemek istediğinizden emin misiniz?')) {
-        // AJAX ile bakım tamamlama işlemi
-        fetch(`/admin/stock/${stockId}/complete-maintenance`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Hata: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Bir hata oluştu');
-        });
-    }
-}
-</script>
 
 @vite('resources/js/stock.js')

@@ -486,7 +486,7 @@
                 </h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
                                     </div>
-                                    <form action="{{ route('assignments.finish', $assignment->id) }}" method="POST">
+                                    <form id="finishForm{{ $assignment->id }}" data-assignment-id="{{ $assignment->id }}">
                                         @csrf
                                         <div class="modal-body">
                     <div class="alert alert-info">
@@ -536,7 +536,7 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="button" class="btn btn-success" onclick="submitFinishForm({{ $assignment->id }})">
                         <i class="fas fa-check-circle me-2"></i>Onayla ve Teslim Et
                     </button>
                                         </div>
@@ -742,6 +742,49 @@
 
 @push('scripts')
 <script>
+// Toast notification function
+function showToast(type, message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Add to page
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.appendChild(toast);
+    
+    // Show toast
+    const bsToast = new bootstrap.Toast(toast, {
+        autohide: true,
+        delay: 5000
+    });
+    bsToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
 // Filtreleme işlemleri
 document.addEventListener('DOMContentLoaded', function() {
     const statusFilter = document.getElementById('statusFilter');
@@ -971,8 +1014,56 @@ function showTimelineError(message) {
 
 // Excel export
 function exportToExcel(type) {
-    alert(`${type === 'giden' ? 'Zimmet alınanlar' : 'Teslim edilenler'} Excel dosyası indirilecek`);
-    // Excel export logic will be implemented here
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>İndiriliyor...';
+    button.disabled = true;
+    
+    const url = type === 'giden' 
+        ? '/admin/gidenGelen/export/giden' 
+        : '/admin/gidenGelen/export/gelen';
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create CSV content with proper escaping
+                const csvContent = data.data.map(row => 
+                    row.map(cell => {
+                        // Escape quotes and wrap in quotes
+                        const escaped = String(cell || '').replace(/"/g, '""');
+                        return `"${escaped}"`;
+                    }).join(',')
+                ).join('\n');
+                
+                // Create and download file
+                const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', data.filename.replace('.xlsx', '.csv'));
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show success message using toast notification
+                showToast('success', `✅ ${type === 'giden' ? 'Zimmet alınanlar' : 'Teslim edilenler'} Excel dosyası başarıyla indirildi!`);
+            } else {
+                showToast('error', `❌ Excel export hatası: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Excel export error:', error);
+            showToast('error', `❌ Excel export hatası: ${error.message}`);
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
 }
 
 // Print table
@@ -997,6 +1088,58 @@ function printTable(type) {
     `);
     printWindow.document.close();
     printWindow.print();
+}
+
+// Finish form submit
+function submitFinishForm(assignmentId) {
+    const form = document.getElementById(`finishForm${assignmentId}`);
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[onclick*="submitFinishForm"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...';
+    submitBtn.disabled = true;
+    
+    fetch(`/admin/assignments/${assignmentId}/finish`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            note: form.querySelector(`#noteGiden${assignmentId}`).value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', '✅ ' + data.message);
+            
+            // Modal'ı kapat
+            const modal = bootstrap.Modal.getInstance(document.getElementById(`finishModalGiden${assignmentId}`));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Sayfayı yenile
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showToast('error', '❌ ' + (data.message || 'İşlem başarısız'));
+        }
+    })
+    .catch(error => {
+        console.error('Finish assignment error:', error);
+        showToast('error', '❌ İşlem sırasında hata oluştu: ' + error.message);
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
 }
 </script>
 @endpush

@@ -366,11 +366,11 @@
                     <div class="error-message">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         @if ($errors->has('email'))
-                            E-posta adresi geçersiz.
+                            E-posta adresi hatalı.
                         @elseif ($errors->has('password'))
                             Şifre hatalı.
                         @else
-                            Giriş bilgilerinizi kontrol ediniz.
+                            E-posta veya şifre hatalı.
                         @endif
                     </div>
                 @endif

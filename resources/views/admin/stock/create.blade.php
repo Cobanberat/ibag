@@ -83,22 +83,8 @@
                 </small>
             </div>
             
-            <div class="col-md-6">
-                <label for="location" class="form-label fw-bold">Konum</label>
-                <input type="text" class="form-control" id="location" name="location" placeholder="Örn: Depo A, Raf 1">
-            </div>
-            
-            <!-- Stok Durumu (Yeni sistemde stock_depo.status) -->
-            <div class="col-md-6">
-                <label for="stock_status" class="form-label fw-bold">Stok Durumu</label>
-                <select class="form-select" id="stock_status" name="stock_status">
-                    <option value="Aktif">Aktif</option>
-                    <option value="Kullanımda">Kullanımda</option>
-                    <option value="Yok">Yok</option>
-                    <option value="Sıfır">Sıfır</option>
-                </select>
-                <small class="form-text text-muted">Stok miktarı durumu (Arıza/Bakım durumu ayrı tabloda tutulur)</small>
-            </div>
+         
+      
             
             <!-- Sonraki Bakım Tarihi -->
             <div class="col-md-6">

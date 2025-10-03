@@ -66,10 +66,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div> --}}
     <div class="row mb-4 g-2">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <input type="text" class="form-control" placeholder="Ara..." id="searchInput">
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-12 col-sm-6 col-md-2">
             <select class="form-select" id="categoryFilter">
                 <option value="">Tüm Kategoriler</option>
                 @foreach($categories ?? [] as $category)
@@ -77,10 +77,19 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-12 col-sm-6 col-md-2">
             <input type="text" class="form-control" placeholder="Ekipman Kodu" id="codeFilter">
         </div>
         <div class="col-12 col-sm-6 col-md-2">
+            <select class="form-select" id="perPageSelect">
+                <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 kayıt</option>
+                <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 kayıt</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 kayıt</option>
+                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 kayıt</option>
+                <option value="999999" {{ request('per_page') == 999999 ? 'selected' : '' }}>Tümünü Listele</option>
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
             <button type="button" class="btn btn-outline-secondary w-100" id="clearFilters">
                 <i class="fas fa-times"></i> Temizle
             </button>
@@ -133,7 +142,7 @@
                                 </td>
                                 <td>{{ ($equipmentStocks->currentPage() - 1) * $equipmentStocks->perPage() + $index + 1 }}</td>
                                 <td class="editable-cell" data-field="code" data-id="{{ $stock->id }}">{{ $stock->code ?? '-' }}</td>
-                                <td>
+                                <td class="editable-cell" data-field="photo" data-id="{{ $stock->id }}">
                                     @if($stock->equipment_image_url)
                                         <img src="{{ $stock->equipment_image_url }}" alt="Ekipman Resmi" class="img-fluid rounded" style="max-width: 50px; max-height: 50px; object-fit: cover; cursor: pointer;" onclick="showImageModal('{{ $stock->equipment_image_url }}', '{{ $stock->equipment->name ?? 'Ekipman' }}')">
                                     @else

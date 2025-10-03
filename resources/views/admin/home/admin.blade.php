@@ -92,7 +92,7 @@
                             </a>
                         </div>
                         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                            <a href="{{route('admin.fault')}}" class="quick-action-btn w-100" data-bs-toggle="tooltip" title="Arıza bildirimi yap">
+                            <a href="{{route('admin.fault.create')}}" class="quick-action-btn w-100" data-bs-toggle="tooltip" title="Arıza bildirimi yap">
                                 <div class="quick-action-icon bg-gradient-danger"><i class="fa fa-bug"></i></div>
                                 <div class="quick-action-label">Arıza Bildir</div>
                             </a>

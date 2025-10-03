@@ -47,12 +47,20 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         port: 5174,
+        https: true,
         cors: {
-            origin: ['http://192.168.1.202:8000', 'http://192.168.1.202:5174', 'http://127.0.0.1:8000', 'http://localhost:8000',],
+            origin: [
+                'https://c2b150d5df3a.ngrok-free.app/', 
+                'http://192.168.1.202:8000',
+                'http://192.168.1.202:5174',
+                'https://127.0.0.1:8000',
+                'https://localhost:8000',
+            ],
             credentials: true,
         },
         hmr: {
-            host: '192.168.1.202',
+            host: 'https://c2b150d5df3a.ngrok-free.app/', 
+            protocol: 'wss',
         },
     },
 })

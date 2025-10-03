@@ -149,7 +149,23 @@ function addCategory() {
         if (data.success) {
             showToast('Kategori başarıyla oluşturuldu', 'success');
             document.getElementById('addCategoryForm').reset();
-            bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+            
+            // Modal'ı kapat ve backdrop'ı temizle
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+            if (modal) {
+                modal.hide();
+                // Modal kapandıktan sonra backdrop'ı temizle
+                setTimeout(() => {
+                    document.body.classList.remove('modal-open');
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
+            }
+            
             loadCategoryData(1); // İlk sayfaya dön
         } else {
             showToast(data.message || 'Kategori oluşturulurken hata oluştu', 'error');
@@ -214,7 +230,23 @@ function updateCategory() {
     .then(data => {
         if (data.success) {
             showToast('Kategori başarıyla güncellendi', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
+            
+            // Modal'ı kapat ve backdrop'ı temizle
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editCategoryModal'));
+            if (modal) {
+                modal.hide();
+                // Modal kapandıktan sonra backdrop'ı temizle
+                setTimeout(() => {
+                    document.body.classList.remove('modal-open');
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
+            }
+            
             loadCategoryData(1); // İlk sayfaya dön
         } else {
             showToast(data.message || 'Kategori güncellenirken hata oluştu', 'error');
@@ -509,6 +541,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const updateCategoryBtn = document.getElementById('updateCategoryBtn');
     if (updateCategoryBtn) {
         updateCategoryBtn.addEventListener('click', updateCategory);
+    }
+
+    // Modal event listener'ları - backdrop temizliği için
+    const addCategoryModal = document.getElementById('addCategoryModal');
+    const editCategoryModal = document.getElementById('editCategoryModal');
+    
+    if (addCategoryModal) {
+        addCategoryModal.addEventListener('hidden.bs.modal', function() {
+            // Modal kapandığında backdrop'ı temizle
+            setTimeout(() => {
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, 100);
+        });
+    }
+    
+    if (editCategoryModal) {
+        editCategoryModal.addEventListener('hidden.bs.modal', function() {
+            // Modal kapandığında backdrop'ı temizle
+            setTimeout(() => {
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, 100);
+        });
     }
 
     // Toplu silme

@@ -54,26 +54,6 @@ class EquipmentStockController extends Controller
     {
         $pageTitle = 'Stok Yönetimi';
         
-        // Equipment tablosundaki verileri listele, stock_depo'dan miktar bilgisini al
-        $stocks = Equipment::with(['category'])
-            ->selectRaw('
-                equipments.id,
-                equipments.name,
-                equipments.category_id,
-                equipments.unit_type,
-                equipments.critical_level,
-                equipments.individual_tracking,
-                equipments.status,
-                equipments.created_at,
-                equipments.updated_at,
-                COALESCE(SUM(stock_depo.quantity), 0) as total_quantity
-            ')
-            ->leftJoin('stock_depo', 'equipments.id', '=', 'stock_depo.equipment_id')
-            ->groupBy('equipments.id', 'equipments.name', 'equipments.category_id', 'equipments.unit_type', 'equipments.critical_level', 'equipments.individual_tracking', 'equipments.status', 'equipments.created_at', 'equipments.updated_at')
-            ->orderBy('equipments.name', 'asc')
-            ->paginate(15)
-            ->withQueryString();
-
         // Kategorileri çek
         $categories = \App\Models\EquipmentCategory::orderBy('name')->get();
         
@@ -83,15 +63,7 @@ class EquipmentStockController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Pagination bilgilerini hazırla
-        $pagination = [
-            'current_page' => $stocks->currentPage(),
-            'last_page' => $stocks->lastPage(),
-            'per_page' => $stocks->perPage(),
-            'total' => $stocks->total()
-        ];
-
-        return view('admin.stock.index', compact('stocks', 'pageTitle', 'categories', 'equipmentList', 'pagination'));
+        return view('admin.stock.index', compact('pageTitle', 'categories', 'equipmentList'));
     }
 
     /**
@@ -187,9 +159,17 @@ class EquipmentStockController extends Controller
             $query->where('equipments.status', $request->status);
         }
 
+        // Sayfa başına gösterilecek kayıt sayısını al
+        $perPage = $request->get('per_page', 15);
+        
+        // Maksimum 1000 kayıt ile sınırla (performans için)
+        if ($perPage > 1000) {
+            $perPage = 1000;
+        }
+        
         $stocks = $query->groupBy('equipments.id', 'equipments.name', 'equipments.category_id', 'equipments.unit_type', 'equipments.critical_level', 'equipments.individual_tracking', 'equipments.status', 'equipments.created_at', 'equipments.updated_at')
             ->orderBy('equipments.name', 'asc')
-            ->paginate(15);
+            ->paginate($perPage);
 
         // Debug için sonuç sayısını logla (geçici)
         // \Log::info('Stock data result:', [
@@ -242,39 +222,161 @@ class EquipmentStockController extends Controller
     }
 
     /**
+     * Normalize unit type value
+     */
+    private function normalizeUnitType($unitType)
+    {
+        if (empty($unitType)) {
+            return 'adet';
+        }
+        
+        $normalized = strtolower(trim($unitType));
+        
+        // Common misspellings and variations
+        $mappings = [
+            'adet' => 'adet',
+            'adEt' => 'adet',
+            'Adet' => 'adet',
+            'ADET' => 'adet',
+            'adet.' => 'adet',
+            'adet,' => 'adet',
+            'adet;' => 'adet',
+            
+            'metre' => 'metre',
+            'metr' => 'metre',
+            'Metre' => 'metre',
+            'METRE' => 'metre',
+            'm' => 'metre',
+            'm.' => 'metre',
+            
+            'kilogram' => 'kilogram',
+            'kg' => 'kilogram',
+            'kilo' => 'kilogram',
+            'Kilogram' => 'kilogram',
+            'KILOGRAM' => 'kilogram',
+            'kg.' => 'kilogram',
+            
+            'litre' => 'litre',
+            'lt' => 'litre',
+            'l' => 'litre',
+            'Litre' => 'litre',
+            'LİTRE' => 'litre',
+            'lt.' => 'litre',
+            
+            'paket' => 'paket',
+            'Paket' => 'paket',
+            'PAKET' => 'paket',
+            'pkt' => 'paket',
+            'pkt.' => 'paket',
+            
+            'kutu' => 'kutu',
+            'Kutu' => 'kutu',
+            'KUTU' => 'kutu',
+            'box' => 'kutu',
+            
+            'çift' => 'çift',
+            'Çift' => 'çift',
+            'ÇİFT' => 'çift',
+            'pair' => 'çift',
+            
+            'takım' => 'takım',
+            'Takım' => 'takım',
+            'TAKIM' => 'takım',
+            'set' => 'takım',
+        ];
+        
+        return $mappings[$normalized] ?? $normalized;
+    }
+    
+    /**
+     * Normalize tracking type value
+     */
+    private function normalizeTrackingType($trackingType)
+    {
+        if (empty($trackingType)) {
+            return false; // Default to toplu takip
+        }
+        
+        $normalized = strtolower(trim($trackingType));
+        
+        // Common misspellings and variations for individual tracking
+        $individualTrackingVariations = [
+            'ayrı takip',
+            'ayri takip',
+            'ayrı',
+            'ayri',
+            'ayrı takıp',
+            'ayri takıp',
+            'ayrı takip.',
+            'ayri takip.',
+            'ayrı takip,',
+            'ayri takip,',
+            'ayrı takip;',
+            'ayri takip;',
+            'ayrı takip:',
+            'ayri takip:',
+            'individual',
+            'tek',
+            'single',
+            '1',
+            'evet',
+            'yes',
+            'true',
+        ];
+        
+        return in_array($normalized, $individualTrackingVariations);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
+        // Handle both quantity and manual_quantity fields
+        $quantity = $request->quantity ?? $request->manual_quantity;
         
-        $request->validate([
-            'category_id' => 'required|exists:equipment_categories,id',
-            'name' => 'required|string|max:255',
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'size' => 'nullable|string|max:255',
-            'feature' => 'nullable|string',
-            'quantity' => 'required|integer|min:1',
-            'unit_type' => 'required|string',
-            'critical_level' => 'nullable|numeric|min:0',
-            'code' => 'nullable|string|max:255',
-            'qr_code' => 'nullable|string|max:255',
-            'location' => 'nullable|string|max:255',
-            'next_maintenance_date' => 'nullable|date',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'note' => 'nullable|string',
-            'individual_tracking' => 'nullable|boolean'
-        ]);
+        // Hızlı ekleme modu (mevcut ekipman kullanımı)
+        if ($request->equipment_id) {
+            $equipment = Equipment::find($request->equipment_id);
+            if (!$equipment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ekipman bulunamadı'
+                ], 404);
+            }
+            
+            $individualTracking = $equipment->individual_tracking;
+        } else {
+            // Manuel ekleme modu
+            if (!$request->name || !$request->category_id || !$quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ekipman adı, kategori ve miktar gereklidir'
+                ], 400);
+            }
+            
+            // Convert string boolean values to actual booleans
+            $individualTracking = $request->individual_tracking;
+            if ($individualTracking === 'true' || $individualTracking === '1') {
+                $individualTracking = true;
+            } elseif ($individualTracking === 'false' || $individualTracking === '0') {
+                $individualTracking = false;
+            } else {
+                $individualTracking = (bool) $individualTracking;
+            }
+        }
 
-        // Ekipman oluştur
-        $equipment = Equipment::create([
-            'name' => $request->name,
-            'category_id' => $request->category_id,
-            'critical_level' => $request->critical_level ?: 3, // Default 3
-            'unit_type' => $request->unit_type,
-            'individual_tracking' => $request->individual_tracking ? true : false,
-            'status' => Equipment::STATUS_ACTIVE
-        ]);
+        // Ekipman oluştur (sadece manuel modda)
+        if (!$request->equipment_id) {
+            $equipment = Equipment::create([
+                'name' => $request->name,
+                'category_id' => $request->category_id,
+                'critical_level' => $request->critical_level ?: 3, // Default 3
+                'unit_type' => $request->unit_type,
+                'individual_tracking' => $individualTracking,
+                'status' => Equipment::STATUS_ACTIVE
+            ]);
+        }
 
         // Fotoğraf işleme
         $photoPath = null;
@@ -286,7 +388,7 @@ class EquipmentStockController extends Controller
         $code = $request->code ?: $this->generateRandomCode();
 
         // Individual tracking kontrolü
-        $quantity = $request->individual_tracking ? 1 : $request->quantity;
+        $quantity = $individualTracking ? 1 : $quantity;
 
         // Ekipman stoku oluştur
         $equipmentStock = EquipmentStock::create([
@@ -322,16 +424,12 @@ class EquipmentStockController extends Controller
             ]);
         }
 
-        // AJAX isteği mi kontrol et
-        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->json([
-                'success' => true,
-                'message' => 'Ekipman başarıyla eklendi!',
-                'equipment_id' => $equipment->id
-            ]);
-        }
-
-        return redirect()->route('admin.equipments')->with('success', 'Ekipman başarıyla eklendi!');
+        // Always return JSON
+        return response()->json([
+            'success' => true,
+            'message' => 'Ekipman başarıyla eklendi!',
+            'equipment_id' => $equipment->id
+        ]);
     }
 
     /**
@@ -446,6 +544,151 @@ class EquipmentStockController extends Controller
     }
 
     /**
+     * Update a single field of equipment stock (for inline editing)
+     */
+    public function updateField(Request $request, $id)
+    {
+        try {
+            $equipmentStock = EquipmentStock::with(['equipment.images'])->findOrFail($id);
+            
+            $field = $request->input('field');
+            
+            // Resim yükleme işlemi
+            if ($field === 'photo') {
+                // Debug için log ekle
+                \Log::info('Photo upload attempt', [
+                    'equipment_stock_id' => $id,
+                    'has_file' => $request->hasFile('photo'),
+                    'equipment' => $equipmentStock->equipment ? $equipmentStock->equipment->id : 'null'
+                ]);
+                
+                $request->validate([
+                    'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120' // 5MB max
+                ]);
+                
+                // Eski resmi sil
+                if ($equipmentStock->equipment && $equipmentStock->equipment->images) {
+                    foreach ($equipmentStock->equipment->images as $image) {
+                        if (file_exists(public_path('storage/' . $image->path))) {
+                            unlink(public_path('storage/' . $image->path));
+                        }
+                        $image->delete();
+                    }
+                }
+                
+                // Yeni resmi yükle
+                $photoPath = $request->file('photo')->store('equipment_photos', 'public');
+                
+                // EquipmentImage tablosuna kaydet
+                if ($equipmentStock->equipment) {
+                    EquipmentImage::create([
+                        'equipment_id' => $equipmentStock->equipment->id,
+                        'path' => $photoPath,
+                        'is_primary' => true
+                    ]);
+                }
+                
+                $imageUrl = asset('storage/' . $photoPath);
+                
+                \Log::info('Photo upload success', [
+                    'photo_path' => $photoPath,
+                    'image_url' => $imageUrl
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Resim başarıyla yüklendi',
+                    'image_url' => $imageUrl
+                ]);
+            }
+            
+            $value = $request->input('value');
+            
+            // Allowed fields for update
+            $allowedFields = ['code', 'brand', 'model', 'size', 'feature', 'quantity', 'status', 'note', 'equipment_name'];
+            
+            if (!in_array($field, $allowedFields)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Geçersiz alan adı'
+                ], 400);
+            }
+            
+            // Individual tracking kontrolü
+            if ($field === 'quantity' && $equipmentStock->equipment && $equipmentStock->equipment->individual_tracking) {
+                // Ayrı takip özelliği olan ekipmanlarda quantity her zaman 1 olmalı
+                $value = 1;
+            }
+            
+            // Validation based on field
+            $validationRules = [];
+            switch ($field) {
+                case 'code':
+                    $validationRules['value'] = 'nullable|string|max:255';
+                    break;
+                case 'brand':
+                case 'model':
+                case 'size':
+                    $validationRules['value'] = 'nullable|string|max:255';
+                    break;
+                case 'feature':
+                    $validationRules['value'] = 'nullable|string|max:1000';
+                    break;
+                case 'quantity':
+                    $validationRules['value'] = 'nullable|integer|min:0';
+                    break;
+                case 'status':
+                    $validationRules['value'] = 'nullable|string|max:255';
+                    break;
+                case 'note':
+                    $validationRules['value'] = 'nullable|string|max:1000';
+                    break;
+                case 'equipment_name':
+                    $validationRules['value'] = 'nullable|string|max:255';
+                    // equipment_name güncellenirse, ilgili Equipment tablosunu da güncelle
+                    if ($equipmentStock->equipment) {
+                        $equipmentStock->equipment->update(['name' => $value]);
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Ekipman adı başarıyla güncellendi',
+                            'data' => [
+                                'field' => $field,
+                                'value' => $value
+                            ]
+                        ]);
+                    }
+                    break;
+            }
+            
+            $request->validate($validationRules);
+            
+            // Update the field
+            $equipmentStock->update([$field => $value]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Alan başarıyla güncellendi',
+                'data' => [
+                    'field' => $field,
+                    'value' => $value
+                ]
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasyon hatası',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Güncelleme sırasında hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show($id)
@@ -474,6 +717,72 @@ class EquipmentStockController extends Controller
     }
 
     /**
+     * Get equipment details with stock information
+     */
+    public function getEquipmentDetails($id)
+    {
+        try {
+            $equipment = Equipment::with(['category', 'images'])->findOrFail($id);
+            
+            // Get all stock records for this equipment
+            $stocks = EquipmentStock::where('equipment_id', $id)->get();
+            
+            // Calculate total quantity
+            $totalQuantity = $stocks->sum('quantity');
+            
+            // Prepare equipment data with stock info
+            $equipmentData = [
+                'id' => $equipment->id,
+                'name' => $equipment->name,
+                'category' => $equipment->category,
+                'unit_type' => $equipment->unit_type,
+                'unit_type_label' => $equipment->unit_type_label,
+                'critical_level' => $equipment->critical_level,
+                'individual_tracking' => $equipment->individual_tracking,
+                'status' => $equipment->status,
+                'note' => $equipment->note,
+                'feature' => $equipment->feature,
+                'total_quantity' => $totalQuantity,
+                'stocks' => $stocks,
+                'images' => $equipment->images
+            ];
+            
+            return response()->json([
+                'success' => true,
+                'data' => $equipmentData
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ekipman detayları yüklenirken hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get equipment stocks only
+     */
+    public function getEquipmentStocks($id)
+    {
+        try {
+            // Get all stock records for this equipment
+            $stocks = EquipmentStock::where('equipment_id', $id)->get();
+            
+            return response()->json([
+                'success' => true,
+                'stocks' => $stocks
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stok verileri yüklenirken hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Delete equipment stock
      */
     public function destroy($id)
@@ -485,6 +794,36 @@ class EquipmentStockController extends Controller
             'success' => true,
             'message' => 'Ekipman başarıyla silindi'
         ]);
+    }
+
+    /**
+     * Delete equipment and all its stocks
+     */
+    public function destroyEquipment($id)
+    {
+        try {
+            $equipment = Equipment::findOrFail($id);
+            
+            // Delete all stock records for this equipment
+            EquipmentStock::where('equipment_id', $id)->delete();
+            
+            // Delete equipment images
+            EquipmentImage::where('equipment_id', $id)->delete();
+            
+            // Delete the equipment
+            $equipment->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ekipman ve tüm stok kayıtları başarıyla silindi'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ekipman silinirken hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -694,7 +1033,18 @@ class EquipmentStockController extends Controller
             return response()->json(['success' => false, 'message' => 'Hiç ekipman seçilmedi']);
         }
 
-        EquipmentStock::whereIn('id', $ids)->delete();
+        // Equipment ID'leri ile Equipment ve tüm EquipmentStock'larını sil
+        foreach ($ids as $equipmentId) {
+            $equipment = Equipment::find($equipmentId);
+            if ($equipment) {
+                // EquipmentStock'ları sil
+                EquipmentStock::where('equipment_id', $equipmentId)->delete();
+                // EquipmentImage'ları sil
+                EquipmentImage::where('equipment_id', $equipmentId)->delete();
+                // Equipment'i sil
+                $equipment->delete();
+            }
+        }
         
         return response()->json(['success' => true, 'message' => 'Seçili ekipmanlar başarıyla silindi']);
     }
@@ -704,12 +1054,14 @@ class EquipmentStockController extends Controller
      */
     public function stockOperation(Request $request, $id)
     {
-        \Log::info('Stock operation request:', [
-            'id' => $id,
-            'operation_type' => $request->operation_type,
-            'amount' => $request->amount,
-            'all_data' => $request->all()
-        ]);
+        try {
+            \Log::info('Stock operation request:', [
+                'id' => $id,
+                'operation_type' => $request->operation_type,
+                'amount' => $request->amount,
+                'all_data' => $request->all(),
+                'headers' => $request->headers->all()
+            ]);
         
         // Validation öncesi kontrol
         if (!$request->operation_type) {
@@ -852,6 +1204,20 @@ class EquipmentStockController extends Controller
         \Log::info('Stock operation response:', $response);
         
         return response()->json($response);
+        
+        } catch (\Exception $e) {
+            \Log::error('Stock operation error:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Stok işlemi sırasında hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -1114,8 +1480,8 @@ class EquipmentStockController extends Controller
                         $rowErrors[] = 'Miktar sayısal değer olmalıdır';
                     } elseif ((int)$quantity < 1) {
                         $rowErrors[] = 'Miktar 1\'den küçük olamaz';
-                    } elseif ((int)$quantity > 999999) {
-                        $rowErrors[] = 'Miktar 999,999\'dan büyük olamaz';
+                    } elseif ((int)$quantity > 10000) {
+                        $rowErrors[] = 'Miktar 10,000\'dan büyük olamaz';
                     }
                 }
                 
@@ -1307,24 +1673,24 @@ class EquipmentStockController extends Controller
                 }
                 
                 // Miktar validasyonu
-                if (!empty($quantity) && (!is_numeric($quantity) || (int)$quantity < 1 || (int)$quantity > 999999)) {
-                    $rowErrors[] = 'Miktar geçersiz (1-999,999 arası sayı olmalı)';
+                if (!empty($quantity) && (!is_numeric($quantity) || (int)$quantity < 1 || (int)$quantity > 10000)) {
+                    $rowErrors[] = 'Miktar geçersiz (1-10,000 arası sayı olmalı)';
                 }
                 
-                // Birim türü validasyonu
+                // Birim türü validasyonu - normalizasyon ile kontrol
                 if (!empty($unitType)) {
-                    $validUnitTypes = ['adet', 'metre', 'kilogram', 'litre', 'paket', 'kutu', 'çift', 'takım', 'Adet', 'Metre', 'Kilogram', 'Litre', 'Paket', 'Kutu', 'Çift', 'Takım'];
-                    if (!in_array($unitType, $validUnitTypes)) {
+                    $normalizedUnitType = $this->normalizeUnitType($unitType);
+                    $validUnitTypes = ['adet', 'metre', 'kilogram', 'litre', 'paket', 'kutu', 'çift', 'takım'];
+                    if (!in_array($normalizedUnitType, $validUnitTypes)) {
                         $rowErrors[] = 'Geçersiz birim türü. Geçerli değerler: adet, metre, kilogram, litre, paket, kutu, çift, takım';
                     }
                 }
                 
-                // Takip türü validasyonu
+                // Takip türü validasyonu - normalizasyon ile kontrol (daha esnek)
                 if (!empty($trackingType)) {
-                    $validTrackingTypes = ['Toplu Takip', 'Ayrı Takip', 'toplu takip', 'ayrı takip', 'TOPLU TAKİP', 'AYRI TAKİP', 'Toplu', 'Ayrı', 'toplu', 'ayrı', 'TOPLU', 'AYRI'];
-                    if (!in_array($trackingType, $validTrackingTypes)) {
-                        $rowErrors[] = 'Geçersiz takip türü. Geçerli değerler: Toplu Takip, Ayrı Takip';
-                    }
+                    // NormalizeTrackingType fonksiyonu boolean döndürür, bu yüzden sadece kontrol ediyoruz
+                    $normalizedTrackingType = $this->normalizeTrackingType($trackingType);
+                    // Burada hata vermiyoruz çünkü fonksiyon zaten esnek
                 }
                 
                 // Durum validasyonu
@@ -1344,6 +1710,10 @@ class EquipmentStockController extends Controller
                 if (!empty($rowErrors)) {
                     $validationErrors[] = "Satır {$row}: " . implode(', ', $rowErrors);
                 } else {
+                    // Normalize values before storing
+                    $normalizedUnitType = $this->normalizeUnitType($unitType);
+                    $normalizedTrackingType = $this->normalizeTrackingType($trackingType);
+                    
                     $validRows[] = [
                         'row' => $row,
                         'category_name' => $categoryName,
@@ -1353,9 +1723,9 @@ class EquipmentStockController extends Controller
                         'model' => $model,
                         'size' => $size,
                         'feature' => $feature,
-                        'unit_type' => $unitType,
+                        'unit_type' => $normalizedUnitType,
                         'quantity' => $quantity,
-                        'tracking_type' => $trackingType,
+                        'tracking_type' => $normalizedTrackingType,
                         'status' => $status,
                         'note' => $note
                     ];
@@ -1405,15 +1775,15 @@ class EquipmentStockController extends Controller
                         $equipment = Equipment::create([
                             'name' => $equipmentName,
                             'category_id' => $category->id,
-                            'unit_type' => strtolower(trim($unitType) ?: 'adet'),
-                            'individual_tracking' => in_array($trackingType, ['Ayrı Takip', 'ayrı takip', 'AYRI TAKİP', 'Ayrı', 'ayrı', 'AYRI'])
+                            'unit_type' => $unitType, // Zaten normalize edilmiş
+                            'individual_tracking' => $trackingType // Zaten normalize edilmiş (boolean)
                         ]);
                         $summary['equipments_created']++;
                         $isNewEquipment = true;
                     }
                     
                     // Takip türüne göre işlem
-                    if (in_array($trackingType, ['Ayrı Takip', 'ayrı takip', 'AYRI TAKİP', 'Ayrı', 'ayrı', 'AYRI'])) {
+                    if ($trackingType) { // Zaten normalize edilmiş boolean değer
                         // Ayrı takip: Her ekipman için ayrı stok kaydı
                         if (empty($code)) {
                             $code = $this->generateRandomCode();

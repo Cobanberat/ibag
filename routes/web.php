@@ -34,6 +34,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         // Ekipman Yönetimi
         Route::get('/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'index'])->name('admin.stock');
         Route::post('/stock', [App\Http\Controllers\Admin\EquipmentStockController::class, 'store'])->name('stock.store');
+        Route::post('/stock/store', [App\Http\Controllers\Admin\EquipmentStockController::class, 'store'])->name('admin.stock.store');
         Route::get('/stock/data', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStockData'])->name('admin.stock.data');
         Route::get('/stock/statistics', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getStatistics'])->name('admin.stock.statistics');
         Route::get('/stock/validate-code', [App\Http\Controllers\Admin\EquipmentStockController::class, 'validateCode'])->name('admin.stock.validate-code');
@@ -44,10 +45,14 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         Route::get('/stock/get-equipment-info/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfoForSearch'])->name('admin.stock.get-equipment-info');
         Route::post('/stock/bulk-delete', [App\Http\Controllers\Admin\EquipmentStockController::class, 'bulkDestroy'])->name('admin.stock.bulk-destroy');
         Route::post('/stock/{id}/operation', [App\Http\Controllers\Admin\EquipmentStockController::class, 'stockOperation'])->name('admin.stock.operation');
+        Route::get('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
+        Route::get('/equipment/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentInfo'])->name('admin.equipment.info');
+        Route::get('/equipment/{id}/details', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentDetails'])->name('admin.equipment.details');
+        Route::get('/equipment/{id}/stocks', [App\Http\Controllers\Admin\EquipmentStockController::class, 'getEquipmentStocks'])->name('admin.equipment.stocks');
+        Route::delete('/equipment/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroyEquipment'])->name('admin.equipment.destroy');
         Route::get('/stock/excel-template', [App\Http\Controllers\Admin\EquipmentStockController::class, 'downloadExcelTemplate'])->name('admin.stock.excel-template');
         Route::post('/stock/preview-excel', [App\Http\Controllers\Admin\EquipmentStockController::class, 'previewExcel'])->name('admin.stock.preview-excel');
         Route::post('/stock/import-excel', [App\Http\Controllers\Admin\EquipmentStockController::class, 'importExcel'])->name('admin.stock.import-excel');
-        Route::get('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'show'])->name('admin.stock.show');
         Route::put('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'update'])->name('admin.stock.update');
         Route::delete('/stock/{id}', [App\Http\Controllers\Admin\EquipmentStockController::class, 'destroy'])->name('admin.stock.destroy');
         Route::post('/stock/{id}/repair', [App\Http\Controllers\Admin\EquipmentStockController::class, 'repair'])->name('admin.stock.repair');
@@ -116,12 +121,14 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::put('/teslim-et/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'completeAssignment'])->name('admin.teslimEt.complete');
     Route::get('/assignments/item/{id}/photos', [App\Http\Controllers\Admin\AssignmentController::class, 'itemPhotos'])->name('admin.assignments.item.photos');
     Route::post('/assignments/item/{id}/return', [App\Http\Controllers\Admin\AssignmentController::class, 'returnItem'])->name('admin.assignments.item.return');
-    Route::post('/finish/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'finishAssignment'])->name('assignments.finish');
+    Route::post('/assignments/{id}/finish', [App\Http\Controllers\Admin\AssignmentController::class, 'finish'])->name('assignments.finish');
     Route::get('/assignments/{id}/timeline', [App\Http\Controllers\Admin\AssignmentController::class, 'getTimeline'])->name('admin.assignments.timeline');
 
     // Giden-Gelen İşlemleri - Admin ve Ekip Yetkilisi
     Route::middleware(['role:admin,ekip_yetkilisi'])->group(function () {
         Route::get('/gidenGelen', [App\Http\Controllers\Admin\AssignmentController::class, 'comingGoing'])->name('admin.gidenGelen');
+        Route::get('/gidenGelen/export/giden', [App\Http\Controllers\Admin\AssignmentController::class, 'exportGidenExcel'])->name('admin.gidenGelen.export.giden');
+        Route::get('/gidenGelen/export/gelen', [App\Http\Controllers\Admin\AssignmentController::class, 'exportGelenExcel'])->name('admin.gidenGelen.export.gelen');
     });
 
     // Profil
@@ -145,7 +152,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/ekipmanlar/bulk-delete', [App\Http\Controllers\Admin\EquipmentController::class, 'bulkDelete'])->name('admin.equipments.bulk-delete');
 
     // Ekipman Stok Güncelleme (Sadece görüntüleme)
-    Route::get('/equipment-stock/{id}/update-field', [App\Http\Controllers\Admin\EquipmentStockController::class, 'updateField'])->name('admin.equipment-stock.update-field');
+    Route::post('/equipment-stock/{id}/update-field', [App\Http\Controllers\Admin\EquipmentStockController::class, 'updateField'])->name('admin.equipment-stock.update-field');
     
     // Zimmet Teslim Etme
     Route::put('/teslim-et/{id}', [App\Http\Controllers\Admin\AssignmentController::class, 'returnAssignment'])->name('admin.assignments.return');

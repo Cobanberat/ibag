@@ -172,7 +172,13 @@ class CategoryController extends Controller
     {
         $ids = $request->input('ids', []);
         
-        if (empty($ids)) {
+        // JSON string ise decode et
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true);
+        }
+        
+        // Array kontrolü
+        if (!is_array($ids) || empty($ids)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Silinecek kategori seçilmedi'

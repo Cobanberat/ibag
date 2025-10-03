@@ -22,7 +22,7 @@
                                 <div class="me-3">
                                     <div class="fw-bold text-success">{{ $myStats['active_assignments'] }}</div>
                                     <small class="text-muted">Aktif Zimmet</small>
-                                </div>
+                                      </div>
                                 <div class="me-3">
                                     <div class="fw-bold text-primary">{{ $myStats['completed_assignments'] }}</div>
                                     <small class="text-muted">Tamamlanan</small>
@@ -100,7 +100,7 @@
                                         </td>
                                         <td>{{ $assignment['assigned_date'] }}</td>
                                         <td>
-                                            <span class="badge bg-success">Aktif</span>
+                                            <span class="badge {{ $assignment['status'] == 'Aktif' ? 'bg-success' : 'bg-secondary' }}">{{ $assignment['status'] }}</span>
                                         </td>
                                     </tr>
                                     @endforeach

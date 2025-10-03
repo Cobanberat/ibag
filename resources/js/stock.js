@@ -1,1232 +1,157 @@
-// Debug: JavaScript yüklendi
-console.log('Stock.js yüklendi!');
+// Global variables
+let currentPage = 1;
+let currentFilters = {};
 
-// URL parametresinden ekipman adını al ve arama kutusuna doldur
+// Make functions globally available
+window.loadStockData = loadStockData;
+window.showStockOperation = showStockOperation;
+window.viewStockDetails = viewStockDetails;
+window.deleteStock = deleteStock;
+window.submitStockOperation = submitStockOperation;
+window.submitEditStock = submitEditStock;
+
+// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded tetiklendi');
+    loadStockData();
+    setupEventListeners();
+    setupAddEquipmentForm();
+    setupEquipmentSelectionHandler();
     
-    // Kısa bir gecikme ekleyerek DOM'un tam yüklenmesini bekleyelim
-    setTimeout(function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const equipmentName = urlParams.get('equipment_name');
-        console.log('URL parametreleri:', window.location.search);
-        console.log('Ekipman Adı:', equipmentName);
-        
-        if (equipmentName) {
-            const searchInput = document.getElementById('filterSearch');
-            console.log('Arama kutusu bulundu:', searchInput);
-            
-            if (searchInput) {
-                // Ekipman adını arama kutusuna doldur
-                searchInput.value = decodeURIComponent(equipmentName);
-                console.log('Arama kutusuna değer dolduruldu:', decodeURIComponent(equipmentName));
-                
-                // Input event'ini tetikleyerek filtreleme yapalım
-                const event = new Event('input', { bubbles: true });
-                searchInput.dispatchEvent(event);
-                
-                // Toast bildirimi göster
-                if (typeof showToast === 'function') {
-                    showToast(`"${decodeURIComponent(equipmentName)}" ekipmanı için sonuçlar gösteriliyor`, 'info');
-                }
-            } else {
-                console.log('Arama kutusu bulunamadı!');
-            }
-        }
-    }, 500); // 500ms gecikme
+    // Initialize form switch
+    setTimeout(() => {
+        toggleQuantityMode();
+    }, 100);
 });
 
-// CSRF token alma fonksiyonu
-function getCsrfToken() {
-    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-}
-
-// Rastgele kod oluşturma fonksiyonu
-function generateRandomCode() {
-    const prefix = 'EQ';
-    const timestamp = Date.now().toString().slice(-6);
-    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-    return `${prefix}-${timestamp}-${random}`;
-}
-
-// Modal mod değiştirme fonksiyonu
-function toggleModalMode() {
-    console.log('toggleModalMode çağrıldı');
+// Setup event listeners
+function setupEventListeners() {
+    // Filter events
+    document.getElementById('filterSearch').addEventListener('input', debounce(applyFilters, 300));
+    document.getElementById('filterCategory').addEventListener('change', applyFilters);
+    document.getElementById('filterTracking').addEventListener('change', applyFilters);
+    document.getElementById('perPageSelect').addEventListener('change', handlePerPageChange);
+    document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
     
+    // Action events
+    document.getElementById('selectAll').addEventListener('change', toggleSelectAll);
+    document.getElementById('deleteSelected').addEventListener('click', deleteSelected);
+    
+    // Form switch events
+    const quantityOnlyMode = document.getElementById('quantityOnlyMode');
+    if (quantityOnlyMode) {
+        quantityOnlyMode.addEventListener('change', toggleQuantityMode);
+    }
+}
+
+// Toggle quantity mode
+function toggleQuantityMode() {
     const quantityOnlyMode = document.getElementById('quantityOnlyMode');
     const quantityOnlySection = document.getElementById('quantityOnlySection');
     const manualEquipmentSection = document.getElementById('manualEquipmentSection');
     
-    console.log('Checkbox durumu:', quantityOnlyMode.checked);
-    console.log('Quantity section:', quantityOnlySection);
-    console.log('Manual section:', manualEquipmentSection);
-    
     if (quantityOnlyMode.checked) {
-        // Sadece miktar modu
-        console.log('Sadece miktar modu aktif');
         quantityOnlySection.style.display = 'block';
         manualEquipmentSection.style.display = 'none';
         
-        // Manuel alanları temizle
-        document.querySelectorAll('#manualEquipmentSection input, #manualEquipmentSection select, #manualEquipmentSection textarea').forEach(field => {
-            field.required = false;
-            field.value = '';
+        // Disable required fields in manual section
+        const manualInputs = manualEquipmentSection.querySelectorAll('[required]');
+        manualInputs.forEach(input => {
+            input.removeAttribute('required');
+            input.disabled = true;
         });
         
-        // Miktar modu alanlarını zorunlu yap
-        const equipmentSelect = document.querySelector('select[name="equipment_id"]');
-        const quantityInput = document.querySelector('input[name="quantity"]');
+        // Enable required fields in quantity section
+        const quantityInputs = quantityOnlySection.querySelectorAll('[required]');
+        quantityInputs.forEach(input => {
+            input.setAttribute('required', 'required');
+            input.disabled = false;
+        });
         
-        if (equipmentSelect) equipmentSelect.required = true;
-        if (quantityInput) quantityInput.required = true;
-        
-        // Ekipman seçimi değiştiğinde individual tracking kontrolü
+        // Ensure equipment select is enabled in quantity section
+        const equipmentSelect = quantityOnlySection.querySelector('select[name="equipment_id"]');
         if (equipmentSelect) {
-            equipmentSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const isIndividualTracking = selectedOption.getAttribute('data-individual-tracking') === 'true';
-                const quantityHelp = document.getElementById('quantityHelp');
-                
-                if (isIndividualTracking) {
-                    quantityInput.value = '1';
-                    quantityInput.readOnly = true;
-                    quantityHelp.textContent = 'Bu ekipman ayrı takip edilir, miktar otomatik 1 olur';
-                    quantityHelp.className = 'form-text text-warning';
-                } else {
-                    quantityInput.readOnly = false;
-                    quantityHelp.textContent = 'Toplu takip ekipmanı, istediğiniz miktarı girebilirsiniz';
-                    quantityHelp.className = 'form-text text-muted';
-                }
-            });
+            equipmentSelect.disabled = false;
+            equipmentSelect.setAttribute('required', 'required');
         }
         
     } else {
-        // Manuel ekipman modu
-        console.log('Manuel ekipman modu aktif');
         quantityOnlySection.style.display = 'none';
         manualEquipmentSection.style.display = 'block';
         
-        // Miktar modu alanlarını temizle
-        const equipmentSelect = document.querySelector('select[name="equipment_id"]');
-        const quantityInput = document.querySelector('input[name="quantity"]');
-        
-        if (equipmentSelect) {
-            equipmentSelect.required = false;
-            equipmentSelect.value = '';
-        }
-        if (quantityInput) {
-            quantityInput.required = false;
-            quantityInput.value = '';
-        }
-        
-        // Manuel alanları zorunlu yap
-        document.querySelectorAll('#manualEquipmentSection input, #manualEquipmentSection select, #manualEquipmentSection textarea').forEach(field => {
-            if (field.name === 'name' || field.name === 'category_id' || field.name === 'manual_quantity') {
-                field.required = true;
-            }
+        // Disable required fields in quantity section
+        const quantityInputs = quantityOnlySection.querySelectorAll('[required]');
+        quantityInputs.forEach(input => {
+            input.removeAttribute('required');
+            input.disabled = true;
         });
         
-        // Individual tracking kontrolü
-        const individualTrackingCheckbox = document.getElementById('individualTracking');
+        // Enable required fields in manual section
+        const manualInputs = manualEquipmentSection.querySelectorAll('[required]');
+        manualInputs.forEach(input => {
+            input.setAttribute('required', 'required');
+            input.disabled = false;
+        });
+        
+        // Ensure name field is enabled and required
+        const nameInput = document.querySelector('input[name="name"]');
+        if (nameInput) {
+            nameInput.disabled = false;
+            nameInput.setAttribute('required', 'required');
+        }
+        
+        // Ensure category and unit type selects are enabled and required
+        const categorySelect = document.querySelector('select[name="category_id"]');
+        if (categorySelect) {
+            categorySelect.disabled = false;
+            categorySelect.setAttribute('required', 'required');
+        }
+        
+        const unitTypeSelect = document.querySelector('select[name="unit_type"]');
+        if (unitTypeSelect) {
+            unitTypeSelect.disabled = false;
+            unitTypeSelect.setAttribute('required', 'required');
+        }
+        
+        // Ensure manual quantity input is enabled and required
         const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
-        const manualQuantityHelp = document.getElementById('modalCriticalLevelHelp');
-        
-        if (individualTrackingCheckbox && manualQuantityInput) {
-            individualTrackingCheckbox.addEventListener('change', function() {
-                if (this.checked) {
-                    manualQuantityInput.value = '1';
-                    manualQuantityInput.readOnly = true;
-                    manualQuantityHelp.textContent = 'Ayrı takip aktif: Her ekipman için ayrı stok kaydı oluşturulur';
-                    manualQuantityHelp.className = 'form-text text-warning';
-                } else {
-                    manualQuantityInput.readOnly = false;
-                    manualQuantityHelp.textContent = 'Toplu takip: Aynı özellikteki ekipmanlar tek kayıtta toplanır';
-                    manualQuantityHelp.className = 'form-text text-muted';
-                }
-            });
+        if (manualQuantityInput) {
+            manualQuantityInput.disabled = false;
+            manualQuantityInput.style.display = 'block';
+            manualQuantityInput.setAttribute('required', 'required');
         }
+        
+        // Re-setup equipment selection handlers for manual section
+        setupEquipmentSelectionHandler();
     }
 }
 
-// Resim seçeneklerini kontrol etme fonksiyonu
-function toggleImageOptions() {
-    const imageSection = document.getElementById('imageSection');
-    if (imageSection) {
-        imageSection.style.display = 'block';
-    }
-}
-
-// Stok işlemi resim seçeneklerini kontrol etme fonksiyonu
-function toggleOperationImageOptions() {
-    const imageSection = document.getElementById('operationImageSection');
-    if (imageSection) {
-        imageSection.style.display = 'block';
-    }
-}
-
-// Manuel özellik seçeneklerini kontrol etme fonksiyonu
-function toggleManualProperties() {
-    const useSameProperties = document.getElementById('useSameProperties');
-    const manualPropertiesSection = document.getElementById('manualPropertiesSection');
-    const referenceCodeSection = document.getElementById('referenceCodeSection');
-    
-    if (useSameProperties && manualPropertiesSection) {
-        if (useSameProperties.checked) {
-            manualPropertiesSection.style.display = 'none';
-            if (referenceCodeSection) {
-                referenceCodeSection.style.display = 'block';
-            }
-        } else {
-            manualPropertiesSection.style.display = 'block';
-            if (referenceCodeSection) {
-                referenceCodeSection.style.display = 'none';
-            }
-        }
-    }
-}
-
-// Miktar değiştiğinde resim seçeneklerini güncelleme
-function updateImageOptions() {
-    const quantityInput = document.querySelector('input[name="quantity"]');
-    const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
-    const imageSection = document.getElementById('imageSection');
-    const individualTracking = document.getElementById('individualTracking');
-    
-    let quantity = 1;
-    if (quantityInput && quantityInput.value) {
-        quantity = parseInt(quantityInput.value);
-    } else if (manualQuantityInput && manualQuantityInput.value) {
-        quantity = parseInt(manualQuantityInput.value);
-    }
-    
-    // Individual tracking kontrolü
-    if (individualTracking && individualTracking.checked) {
-        // Ayrı takip aktifse miktar her zaman 1 olmalı
-        if (quantityInput) quantityInput.value = 1;
-        if (manualQuantityInput) manualQuantityInput.value = 1;
-        quantity = 1;
-        
-        // Miktar alanlarını devre dışı bırak
-        if (quantityInput) quantityInput.disabled = true;
-        if (manualQuantityInput) manualQuantityInput.disabled = true;
-        
-        // Miktar etiketlerini güncelle
-        const quantityLabel = document.getElementById('quantityLabel');
-        const manualQuantityLabel = document.getElementById('manualQuantityLabel');
-        
-        if (quantityLabel) {
-            quantityLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
-        }
-        if (manualQuantityLabel) {
-            manualQuantityLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
-        }
-    } else {
-        // Ayrı takip kapalıysa miktar alanlarını aktif et
-        if (quantityInput) quantityInput.disabled = false;
-        if (manualQuantityInput) manualQuantityInput.disabled = false;
-        
-        // Miktar etiketlerini geri al
-        const quantityLabel = document.getElementById('quantityLabel');
-        const manualQuantityLabel = document.getElementById('manualQuantityLabel');
-        
-        if (quantityLabel) {
-            quantityLabel.textContent = 'Miktar';
-        }
-        if (manualQuantityLabel) {
-            manualQuantityLabel.textContent = 'Miktar';
-        }
-    }
-    
-    if (imageSection) {
-        imageSection.style.display = 'block';
-    }
-}
-
-// Stok verilerini yükleme
+// Load stock data
 function loadStockData(page = 1) {
-    const searchValue = document.getElementById('filterSearch').value;
-    const categoryValue = document.getElementById('filterCategory').value;
-    const trackingValue = document.getElementById('filterTracking').value;
-
-    // Loading indicator göster
-    const tbody = document.getElementById('stockTableBody');
-            tbody.innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Yükleniyor...</span>
-                    </div>
-                    <p class="mt-2 text-muted">Veriler yükleniyor...</p>
-                </td>
-            </tr>
-        `;
-
-    fetch(`/admin/stock/data?search=${encodeURIComponent(searchValue)}&category=${encodeURIComponent(categoryValue)}&tracking=${encodeURIComponent(trackingValue)}&page=${page}`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            renderStockTable(data.data);
-            if (data.pagination) {
-                updatePagination(data.pagination);
-            }
-        } else {
-            showToast(data.message || 'Stok verileri yüklenirken hata oluştu', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Stok verileri yükleme hatası:', error);
-        showToast('Stok verileri yüklenirken hata oluştu: ' + error.message, 'error');
+    currentPage = page;
+    
+    const params = new URLSearchParams({
+        page: page,
+        ...currentFilters
     });
-}
-
-// Stok girişi modalını açma
-function stockIn(stockId) {
-    // Modal açma işlemi
-    const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
-    // Tek modal: işlem bölümünü göster, düzenleme bölümünü gizle
-    const titleEl = document.getElementById('stockOperationModalLabel');
-    if (titleEl) titleEl.textContent = 'Stok Girişi';
-    const operationSection = document.getElementById('operationSection');
-    const editSection = document.getElementById('editSection');
-    if (operationSection) operationSection.style.display = 'block';
-    if (editSection) editSection.style.display = 'none';
-    const btnSubmitOperation = document.getElementById('btnSubmitOperation');
-    const btnSubmitEdit = document.getElementById('btnSubmitEdit');
-    if (btnSubmitOperation) btnSubmitOperation.style.display = 'inline-block';
-    if (btnSubmitEdit) btnSubmitEdit.style.display = 'none';
-    document.getElementById('operationType').value = 'in';
-    document.getElementById('stockId').value = stockId;
-    document.getElementById('operationTitle').textContent = 'Stok Girişi';
-    document.getElementById('operationAmount').value = '';
-    document.getElementById('operationNote').value = '';
     
-    // Stok girişi için alanları başlangıçta göster
-    document.getElementById('samePropertiesOption').style.display = 'block';
-    document.getElementById('operationImageOptions').style.display = 'block';
-    document.getElementById('manualPropertiesSection').style.display = 'none';
-    document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
-    
-    // Açılışta kod seçimi alanlarını sıfırla
-    (function resetExistingCodeUI() {
-        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
-        const selectEl = document.getElementById('existingCodesSelect');
-        const label = document.getElementById('existingCodesLabel');
-        const help = document.getElementById('existingCodesHelp');
-        const refInput = document.getElementById('referenceCode');
-        const refMsg = document.getElementById('referenceCodeValidationMessage');
-        if (selectWrapper) selectWrapper.style.display = 'none';
-        if (selectEl) selectEl.innerHTML = '';
-        if (label) label.textContent = 'Mevcut Kod Seç';
-        if (help) help.textContent = 'Mevcut tekil ürünlerden birini seçtiğinizde ilgili kod otomatik doldurulur';
-        if (refInput) refInput.value = '';
-        if (refMsg) { refMsg.textContent = ''; refMsg.className = 'form-text'; }
-    })();
-
-    // Individual tracking kontrolü - ekipman bilgisini al
-    fetch(`/admin/stock/${stockId}/info`)
+    fetch(`/admin/stock/data?${params}`)
         .then(response => response.json())
         .then(data => {
-            const isIndividual = !!(data && data.data && (data.data.individual_tracking === true || data.data.individual_tracking === 1 || data.data.individual_tracking === '1'));
-            const equipmentName = (data && data.data && data.data.name) ? data.data.name : '';
-            if (data.success && isIndividual) {
-                const badge = document.getElementById('trackingTypeBadge');
-                if (badge) { badge.textContent = 'Ayrı Takip'; badge.className = 'badge bg-info'; }
-                // Individual tracking: Miktar her zaman 1
-                document.getElementById('operationAmount').value = '1';
-                document.getElementById('operationAmount').disabled = true;
-                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
-                
-                // Etiketi güncelle
-                const operationAmountLabel = document.getElementById('operationAmountLabel');
-                if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Adet (Ayrı takip: Her ürün tek adet)';
-                }
-                // Ayrı takipte özellik seçenekleri açık
-                document.getElementById('samePropertiesOption').style.display = 'block';
-                document.getElementById('operationImageOptions').style.display = 'block';
-                // Referans kod alanını görünür hale getirmek için toggle
-                const useSameProps = document.getElementById('useSameProperties');
-                if (useSameProps && !useSameProps.checked) {
-                    useSameProps.checked = true;
-                }
-                toggleManualProperties();
-                
-                // Mevcut kodları çek ve otomatik doldurma/seçim sağla
-                fetch(`/admin/stock/${stockId}/codes`)
-                    .then(r => r.json())
-                    .then(codeData => {
-                        const referenceInput = document.getElementById('referenceCode');
-                        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
-                        const selectEl = document.getElementById('existingCodesSelect');
-                        const label = document.getElementById('existingCodesLabel');
-                        const help = document.getElementById('existingCodesHelp');
-                        if (!codeData || !codeData.success) return;
-                        const codes = Array.isArray(codeData.data) ? codeData.data : [];
-                        if (codes.length === 1) {
-                            // Tek kod varsa otomatik yerleştir
-                            if (referenceInput) {
-                                referenceInput.value = codes[0];
-                                // validasyon mesajını pozitif göster
-                                const vm = document.getElementById('referenceCodeValidationMessage');
-                                if (vm) { vm.textContent = '✓ Kod otomatik dolduruldu'; vm.className = 'form-text text-success'; }
-                            }
-                            if (selectWrapper) selectWrapper.style.display = 'none';
-                        } else if (codes.length > 1) {
-                            // Çok kod varsa seçim sun
-                            if (selectWrapper && selectEl) {
-                                if (label) label.textContent = 'Mevcut Kod Seç (Giriş)';
-                                if (help) help.textContent = 'Seçilen kodun özellikleri referans alınır';
-                                selectEl.innerHTML = '<option value="">Kod seçiniz</option>' + codes.map(c => `<option value="${c}">${c} - ${equipmentName}</option>`).join('');
-                                selectWrapper.style.display = 'block';
-                                selectEl.onchange = function() {
-                                    if (referenceInput) {
-                                        referenceInput.value = this.value || '';
-                                        const vm = document.getElementById('referenceCodeValidationMessage');
-                                        if (vm) { vm.textContent = this.value ? '✓ Kod seçildi' : ''; vm.className = this.value ? 'form-text text-success' : 'form-text'; }
-                                    }
-                                };
-                            }
-                        }
-                    })
-                    .catch(() => {});
-
-                // Kod validation'ını aktif et
-                const codeInput = document.getElementById('operationCode');
-                codeInput.addEventListener('input', handleCodeInput);
+            if (data.success) {
+                renderStockTable(data.data);
+                renderPagination(data.pagination);
+                updateCriticalStockAlert(data.data);
             } else {
-                const badge = document.getElementById('trackingTypeBadge');
-                if (badge) { badge.textContent = 'Toplu Takip'; badge.className = 'badge bg-secondary'; }
-                // Toplu tracking: Miktar girişi (kaç adet eklenecek)
-                document.getElementById('operationAmount').disabled = false;
-                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
-                // Max miktar sınırı uygula
-                const amountInput = document.getElementById('operationAmount');
-                if (amountInput) {
-                    amountInput.setAttribute('max', '10000');
-                    amountInput.oninput = function() {
-                        let val = parseInt(this.value || '');
-                        if (isNaN(val)) return;
-                        if (val > 10000) {
-                            this.value = 10000;
-                            showToast('En fazla 10000 girilebilir', 'warning');
-                        } else if (val < 1) {
-                            this.value = 1;
-                        }
-                    };
-                }
-                
-                // Etiketi güncelle
-                const operationAmountLabel = document.getElementById('operationAmountLabel');
-                if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Miktar';
-                }
-                // Toplu takipte özellik kopyalama/girme alanlarına gerek yok
-                document.getElementById('samePropertiesOption').style.display = 'none';
-                document.getElementById('manualPropertiesSection').style.display = 'none';
-                // Görsel opsiyonları açık kalsın (isteğe bağlı güncel resim)
-                document.getElementById('operationImageOptions').style.display = 'block';
+                showToast('error', 'Veri yüklenirken hata oluştu');
             }
         })
-        .catch(() => {
-            // Hata durumunda varsayılan olarak miktar girişi göster
-            document.getElementById('operationAmount').disabled = false;
-            document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
-            // Max miktar sınırı uygula (fallback)
-            const amountInput = document.getElementById('operationAmount');
-            if (amountInput) {
-                amountInput.setAttribute('max', '10000');
-                amountInput.oninput = function() {
-                    let val = parseInt(this.value || '');
-                    if (isNaN(val)) return;
-                    if (val > 10000) {
-                        this.value = 10000;
-                        showToast('En fazla 10000 girilebilir', 'warning');
-                    } else if (val < 1) {
-                        this.value = 1;
-                    }
-                };
-            }
-            
-            // Etiketi geri al
-            const operationAmountLabel = document.getElementById('operationAmountLabel');
-            if (operationAmountLabel) {
-                operationAmountLabel.textContent = 'Miktar';
-            }
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', 'Bağlantı hatası');
         });
-    
-    // Manuel özellik seçeneklerini ayarla
-    toggleManualProperties();
-    
-    modal.show();
 }
 
-// Stok çıkışı modalını açma
-function stockOut(stockId) {
-    // Modal açma işlemi
-    const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
-    // Tek modal: işlem bölümünü göster, düzenleme bölümünü gizle
-    const titleEl = document.getElementById('stockOperationModalLabel');
-    if (titleEl) titleEl.textContent = 'Stok Çıkışı';
-    const operationSection = document.getElementById('operationSection');
-    const editSection = document.getElementById('editSection');
-    if (operationSection) operationSection.style.display = 'block';
-    if (editSection) editSection.style.display = 'none';
-    const btnSubmitOperation = document.getElementById('btnSubmitOperation');
-    const btnSubmitEdit = document.getElementById('btnSubmitEdit');
-    if (btnSubmitOperation) btnSubmitOperation.style.display = 'inline-block';
-    if (btnSubmitEdit) btnSubmitEdit.style.display = 'none';
-    document.getElementById('operationType').value = 'out';
-    document.getElementById('stockId').value = stockId;
-    document.getElementById('operationTitle').textContent = 'Stok Çıkışı';
-    document.getElementById('operationAmount').value = '1'; // Varsayılan değer
-    document.getElementById('operationNote').value = '';
-    document.getElementById('operationCode').value = '';
-    
-    // Stok çıkışı için alanları göster/gizle
-    document.getElementById('samePropertiesOption').style.display = 'none';
-    document.getElementById('manualPropertiesSection').style.display = 'none';
-    document.getElementById('operationImageOptions').style.display = 'none';
-    
-    // Açılışta kod seçimi alanlarını sıfırla
-    (function resetExistingCodeUI() {
-        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
-        const selectEl = document.getElementById('existingCodesSelect');
-        const label = document.getElementById('existingCodesLabel');
-        const help = document.getElementById('existingCodesHelp');
-        const opCode = document.getElementById('operationCode');
-        if (selectWrapper) selectWrapper.style.display = 'none';
-        if (selectEl) selectEl.innerHTML = '';
-        if (label) label.textContent = 'Mevcut Kod Seç';
-        if (help) help.textContent = 'Mevcut tekil ürünlerden birini seçtiğinizde ilgili kod otomatik doldurulur';
-        if (opCode) opCode.value = '';
-    })();
-
-    // Individual tracking kontrolü - ekipman bilgisini al
-    fetch(`/admin/stock/${stockId}/info`)
-        .then(response => response.json())
-        .then(data => {
-            const isIndividual = !!(data && data.data && (data.data.individual_tracking === true || data.data.individual_tracking === 1 || data.data.individual_tracking === '1'));
-            const equipmentName = (data && data.data && data.data.name) ? data.data.name : '';
-            if (data.success && isIndividual) {
-                const badge = document.getElementById('trackingTypeBadge');
-                if (badge) { badge.textContent = 'Ayrı Takip'; badge.className = 'badge bg-info'; }
-                // Individual tracking: Her zaman 1 adet düşer, miktar alanı gizle
-                document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
-                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
-                
-                // Stok çıkışında kod validation'ını aktif et
-                const codeInput = document.getElementById('operationCode');
-                codeInput.addEventListener('input', handleCodeInput);
-                
-                // Etiketi güncelle
-                const operationAmountLabel = document.getElementById('operationAmountLabel');
-                if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Çıkış Adedi';
-                }
-
-                // Mevcut kodları çek: 1 ise otomatik operationCode'a yaz, birden fazla ise select göster
-                fetch(`/admin/stock/${stockId}/codes`)
-                    .then(r => r.json())
-                    .then(codeData => {
-                        const codeInput = document.getElementById('operationCode');
-                        const selectWrapper = document.getElementById('existingCodesSelectWrapper');
-                        const selectEl = document.getElementById('existingCodesSelect');
-                        const label = document.getElementById('existingCodesLabel');
-                        const help = document.getElementById('existingCodesHelp');
-                        if (!codeData || !codeData.success) return;
-                        const codes = Array.isArray(codeData.data) ? codeData.data : [];
-                        if (codes.length === 1) {
-                            if (codeInput) codeInput.value = codes[0];
-                            if (selectWrapper) selectWrapper.style.display = 'none';
-                        } else if (codes.length > 1) {
-                            if (selectWrapper && selectEl) {
-                                if (label) label.textContent = 'Mevcut Kod Seç (Çıkış)';
-                                if (help) help.textContent = 'Seçilen kod stoktan düşülecek ürünü belirtir';
-                                selectEl.innerHTML = '<option value="">Kod seçiniz</option>' + codes.map(c => `<option value="${c}">${c} - ${equipmentName}</option>`).join('');
-                                selectWrapper.style.display = 'block';
-                                selectEl.onchange = function() {
-                                    if (codeInput) codeInput.value = this.value || '';
-                                };
-                            }
-                        }
-                    })
-                    .catch(() => {});
-            } else {
-                const badge = document.getElementById('trackingTypeBadge');
-                if (badge) { badge.textContent = 'Toplu Takip'; badge.className = 'badge bg-secondary'; }
-                // Toplu tracking: Miktar girişi, kod gerekmiyor
-                document.getElementById('operationCode').parentElement.parentElement.style.display = 'none';
-                document.getElementById('operationAmount').parentElement.parentElement.style.display = 'block';
-                
-                // Etiketi güncelle
-                const operationAmountLabel = document.getElementById('operationAmountLabel');
-                if (operationAmountLabel) {
-                    operationAmountLabel.textContent = 'Çıkış Adedi';
-                }
-            }
-        })
-        .catch(() => {
-            // Hata durumunda varsayılan olarak kod girişi göster
-            document.getElementById('operationCode').parentElement.parentElement.style.display = 'block';
-            document.getElementById('operationAmount').parentElement.parentElement.style.display = 'none';
-            
-            // Etiketi güncelle
-            const operationAmountLabel = document.getElementById('operationAmountLabel');
-            if (operationAmountLabel) {
-                operationAmountLabel.textContent = 'Adet (Her ürün ayrı kod)';
-            }
-        });
-    
-    // Kod validasyon mesajını temizle
-    document.getElementById('codeValidationMessage').textContent = '';
-    document.getElementById('codeValidationMessage').className = 'form-text';
-    
-    modal.show();
-}
-
-// Stok kodu kontrolü
-function validateStockCode(code) {
-    const stockId = document.getElementById('stockId').value;
-    const operationType = document.getElementById('operationType').value;
-    return new Promise((resolve) => {
-        fetch(`/admin/stock/validate-code?code=${encodeURIComponent(code)}&equipment_id=${stockId}&operation_type=${operationType}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            resolve(data.valid);
-        })
-        .catch(() => {
-            resolve(false);
-        });
-    });
-}
-
-// Kod input değişikliğini dinle
-function handleCodeInput() {
-    const codeInput = document.getElementById('operationCode');
-    const validationMessage = document.getElementById('codeValidationMessage');
-    
-    if (codeInput.value.trim() === '') {
-        codeInput.classList.remove('is-valid', 'is-invalid');
-        validationMessage.textContent = '';
-        validationMessage.className = 'form-text';
-        return;
-    }
-    
-    validateStockCode(codeInput.value).then(isValid => {
-        if (isValid) {
-            codeInput.classList.remove('is-invalid');
-            codeInput.classList.add('is-valid');
-            validationMessage.textContent = '✓ Geçerli stok kodu';
-            validationMessage.className = 'form-text text-success';
-        } else {
-            codeInput.classList.remove('is-valid');
-            codeInput.classList.add('is-invalid');
-            validationMessage.textContent = '✗ Geçersiz stok kodu';
-            validationMessage.className = 'form-text text-danger';
-        }
-    });
-}
-
-// Referans stok kodu kontrolü
-function validateReferenceCode(code) {
-    const stockId = document.getElementById('stockId').value;
-    return new Promise((resolve) => {
-        fetch(`/admin/stock/validate-reference-code?code=${encodeURIComponent(code)}&equipment_id=${stockId}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            resolve(data);
-        })
-        .catch(() => {
-            resolve({ valid: false, data: null });
-        });
-    });
-}
-
-// Referans kod input değişikliğini dinle
-function handleReferenceCodeInput() {
-    const codeInput = document.getElementById('referenceCode');
-    const validationMessage = document.getElementById('referenceCodeValidationMessage');
-    
-    if (codeInput.value.trim() === '') {
-        codeInput.classList.remove('is-valid', 'is-invalid');
-        validationMessage.textContent = '';
-        validationMessage.className = 'form-text';
-        return;
-    }
-    
-    validateReferenceCode(codeInput.value).then(result => {
-        if (result.valid) {
-            codeInput.classList.remove('is-invalid');
-            codeInput.classList.add('is-valid');
-            validationMessage.textContent = `✓ Geçerli stok kodu - ${result.data.brand} ${result.data.model}`;
-            validationMessage.className = 'form-text text-success';
-        } else {
-            codeInput.classList.remove('is-valid');
-            codeInput.classList.add('is-invalid');
-            validationMessage.textContent = '✗ Geçersiz stok kodu';
-            validationMessage.className = 'form-text text-danger';
-        }
-    });
-}
-
-// Stok işlemi gönderme
-function submitStockOperation() {
-    const stockId = document.getElementById('stockId').value;
-    const type = document.getElementById('operationType').value;
-    const amount = document.getElementById('operationAmount').value || '1'; // Varsayılan değer
-    const note = document.getElementById('operationNote').value;
-    const code = document.getElementById('operationCode').value;
-    const useSameProperties = document.getElementById('useSameProperties')?.checked || false;
-    const useSingleImage = false;
-    const photoFiles = document.getElementById('operationPhoto')?.files;
-    const individualTracking = document.getElementById('individualTracking')?.checked || false;
-    const referenceCode = document.getElementById('referenceCode')?.value || '';
-    const unitType = document.getElementById('operationUnitType')?.value || '';
-    
-    // Manuel özellikler
-    const brand = document.getElementById('operationBrand')?.value || '';
-    const model = document.getElementById('operationModel')?.value || '';
-    const size = document.getElementById('operationSize')?.value || '';
-    const feature = document.getElementById('operationFeature')?.value || '';
-
-    // Individual tracking kontrolü
-    if (individualTracking && amount != 1) {
-        showToast('Ayrı takip özelliği olan ekipmanlarda miktar her zaman 1 olmalıdır', 'error');
-        return;
-    }
-
-    // Stok çıkışında amount kontrolü (individual tracking için gizli olabilir)
-    if (type === 'in') {
-        const numericAmount = parseInt(amount);
-        if (!numericAmount || numericAmount <= 0) {
-            showToast('Lütfen geçerli bir miktar girin', 'error');
-            return;
-        }
-        // Üst sınır kontrolü (İstek atmadan engelle)
-        if (numericAmount > 10000) {
-            showToast('En fazla 10000 girilebilir', 'error');
-            return;
-        }
-    }
-
-    // Stok çıkışında doğrulama
-    if (type === 'out') {
-        // Ekipmanın takip tipini öğren
-        // stockOut çağrısında zaten ayarlanmış görünürlüğe göre kontrol yapalım
-        const codeRowVisible = document.getElementById('operationCode').parentElement.parentElement.style.display !== 'none';
-        const amountRowVisible = document.getElementById('operationAmount').parentElement.parentElement.style.display !== 'none';
-
-        if (amountRowVisible) {
-            if (!amount || parseInt(amount) < 1) {
-                showToast('Geçerli bir çıkış adedi girin', 'error');
-                return;
-            }
-        } else if (codeRowVisible) {
-            // Ayrı takip: miktar gizli, kod opsiyonel ama girilmişse doğrula
-            if (code && code.trim() !== '') {
-                const codeInput = document.getElementById('operationCode');
-                if (codeInput.classList.contains('is-invalid')) {
-                    showToast('Geçersiz stok kodu', 'error');
-                    return;
-                }
-            }
-        }
-    }
-
-    console.log('Stok işlemi gönderiliyor:', { stockId, type, amount, note, code, useSameProperties, useSingleImage });
-
-    const formData = new FormData();
-    formData.append('operation_type', type);
-    formData.append('amount', parseInt(amount) || 1); // Varsayılan değer
-    formData.append('note', note);
-    
-    // Unit type güncelleme (eğer seçildiyse)
-    if (unitType && unitType.trim() !== '') {
-        formData.append('unit_type', unitType);
-    }
-    
-    if (type === 'in') {
-        // Stok girişi için özellikler ve resimler (yalnızca ayrı takipte gerekli)
-        const samePropsSectionVisible = document.getElementById('samePropertiesOption').style.display !== 'none';
-        if (samePropsSectionVisible) {
-            formData.append('use_same_properties', useSameProperties ? '1' : '0');
-            formData.append('use_single_image', useSingleImage ? '1' : '0');
-            if (!useSameProperties) {
-                formData.append('brand', brand);
-                formData.append('model', model);
-                formData.append('size', size);
-                formData.append('feature', feature);
-            } else {
-                formData.append('reference_code', referenceCode);
-            }
-        }
-        
-        if (photoFiles && photoFiles.length > 0) {
-            // Miktar kadar resim ekle
-            const maxFiles = Math.min(photoFiles.length, parseInt(amount));
-            for (let i = 0; i < maxFiles; i++) {
-                formData.append(`photos[]`, photoFiles[i]);
-            }
-        }
-    } else {
-        // Stok çıkışı için kod
-        formData.append('code', code);
-    }
-
-    fetch(`/admin/stock/${stockId}/operation`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: formData
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-            return response.text().then(text => {
-                console.log('Response text:', text);
-                try {
-                    const data = JSON.parse(text);
-                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
-                } catch (e) {
-                    if (e instanceof SyntaxError) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                    throw e;
-                }
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            showToast(data.message, 'success');
-            // Modal'ı kapat
-            const modal = bootstrap.Modal.getInstance(document.getElementById('stockOperationModal'));
-            modal.hide();
-            // Tabloyu yenile
-            loadStockData();
-        } else {
-            showToast(data.message || 'İşlem başarısız', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Bir hata oluştu: ' + error.message, 'error');
-    });
-}
-
-// Modal içindeki Enter tuşu olayını yakala (tek modal için)
-document.addEventListener('DOMContentLoaded', function() {
-    const modalElement = document.getElementById('stockOperationModal');
-    if (modalElement) {
-        modalElement.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                e.stopPropagation();
-                const operationSection = document.getElementById('operationSection');
-                const editSection = document.getElementById('editSection');
-                const isEditVisible = editSection && editSection.style.display !== 'none';
-                if (isEditVisible) {
-                    submitEditStock();
-                } else {
-                    submitStockOperation();
-                }
-                return false;
-            }
-        });
-    }
-});
-
-// Stok düzenleme
-function editStock(stockId) {
-    // Mevcut verileri al
-    const row = document.querySelector(`tr[data-id="${stockId}"]`);
-    const name = row.querySelector('td:nth-child(2) .fw-bold')?.textContent || '';
-    const code = row.querySelector('td:nth-child(2) small')?.textContent || '';
-    const criticalLevel = row.querySelector('td:nth-child(6)')?.textContent || '';
-
-    // Tek modal içinde düzenleme bölümü
-    const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
-    const titleEl = document.getElementById('stockOperationModalLabel');
-    if (titleEl) titleEl.textContent = 'Ekipman Düzenle';
-    const operationSection = document.getElementById('operationSection');
-    const editSection = document.getElementById('editSection');
-    if (operationSection) operationSection.style.display = 'none';
-    if (editSection) editSection.style.display = 'block';
-    const btnSubmitOperation = document.getElementById('btnSubmitOperation');
-    const btnSubmitEdit = document.getElementById('btnSubmitEdit');
-    if (btnSubmitOperation) btnSubmitOperation.style.display = 'none';
-    if (btnSubmitEdit) btnSubmitEdit.style.display = 'inline-block';
-
-    document.getElementById('editStockId').value = stockId;
-    document.getElementById('editStockName').value = name;
-    document.getElementById('editStockCode').value = code;
-    document.getElementById('editStockCriticalLevel').value = criticalLevel;
-    document.getElementById('editStockNote').value = '';
-    
-    // Birim türü varsayılan olarak 'adet' seçili
-    document.getElementById('editStockUnitType').value = 'adet';
-    
-    // Birim türü yardım metnini güncelle
-    updateEditCriticalLevelHelp();
-    
-    modal.show();
-}
-
-// Stok düzenleme gönderme
-function submitEditStock() {
-    const stockId = document.getElementById('editStockId').value;
-    const name = document.getElementById('editStockName').value;
-    const code = document.getElementById('editStockCode').value;
-    const unitType = document.getElementById('editStockUnitType').value;
-    const criticalLevel = document.getElementById('editStockCriticalLevel').value;
-    const note = document.getElementById('editStockNote').value;
-
-    if (!name || !code || !unitType || !criticalLevel) {
-        showToast('Lütfen tüm zorunlu alanları doldurun', 'error');
-        return;
-    }
-
-    if (criticalLevel <= 0) {
-        showToast('Kritik seviye 0\'dan büyük olmalıdır', 'error');
-        return;
-    }
-
-    console.log('Stok düzenleme gönderiliyor:', { stockId, name, code, unitType, criticalLevel, note });
-
-    fetch(`/admin/stock/${stockId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            name: name,
-            code: code,
-            unit_type: unitType,
-            critical_level: parseFloat(criticalLevel),
-            note: note
-        })
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-        return response.json();
-        } else {
-            throw new Error('Beklenmeyen response formatı');
-        }
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            showToast(data.message, 'success');
-            // Modal'ı kapat
-            const modal = bootstrap.Modal.getInstance(document.getElementById('stockOperationModal'));
-            modal.hide();
-            // Tabloyu yenile
-            loadStockData();
-        } else {
-            showToast(data.message, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Bir hata oluştu: ' + error.message, 'error');
-    });
-}
-
-// Stok detaylarını göster/gizle
-function toggleStockDetails(stockId) {
-    const detailRow = document.getElementById(`detailRow${stockId}`);
-    const codesContainer = document.getElementById(`stockCodes${stockId}`);
-    
-    if (detailRow.style.display === 'none') {
-        // Detay satırını göster
-        detailRow.style.display = 'table-row';
-        
-        // Eğer kodlar daha önce yüklenmemişse, yükle
-        if (codesContainer.innerHTML.includes('Yükleniyor')) {
-            loadStockCodes(stockId);
-        }
-    } else {
-        // Detay satırını gizle
-        detailRow.style.display = 'none';
-    }
-}
-
-// Global scope'a da ekle
-window.toggleStockDetails = toggleStockDetails;
-
-// Stok kodlarını yükle
-function loadStockCodes(equipmentId) {
-    const codesContainer = document.getElementById(`stockCodes${equipmentId}`);
-    const carouselControls = document.getElementById(`carouselControls${equipmentId}`);
-    
-    fetch(`/admin/stock/${equipmentId}/detailed-codes`, {
-        method: 'GET',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.codes && data.codes.length > 0) {
-            // Carousel state'i sakla
-            window.stockCarouselData = window.stockCarouselData || {};
-            window.stockCarouselData[equipmentId] = {
-                codes: data.codes,
-                currentPage: 0,
-                itemsPerPage: 4,
-                totalPages: Math.ceil(data.codes.length / 4)
-            };
-            
-            // İlk sayfayı göster
-            showStockCodesPage(equipmentId);
-            
-            // Carousel kontrollerini göster
-            carouselControls.style.display = 'block';
-        } else {
-            codesContainer.innerHTML = `
-                <div class="text-center py-4">
-                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
-                    <p class="text-muted mb-0">Bu ekipman için henüz stok kodu bulunmuyor</p>
-                </div>
-            `;
-        }
-    })
-    .catch(error => {
-        console.error('Error loading stock codes:', error);
-        codesContainer.innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
-                <p class="text-danger mb-0">Kodlar yüklenirken hata oluştu</p>
-            </div>
-        `;
-    });
-}
-
-// Stok kodlarının belirli bir sayfasını göster
-function showStockCodesPage(equipmentId, direction = 'none') {
-    const data = window.stockCarouselData[equipmentId];
-    if (!data) return;
-    
-    const codesContainer = document.getElementById(`stockCodes${equipmentId}`);
-    const pageInfo = document.getElementById(`pageInfo${equipmentId}`);
-    const prevBtn = document.getElementById(`prevBtn${equipmentId}`);
-    const nextBtn = document.getElementById(`nextBtn${equipmentId}`);
-    const dotsContainer = document.getElementById(`dots${equipmentId}`);
-    
-    const startIndex = data.currentPage * data.itemsPerPage;
-    const endIndex = Math.min(startIndex + data.itemsPerPage, data.codes.length);
-    const pageCodes = data.codes.slice(startIndex, endIndex);
-    
-    // HTML oluştur - Responsive versiyon
-    let html = '<div class="row g-2 stock-codes-slide">';
-    pageCodes.forEach((code, index) => {
-        html += `
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="card border-0 shadow-sm h-100 stock-code-card" style="animation-delay: ${index * 0.1}s;">
-                    <div class="card-body p-2 p-md-3">
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-2 gap-1">
-                            <h6 class="card-title mb-0 text-primary small">${code.code || 'Kod Yok'}</h6>
-                            <span class="badge bg-info small">${code.quantity || 0} adet</span>
-                        </div>
-                        <div class="small text-muted">
-                            <div class="d-flex flex-column flex-sm-row gap-1">
-                                <div class="flex-fill">
-                                    <div><strong>Marka:</strong> ${code.brand || '-'}</div>
-                                    <div><strong>Model:</strong> ${code.model || '-'}</div>
-                                </div>
-                                <div class="flex-fill">
-                                    <div><strong>Beden:</strong> ${code.size || '-'}</div>
-                                    <div class="d-none d-sm-block"><strong>Tarih:</strong> ${new Date(code.created_at).toLocaleDateString('tr-TR')}</div>
-                                </div>
-                            </div>
-                            ${code.feature ? `<div class="mt-1"><strong>Özellik:</strong> ${code.feature}</div>` : ''}
-                            ${code.note ? `<div class="mt-1"><strong>Not:</strong> ${code.note}</div>` : ''}
-                            <div class="mt-1 d-sm-none">
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar me-1"></i>
-                                    ${new Date(code.created_at).toLocaleDateString('tr-TR')}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    html += '</div>';
-    
-    // Animasyon efekti
-    if (direction !== 'none') {
-        const currentSlide = codesContainer.querySelector('.stock-codes-slide');
-        if (currentSlide) {
-            // Mevcut slide'ı çıkış animasyonu ile gizle
-            currentSlide.classList.add(direction === 'next' ? 'slide-out-left' : 'slide-out-right');
-            
-            setTimeout(() => {
-                codesContainer.innerHTML = html;
-                const newSlide = codesContainer.querySelector('.stock-codes-slide');
-                if (newSlide) {
-                    // Yeni slide'ı giriş animasyonu ile göster
-                    newSlide.classList.add(direction === 'next' ? 'slide-in-right' : 'slide-in-left');
-                    setTimeout(() => {
-                        newSlide.classList.remove('slide-in-left', 'slide-in-right');
-                    }, 50);
-                }
-            }, 250);
-        } else {
-            codesContainer.innerHTML = html;
-        }
-    } else {
-        codesContainer.innerHTML = html;
-    }
-    
-    // Sayfa bilgisini güncelle (animasyonlu)
-    pageInfo.style.opacity = '0';
-    setTimeout(() => {
-        pageInfo.textContent = `${data.currentPage + 1} / ${data.totalPages}`;
-        pageInfo.style.opacity = '1';
-    }, 100);
-    
-    // Butonları güncelle
-    prevBtn.disabled = data.currentPage === 0;
-    nextBtn.disabled = data.currentPage === data.totalPages - 1;
-    
-    // Dots oluştur (animasyonlu)
-    let dotsHtml = '';
-    for (let i = 0; i < data.totalPages; i++) {
-        const isActive = i === data.currentPage ? 'active' : '';
-        dotsHtml += `<span class="dot ${isActive}" onclick="goToPage(${equipmentId}, ${i})"></span>`;
-    }
-    dotsContainer.innerHTML = dotsHtml;
-}
-
-// Önceki sayfa
-function previousPage(equipmentId) {
-    const data = window.stockCarouselData[equipmentId];
-    if (data && data.currentPage > 0) {
-        data.currentPage--;
-        showStockCodesPage(equipmentId, 'prev');
-    }
-}
-
-// Sonraki sayfa
-function nextPage(equipmentId) {
-    const data = window.stockCarouselData[equipmentId];
-    if (data && data.currentPage < data.totalPages - 1) {
-        data.currentPage++;
-        showStockCodesPage(equipmentId, 'next');
-    }
-}
-
-// Belirli bir sayfaya git
-function goToPage(equipmentId, page) {
-    const data = window.stockCarouselData[equipmentId];
-    if (data && page >= 0 && page < data.totalPages) {
-        const direction = page > data.currentPage ? 'next' : 'prev';
-        data.currentPage = page;
-        showStockCodesPage(equipmentId, direction);
-    }
-}
-
-// Global scope'a da ekle
-window.loadStockCodes = loadStockCodes;
-window.showStockCodesPage = showStockCodesPage;
-window.previousPage = previousPage;
-window.nextPage = nextPage;
-window.goToPage = goToPage;
-
-// Stok silme
-function deleteStock(stockId) {
-    Swal.fire({
-        title: 'Emin misiniz?',
-        text: "Bu stok kaydı kalıcı olarak silinecek!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Evet, sil!',
-        cancelButtonText: 'İptal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            // Stok sayfasında Equipment ID'si kullanılıyor, Equipment silme route'unu kullan
-            fetch(`/admin/ekipmanlar/${stockId}`, {
-                method: 'DELETE',
-                headers: { 'X-CSRF-TOKEN': csrf }
-            })
-            .then(response => {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                }
-                return { success: response.ok };
-            })
-            .then(data => {
-                if (data && data.success) {
-                    // DOM'dan satırı kaldır
-                    const row = document.querySelector(`tr[data-id="${stockId}"]`);
-                    if (row) {
-                        row.remove();
-                    }
-                    
-                    // Tablo boşsa "Henüz stok bulunmuyor" mesajını göster
-                    const tbody = document.getElementById('stockTableBody');
-                    if (tbody && tbody.children.length === 0) {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="9" class="text-center py-4">
-                                    <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted">Henüz stok bulunmuyor</p>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                    
-                    showToast(data.message, 'success');
-                } else {
-                    showToast((data && data.message) || 'Silme işlemi başarısız', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Bir hata oluştu', 'error');
-            });
-        }
-    });
-}
-
-// Stok tablosunu render etme - Responsive versiyon
+// Render stock table
 function renderStockTable(stocks) {
     const tbody = document.getElementById('stockTableBody');
     
@@ -1234,947 +159,1132 @@ function renderStockTable(stocks) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="11" class="text-center py-4">
-                    <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
-                    <p class="text-muted">Stok bulunamadı</p>
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted small">Stok bulunamadı</p>
                 </td>
             </tr>
         `;
         return;
     }
-
-    tbody.innerHTML = stocks.map(stock => {
-        // PHP'den gelen hesaplanmış değerleri kullan
-        const totalQuantity = stock.total_quantity || 0;
-        const criticalLevel = stock.critical_level || 3;
-        const rowClass = stock.row_class || 'table-success';
-        const barClass = stock.bar_class || 'bg-success';
+    
+    let html = '';
+    stocks.forEach(stock => {
+        // Güvenli değer kontrolü
+        const statusClass = getStatusClass(stock.stock_status || 'Bilinmiyor');
+        const trackingType = stock.individual_tracking ? 'Ayrı Takip' : 'Toplu Takip';
+        const trackingBadge = stock.individual_tracking ? 'bg-info' : 'bg-warning';
+        
+        // Progress bar for stock level
         const percentage = stock.percentage || 0;
+        const barClass = stock.bar_class || 'bg-secondary';
+        const progressBar = `
+            <div class="progress" style="height: 6px; width: 50px;">
+                <div class="progress-bar ${barClass}" role="progressbar" style="width: ${percentage}%" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        `;
         
-        // Status badge HTML'i - Manuel hesaplama
-        let statusBadge = '';
+        // Row class güvenli kontrolü
+        const rowClass = stock.row_class || '';
         
-        if (stock.status === 'Arızalı') {
-            statusBadge = '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Arızalı</span>';
-        } else if (stock.status === 'Bakımda') {
-            statusBadge = '<span class="badge bg-warning"><i class="fas fa-tools"></i> Bakımda</span>';
-        } else {
-            // Stok miktarına göre durum belirle
-            const totalQuantity = stock.total_quantity || 0;
-            const criticalLevel = stock.critical_level || 0;
-            
-            if (totalQuantity <= 0) {
-                statusBadge = '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Tükendi</span>';
-            } else if (totalQuantity <= criticalLevel) {
-                statusBadge = '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Az Stok</span>';
-            } else {
-                statusBadge = '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Yeterli</span>';
-            }
-        }
-
-        return `
-            <tr class="${rowClass}" data-id="${stock.id}">
-                <td class="d-none d-md-table-cell"><input type="checkbox" class="stock-checkbox" value="${stock.id}"></td>
+        html += `
+            <tr class="${rowClass}">
+                <td class="d-none d-md-table-cell">
+                    <input type="checkbox" class="stock-checkbox form-check-input" value="${stock.id}">
+                </td>
                 <td>
-                    <div class="d-flex flex-column">
-                        <span class="fw-bold">${stock.name || '-'}</span>
-                        <small class="text-muted d-md-none">${stock.category?.name || '-'}</small>
-                        <div class="d-flex gap-1 mt-1 d-md-none">
-                            <span class="badge bg-info small">${stock.unit_type_label || 'Adet'}</span>
-                            ${stock.individual_tracking ? 
-                                '<span class="badge bg-primary small"><i class="fas fa-user"></i></span>' : 
-                                '<span class="badge bg-secondary small"><i class="fas fa-layer-group"></i></span>'
-                            }
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <i class="fas fa-cube text-primary"></i>
+                        </div>
+                        <div>
+                            <strong style="font-size: 0.8em;">${stock.name || 'İsimsiz'}</strong>
+                            <br><small class="text-muted" style="font-size: 0.65em;">${stock.unit_type_label || 'Adet'}</small>
                         </div>
                     </div>
                 </td>
-                <td class="d-none d-sm-table-cell">${stock.category?.name || '-'}</td>
+                <td class="d-none d-sm-table-cell">
+                    <span class="badge bg-secondary" style="font-size: 0.65em;">${stock.category?.name || 'Kategori yok'}</span>
+                </td>
                 <td class="d-none d-md-table-cell">
-                    <span class="badge bg-info">${stock.unit_type_label || 'Adet'}</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.65em;">${stock.unit_type_label || 'Adet'}</span>
                 </td>
                 <td>
-                    <div class="d-flex flex-column">
-                        <span class="fw-bold">${totalQuantity}</span>
-                        <small class="text-muted d-sm-none">Kritik: ${criticalLevel}</small>
-                    </div>
+                    <strong style="font-size: 0.8em;">${stock.total_quantity || 0}</strong>
                 </td>
-                <td class="d-none d-sm-table-cell">${criticalLevel}</td>
-                <td class="d-none d-md-table-cell">
-                    ${stock.individual_tracking ? 
-                        '<span class="badge bg-primary"><i class="fas fa-user"></i></span>' : 
-                        '<span class="badge bg-secondary"><i class="fas fa-layer-group"></i></span>'
-                    }
+                <td class="d-none d-sm-table-cell">
+                    <span class="badge bg-info" style="font-size: 0.65em;">${stock.critical_level || 0}</span>
                 </td>
                 <td class="d-none d-lg-table-cell">
-                    <div class="progress" style="height: 10px;">
-                        <div class="progress-bar ${barClass}" style="width: ${percentage}%"></div>
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span class="badge ${statusClass}" style="font-size: 0.75em; min-width: 70px; text-align: center;">${stock.stock_status || 'Bilinmiyor'}</span>
+                        ${progressBar}
                     </div>
                 </td>
-                <td class="d-none d-xl-table-cell">${statusBadge}</td>
-                <td class="category-actions">
-                    <div class="d-flex flex-wrap gap-1">
-                        ${stock.status === 'Arızalı' ? 
-                            `<button class="btn btn-outline-danger btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="viewFault(${stock.id})" title="Arıza Detayı">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="repairEquipment(${stock.id})" title="Tamir Et">
-                                <i class="fas fa-wrench"></i>
-                            </button>` :
-                            stock.status === 'Bakımda' ?
-                            `<button class="btn btn-outline-warning btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="viewMaintenance(${stock.id})" title="Bakım Detayı">
-                                <i class="fas fa-tools"></i>
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="completeMaintenance(${stock.id})" title="Bakımı Tamamla">
-                                <i class="fas fa-check"></i>
-                            </button>` :
-                            `<button class="btn btn-outline-info btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="toggleStockDetails(${stock.id})" title="Detayları Göster/Gizle">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="editStock(${stock.id})" title="Düzenle">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="stockIn(${stock.id})" title="Stok Girişi">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                            <button class="btn btn-outline-warning btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="stockOut(${stock.id})" title="Stok Çıkışı">
-                                <i class="fas fa-minus"></i>
-                            </button>`
-                        }
-                        <button class="btn btn-outline-danger btn-sm" style="padding:0.35em 0.7em;border-radius:1.2em;font-size:0.8rem;" onclick="deleteStock(${stock.id})" title="Sil">
+                <td class="d-none d-md-table-cell">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <span class="badge ${trackingBadge} px-2 py-1" style="font-size: 0.75em; min-width: 80px; text-align: center;">${trackingType}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-primary btn-sm" onclick="showStockOperation(${stock.id}, 'add')" title="Stok Ekle" style="font-size: 0.65em; padding: 0.2rem 0.4rem;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="showStockOperation(${stock.id}, 'remove')" title="Stok Çıkar" style="font-size: 0.65em; padding: 0.2rem 0.4rem;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="viewStockDetails(${stock.id})" title="Detaylar" style="font-size: 0.65em; padding: 0.2rem 0.4rem;">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteStock(${stock.id})" title="Sil" style="font-size: 0.65em; padding: 0.2rem 0.4rem;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </td>
             </tr>
-            <!-- Detay satırı (gizli) -->
-            <tr class="stock-detail-row" id="detailRow${stock.id}" style="display: none;">
-                <td colspan="11" class="p-0">
-                    <div class="bg-light p-2 p-md-3">
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
-                            <h6 class="mb-0 text-primary">
-                                <i class="fas fa-barcode me-2"></i>
-                                <span class="d-none d-sm-inline">${stock.name} - Stok Kodları</span>
-                                <span class="d-sm-none">Stok Kodları</span>
-                            </h6>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleStockDetails(${stock.id})">
-                                <i class="fas fa-times me-1"></i>
-                                <span class="d-none d-sm-inline">Kapat</span>
-                            </button>
-                        </div>
-                        <div id="stockCodes${stock.id}" class="stock-codes-container">
-                            <div class="text-center py-3">
-                                <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                    <span class="visually-hidden">Yükleniyor...</span>
-                                </div>
-                                <p class="text-muted mt-2 mb-0">Kodlar yükleniyor...</p>
-                            </div>
-                        </div>
-                        <!-- Carousel Controls -->
-                        <div id="carouselControls${stock.id}" style="display: none;">
-                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-2 gap-2">
-                                <button class="btn btn-sm btn-outline-primary carousel-btn w-100 w-sm-auto" onclick="previousPage(${stock.id})" id="prevBtn${stock.id}" disabled>
-                                    <i class="fas fa-chevron-left me-1"></i>
-                                    <span class="d-none d-sm-inline">Önceki</span>
-                                    <span class="d-sm-none">Önceki</span>
-                                </button>
-                                <span class="text-muted small page-info" id="pageInfo${stock.id}">1 / 1</span>
-                                <button class="btn btn-sm btn-outline-primary carousel-btn w-100 w-sm-auto" onclick="nextPage(${stock.id})" id="nextBtn${stock.id}" disabled>
-                                    <span class="d-none d-sm-inline">Sonraki</span>
-                                    <span class="d-sm-none">Sonraki</span>
-                                    <i class="fas fa-chevron-right ms-1"></i>
-                                </button>
-                            </div>
-                            <!-- Dots indicator -->
-                            <div class="text-center" id="dots${stock.id}">
-                                <!-- Dots will be generated by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
         `;
-    }).join('');
+    });
+    
+    tbody.innerHTML = html;
 }
 
-// Pagination güncelleme - Responsive versiyon
-function updatePagination(pagination) {
-    const paginationContainer = document.getElementById('pagination');
+// Get status class
+function getStatusClass(status) {
+    switch(status) {
+        case 'Yeterli': return 'bg-success';
+        case 'Az': return 'bg-warning';
+        case 'Tükendi': return 'bg-danger';
+        default: return 'bg-secondary';
+    }
+}
+
+// Render pagination
+function renderPagination(pagination) {
+    const paginationEl = document.getElementById('pagination');
     const paginationText = document.getElementById('paginationText');
     
-    if (!paginationContainer) return;
-
-    let paginationHTML = '';
+    // Update pagination info
+    const start = (pagination.current_page - 1) * pagination.per_page + 1;
+    const end = Math.min(pagination.current_page * pagination.per_page, pagination.total);
+    paginationText.textContent = `${start}-${end} / ${pagination.total} kayıt`;
     
-    // Önceki sayfa
-    if (pagination.current_page > 1) {
-        paginationHTML += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="loadStockData(${pagination.current_page - 1}); return false;">
-                    <i class="fas fa-chevron-left me-1"></i>
-                    <span class="d-none d-sm-inline">Önceki</span>
-                </a>
-            </li>
-        `;
+    if (pagination.last_page <= 1) {
+        paginationEl.innerHTML = '';
+        return;
     }
-
-    // Sayfa numaraları
+    
+    let html = '';
+    
+    // Previous button
+    html += `
+        <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="loadStockData(${pagination.current_page - 1})">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+    `;
+    
+    // Page numbers
     const startPage = Math.max(1, pagination.current_page - 2);
     const endPage = Math.min(pagination.last_page, pagination.current_page + 2);
-
-    for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === pagination.current_page;
-        paginationHTML += `
-            <li class="page-item ${isActive ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="loadStockData(${i}); return false;">
-                    ${i}
-                </a>
-            </li>
-        `;
-    }
-
-    // Sonraki sayfa
-    if (pagination.current_page < pagination.last_page) {
-        paginationHTML += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="loadStockData(${pagination.current_page + 1}); return false;">
-                    <span class="d-none d-sm-inline">Sonraki</span>
-                    <i class="fas fa-chevron-right ms-1"></i>
-                </a>
-            </li>
-        `;
-    }
-
-    paginationContainer.innerHTML = paginationHTML;
     
-    // Sayfa bilgisi güncelleme
-    if (paginationText) {
-        const startItem = (pagination.current_page - 1) * pagination.per_page + 1;
-        const endItem = Math.min(pagination.current_page * pagination.per_page, pagination.total);
-        paginationText.textContent = `Toplam ${pagination.total} stoktan ${startItem}-${endItem} arası gösteriliyor`;
+    if (startPage > 1) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadStockData(1)">1</a></li>`;
+        if (startPage > 2) {
+            html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === pagination.current_page) {
+            html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+        } else {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="loadStockData(${i})">${i}</a></li>`;
+        }
+    }
+    
+    if (endPage < pagination.last_page) {
+        if (endPage < pagination.last_page - 1) {
+            html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadStockData(${pagination.last_page})">${pagination.last_page}</a></li>`;
+    }
+    
+    // Next button
+    html += `
+        <li class="page-item ${pagination.current_page === pagination.last_page ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="loadStockData(${pagination.current_page + 1})">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    `;
+    
+    paginationEl.innerHTML = html;
+}
+
+// Apply filters
+function applyFilters() {
+    currentFilters = {
+        search: document.getElementById('filterSearch').value,
+        category: document.getElementById('filterCategory').value,
+        tracking: document.getElementById('filterTracking').value
+    };
+    
+    // Remove empty filters
+    Object.keys(currentFilters).forEach(key => {
+        if (!currentFilters[key]) {
+            delete currentFilters[key];
+        }
+    });
+    
+    loadStockData(1);
+}
+
+// Clear filters
+function clearFilters() {
+    document.getElementById('filterSearch').value = '';
+    document.getElementById('filterCategory').value = '';
+    document.getElementById('filterTracking').value = '';
+    document.getElementById('perPageSelect').value = '15';
+    
+    currentFilters = {};
+    loadStockData(1);
+}
+
+// Toggle select all
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.stock-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+    
+    updateDeleteButton();
+}
+
+// Update delete button
+function updateDeleteButton() {
+    const checkboxes = document.querySelectorAll('.stock-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelected');
+    
+    deleteBtn.disabled = checkboxes.length === 0;
+    deleteBtn.textContent = `Seçili Sil (${checkboxes.length})`;
+}
+
+// Update critical stock alert
+function updateCriticalStockAlert(stocks) {
+    const criticalStocks = stocks.filter(stock => stock.stock_status === 'Az' || stock.stock_status === 'Tükendi');
+    const alertEl = document.getElementById('criticalStockAlert');
+    
+    if (criticalStocks.length > 0) {
+        alertEl.classList.remove('d-none');
+        document.getElementById('criticalStockMessage').textContent = 
+            `${criticalStocks.length} ekipmanın stok seviyesi kritik! Lütfen stokları kontrol edin.`;
+    } else {
+        alertEl.classList.add('d-none');
     }
 }
 
-// Stok ekleme
-function addStock() {
-    const quantityOnlyMode = document.getElementById('quantityOnlyMode').checked;
-    const useSingleImage = false;
-    const individualTracking = document.getElementById('individualTracking').checked;
-    const formData = new FormData(document.getElementById('addProductForm'));
+// Toast notification
+function showToast(type, message) {
+    const toastContainer = getOrCreateToastContainer();
+    const toastId = 'toast-' + Date.now();
     
-    // Individual tracking kontrolü
-    if (individualTracking) {
-        // Ayrı takip aktifse miktar her zaman 1 olmalı
-        formData.set('quantity', '1');
-        formData.set('manual_quantity', '1');
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+}
+
+// Get or create toast container
+function getOrCreateToastContainer() {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+// Debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Add event listener for checkboxes
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('stock-checkbox')) {
+        updateDeleteButton();
+    }
+});
+
+// Show stock operation modal
+function showStockOperation(stockId, operationType) {
+    // Set modal data
+    document.getElementById('stockId').value = stockId;
+    document.getElementById('operationType').value = operationType;
+    
+    // Show operation section, hide edit section
+    document.getElementById('operationSection').style.display = 'block';
+    document.getElementById('editSection').style.display = 'none';
+    
+    // Update modal title and labels
+    const modalTitle = document.getElementById('stockOperationModalLabel');
+    const operationTitle = document.getElementById('operationTitle');
+    const operationAmountLabel = document.getElementById('operationAmountLabel');
+    const btnSubmit = document.getElementById('btnSubmitOperation');
+    const btnEdit = document.getElementById('btnSubmitEdit');
+    
+    if (operationType === 'add') {
+        modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Stok Ekle';
+        operationTitle.textContent = 'Stok Girişi';
+        operationAmountLabel.textContent = 'Eklenecek Miktar';
+        btnSubmit.style.display = 'inline-block';
+        btnEdit.style.display = 'none';
+        
+        // Load existing codes for this equipment
+        loadExistingCodesForEquipment(stockId);
+    } else if (operationType === 'remove') {
+        modalTitle.innerHTML = '<i class="fas fa-minus me-2"></i>Stok Çıkar';
+        operationTitle.textContent = 'Stok Çıkışı';
+        operationAmountLabel.textContent = 'Çıkarılacak Miktar';
+        btnSubmit.style.display = 'inline-block';
+        btnEdit.style.display = 'none';
+        
+        // Load existing codes for this equipment
+        loadExistingCodesForEquipment(stockId);
+    } else if (operationType === 'edit') {
+        modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Ekipman Düzenle';
+        operationTitle.textContent = 'Ekipman Düzenleme';
+        operationAmountLabel.textContent = 'Miktar';
+        btnSubmit.style.display = 'none';
+        btnEdit.style.display = 'inline-block';
+        
+        // Load equipment data for editing
+        loadEquipmentForEdit(stockId);
     }
     
-    // Otomatik kod oluştur
-    const randomCode = generateRandomCode();
-    formData.append('code', randomCode);
-    formData.append('individual_tracking', individualTracking ? '1' : '0');
-    formData.append('_token', getCsrfToken());
+    // Clear form
+    clearStockOperationForm();
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('stockOperationModal'));
+    modal.show();
+}
 
-    if (quantityOnlyMode) {
-        // Sadece miktar modu - mevcut ekipmana stok ekle
-        const equipmentId = formData.get('equipment_id');
-        const quantity = formData.get('quantity');
-        
-        if (!equipmentId || !quantity) {
-            showToast('Lütfen ekipman seçin ve miktar girin', 'error');
-            return;
-        }
-        
-        // Seçilen ekipmanın özelliklerini al
-        fetch(`/admin/stock/${equipmentId}/info`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const equipment = data.data;
-        
-        // Backend için gerekli alanları ekle
-                    formData.set('operation_type', 'in');
-        formData.set('amount', quantity);
-                    
-                    // Ayrı takip için özellikleri gönder
-                    if (equipment.individual_tracking) {
-                        formData.set('use_same_properties', '0'); // Manuel özellik kullan
-                        formData.set('brand', equipment.brand || '');
-                        formData.set('model', equipment.model || '');
-                        formData.set('size', equipment.size || '');
-                        formData.set('feature', equipment.feature || '');
-                        // Kod seçimi önceliği: kullanıcı kod seçtiyse onu kullan
-                        const chosenCode = document.getElementById('addExistingCodesSelect')?.value || '';
-                        if (chosenCode) {
-                            formData.set('code', chosenCode);
-                        }
-                    } else {
-                        formData.set('use_same_properties', '1'); // Aynı özellikleri kullan
-                    }
-                    
-        formData.set('use_single_image', '1');
-
-        // Resim işlemi: stockOperation photos[] bekliyor
-        const photoFile = formData.get('photo');
-        if (photoFile && photoFile.size > 0) {
-            // FormData'daki tekil 'photo' alanını temizleyip dizi formatında ekleyelim
-            formData.delete('photo');
-            formData.append('photos[]', photoFile);
-        }
-        
-            // Stok girişi işlemi
-        fetch(`/admin/stock/${equipmentId}/operation`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': getCsrfToken(),
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-                    .then(response => {
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
-                        } else {
-                            throw new Error('Beklenmeyen response formatı');
-                        }
-                    })
+// Load existing codes for equipment
+function loadExistingCodesForEquipment(equipmentId) {
+    fetch(`/admin/stock/${equipmentId}/detailed-codes`)
+        .then(response => response.json())
         .then(data => {
-                        if (data && data.success) {
-                showToast('Ekipman stoku başarıyla eklendi', 'success');
-                document.getElementById('addProductForm').reset();
-                document.getElementById('quantityOnlyMode').checked = true;
-                toggleModalMode();
-                bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
-                loadStockData(1);
-            } else {
-                showToast(data.message || 'Stok eklenirken hata oluştu', 'error');
+            if (data.success && data.codes) {
+                populateExistingCodesSelect(data.codes);
             }
         })
         .catch(error => {
-            console.error('Stok ekleme hatası:', error);
-            showToast('Stok eklenirken hata oluştu', 'error');
-                    });
-                } else {
-                    showToast('Ekipman bilgileri alınamadı', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Ekipman bilgisi alma hatası:', error);
-                showToast('Ekipman bilgileri alınamadı', 'error');
+            console.error('Error loading existing codes:', error);
+        });
+}
+
+// Populate existing codes select
+function populateExistingCodesSelect(codes) {
+    const existingCodesSelect = document.getElementById('existingCodesSelect');
+    const existingCodesSelectWrapper = document.getElementById('existingCodesSelectWrapper');
+    
+    if (!existingCodesSelect || !existingCodesSelectWrapper) return;
+    
+    // Clear existing options
+    existingCodesSelect.innerHTML = '<option value="">Stok kodu seçiniz</option>';
+    
+    if (codes && codes.length > 0) {
+        codes.forEach(code => {
+            const option = document.createElement('option');
+            option.value = code.code;
+            option.textContent = `${code.code} - ${code.brand || 'Marka yok'} ${code.model || 'Model yok'}`;
+            option.dataset.brand = code.brand || '';
+            option.dataset.model = code.model || '';
+            option.dataset.size = code.size || '';
+            option.dataset.feature = code.feature || '';
+            existingCodesSelect.appendChild(option);
         });
         
+        // Show the select wrapper
+        existingCodesSelectWrapper.style.display = 'block';
+        
+        // If only one code exists, auto-select it
+        if (codes.length === 1) {
+            existingCodesSelect.value = codes[0].code;
+            // Trigger the change event to auto-fill fields
+            existingCodesSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Add change event listener
+        existingCodesSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                // Auto-fill the code field
+                document.getElementById('operationCode').value = selectedOption.value;
+                
+                // Auto-fill other fields if they exist
+                if (selectedOption.dataset.brand) {
+                    document.getElementById('operationBrand').value = selectedOption.dataset.brand;
+                }
+                if (selectedOption.dataset.model) {
+                    document.getElementById('operationModel').value = selectedOption.dataset.model;
+                }
+                if (selectedOption.dataset.size) {
+                    document.getElementById('operationSize').value = selectedOption.dataset.size;
+                }
+                if (selectedOption.dataset.feature) {
+                    document.getElementById('operationFeature').value = selectedOption.dataset.feature;
+                }
+            }
+        });
     } else {
-        // Manuel ekipman modu - yeni ekipman ve stok oluştur
+        // Hide the select wrapper if no codes
+        existingCodesSelectWrapper.style.display = 'none';
+    }
+}
+
+// View stock details
+function viewStockDetails(stockId) {
+    // Load stock details and show in modal instead of redirecting
+    fetch(`/admin/equipment/${stockId}/details`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showStockDetailsModal(data.data);
+            } else {
+                showToast('error', data.message || 'Stok detayları yüklenemedi');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading stock details:', error);
+            showToast('error', 'Stok detayları yüklenirken hata oluştu: ' + error.message);
+        });
+}
+
+// Show stock details modal
+function showStockDetailsModal(equipment) {
+    // Create stocks table if there are multiple stocks
+    let stocksTable = '';
+    if (equipment.stocks && equipment.stocks.length > 0) {
+        stocksTable = `
+            <div class="mt-3">
+                <h6 class="fw-bold">Stok Kayıtları</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kod</th>
+                                <th>Marka</th>
+                                <th>Model</th>
+                                <th>Miktar</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${equipment.stocks.map(stock => `
+                                <tr>
+                                    <td>${stock.code || 'Kod yok'}</td>
+                                    <td>${stock.brand || 'Marka yok'}</td>
+                                    <td>${stock.model || 'Model yok'}</td>
+                                    <td>${stock.quantity || 0}</td>
+                                    <td><span class="badge bg-success">${stock.status || 'Aktif'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Create modal content
+    const modalContent = `
+        <div class="modal fade" id="stockDetailsModal" tabindex="-1" aria-labelledby="stockDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="stockDetailsModalLabel">
+                            <i class="fas fa-info-circle me-2"></i>Ekipman Detayları
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">Ekipman Bilgileri</h6>
+                                <p><strong>Adı:</strong> ${equipment.name || 'Bilinmiyor'}</p>
+                                <p><strong>Kategori:</strong> ${equipment.category?.name || 'Kategori yok'}</p>
+                                <p><strong>Birim Türü:</strong> ${equipment.unit_type_label || 'Adet'}</p>
+                                <p><strong>Kritik Seviye:</strong> ${equipment.critical_level || 0}</p>
+                                <p><strong>Takip Türü:</strong> ${equipment.individual_tracking ? 'Ayrı Takip' : 'Toplu Takip'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">Stok Bilgileri</h6>
+                                <p><strong>Toplam Miktar:</strong> <span class="badge bg-primary">${equipment.total_quantity || 0}</span></p>
+                                <p><strong>Durum:</strong> <span class="badge bg-success">${equipment.status || 'Aktif'}</span></p>
+                                <p><strong>Stok Kayıt Sayısı:</strong> ${equipment.stocks ? equipment.stocks.length : 0}</p>
+                            </div>
+                        </div>
+                        ${equipment.note ? `<div class="mt-3"><h6 class="fw-bold">Not:</h6><p>${equipment.note}</p></div>` : ''}
+                        ${equipment.feature ? `<div class="mt-3"><h6 class="fw-bold">Özellik:</h6><p>${equipment.feature}</p></div>` : ''}
+                        ${stocksTable}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('stockDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('stockDetailsModal'));
+    modal.show();
+    
+    // Clean up modal when hidden
+    document.getElementById('stockDetailsModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// Delete stock
+function deleteStock(stockId) {
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu ekipmanı ve tüm stok kayıtlarını silmek istediğinizden emin misiniz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, Sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+    
+    fetch(`/admin/equipment/${stockId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('success', 'Ekipman ve tüm stok kayıtları başarıyla silindi');
+            loadStockData(currentPage);
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Ekipman silinirken hata oluştu: ' + error.message);
+    });
+        }
+    });
+}
+
+// Delete selected
+function deleteSelected() {
+    const checkboxes = document.querySelectorAll('.stock-checkbox:checked');
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (ids.length === 0) {
+        showToast('error', 'Silinecek ekipman seçin');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Emin misiniz?',
+        text: `${ids.length} ekipmanı silmek istediğinizden emin misiniz?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, Sil!',
+        cancelButtonText: 'İptal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Delete işlemi
+    fetch('/admin/stock/bulk-delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ ids })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', `${ids.length} ekipman başarıyla silindi`);
+            loadStockData(currentPage);
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Ekipmanlar silinirken hata oluştu');
+            });
+        }
+    });
+}
+
+// Submit stock operation
+function submitStockOperation() {
+    const stockId = document.getElementById('stockId').value;
+    const operationType = document.getElementById('operationType').value;
+    const amount = document.getElementById('operationAmount').value;
+    const code = document.getElementById('operationCode').value;
+    const note = document.getElementById('operationNote').value;
+    const brand = document.getElementById('operationBrand').value;
+    const model = document.getElementById('operationModel').value;
+    const size = document.getElementById('operationSize').value;
+    const feature = document.getElementById('operationFeature').value;
+    const unitType = document.getElementById('operationUnitType').value;
+    
+    if (!amount) {
+        showToast('error', 'Miktar gereklidir');
+        return;
+    }
+    
+    // Convert operation type to controller expected values
+    const operationTypeMap = {
+        'add': 'in',
+        'remove': 'out'
+    };
+    
+    const data = {
+        operation_type: operationTypeMap[operationType] || operationType,
+        amount: amount,
+        code: code,
+        note: note,
+        brand: brand,
+        model: model,
+        size: size,
+        feature: feature,
+        unit_type: unitType
+    };
+    
+    console.log('Sending stock operation request:', {
+        url: `/admin/stock/${stockId}/operation`,
+        data: data
+    });
+    
+    fetch(`/admin/stock/${stockId}/operation`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error(`Expected JSON response, got: ${contentType}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('success', 'Stok işlemi başarıyla tamamlandı');
+            loadStockData(currentPage);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('stockOperationModal'));
+            modal.hide();
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Stok işlemi sırasında hata oluştu: ' + error.message);
+    });
+}
+
+// Submit edit stock
+function submitEditStock() {
+    const stockId = document.getElementById('editStockId').value;
+    const name = document.getElementById('editStockName').value;
+    const code = document.getElementById('editStockCode').value;
+    const unitType = document.getElementById('editStockUnitType').value;
+    const criticalLevel = document.getElementById('editStockCriticalLevel').value;
+    const note = document.getElementById('editStockNote').value;
+    
+    if (!name || !code || !unitType || !criticalLevel) {
+        showToast('error', 'Tüm alanlar gereklidir');
+        return;
+    }
+    
+    const data = {
+        id: stockId,
+        name: name,
+        code: code,
+        unit_type: unitType,
+        critical_level: criticalLevel,
+        note: note
+    };
+    
+    fetch('/admin/stock/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', 'Ekipman başarıyla güncellendi');
+            loadStockData(currentPage);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('stockOperationModal'));
+            modal.hide();
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Ekipman güncellenirken hata oluştu');
+    });
+}
+
+// Clear stock operation form
+function clearStockOperationForm() {
+    document.getElementById('operationAmount').value = '';
+    document.getElementById('operationCode').value = '';
+    document.getElementById('operationNote').value = '';
+    document.getElementById('operationBrand').value = '';
+    document.getElementById('operationModel').value = '';
+    document.getElementById('operationSize').value = '';
+    document.getElementById('operationFeature').value = '';
+    document.getElementById('operationUnitType').value = '';
+    document.getElementById('operationPhoto').value = '';
+}
+
+// Load equipment for editing
+function loadEquipmentForEdit(equipmentId) {
+    fetch(`/admin/equipment/${equipmentId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const equipment = data.data;
+                document.getElementById('editStockId').value = equipment.id;
+                document.getElementById('editStockName').value = equipment.name || '';
+                document.getElementById('editStockCode').value = equipment.code || '';
+                document.getElementById('editStockUnitType').value = equipment.unit_type || 'adet';
+                document.getElementById('editStockCriticalLevel').value = equipment.critical_level || 0;
+                document.getElementById('editStockNote').value = equipment.note || '';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading equipment:', error);
+            showToast('error', 'Ekipman bilgileri yüklenemedi');
+        });
+}
+
+// Add equipment form submission
+function setupAddEquipmentForm() {
+    const addProductForm = document.getElementById('addProductForm');
+    if (addProductForm) {
+        addProductForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitAddEquipment();
+        });
+    }
+    
+    // Setup modal event listeners
+    const addProductModal = document.getElementById('addProductModal');
+    if (addProductModal) {
+        addProductModal.addEventListener('shown.bs.modal', function() {
+            // Re-setup equipment selection handlers when modal is shown
+            setupEquipmentSelectionHandler();
+            
+            // Setup equipment selection handler for quick add mode
+            const quickAddEquipmentSelect = document.querySelector('#quantityOnlySection select[name="equipment_id"]');
+            if (quickAddEquipmentSelect) {
+                quickAddEquipmentSelect.addEventListener('change', function() {
+                    const equipmentId = this.value;
+                    console.log('Equipment selected, ID:', equipmentId);
+                    
+                    if (equipmentId) {
+                        loadEquipmentStocks(equipmentId);
+                        document.getElementById('quickAddCodeSelect').style.display = 'block';
+                    } else {
+                        document.getElementById('quickAddCodeSelect').style.display = 'none';
+                    }
+                });
+            }
+            
+        });
+        
+        addProductModal.addEventListener('hidden.bs.modal', function() {
+            // Clear backdrop when modal is hidden
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            
+            // Reset form
+            document.getElementById('addProductForm').reset();
+            
+            // Reset to quantity only mode
+            const quantityOnlyMode = document.getElementById('quantityOnlyMode');
+            if (quantityOnlyMode) {
+                quantityOnlyMode.checked = true;
+                toggleQuantityMode();
+            }
+        });
+    }
+}
+
+// Submit add equipment
+function submitAddEquipment() {
+    const formData = new FormData(document.getElementById('addProductForm'));
+    const quantityOnlyMode = document.getElementById('quantityOnlyMode').checked;
+    
+    // Prepare data based on mode
+    let data = {};
+    
+    if (quantityOnlyMode) {
+        // Quick add mode
+        const equipmentId = formData.get('equipment_id');
+        const quantityInput = document.querySelector('#quantityOnlySection input[name="quantity"]');
+        const quantity = quantityInput ? quantityInput.value : formData.get('quantity');
+        
+        if (!equipmentId) {
+            showToast('error', 'Lütfen bir ekipman seçin');
+            return;
+        }
+        
+        if (!quantity || quantity <= 0) {
+            showToast('error', 'Lütfen geçerli bir miktar girin');
+            return;
+        }
+        
+        // Seçilen ekipmanın individual_tracking değerini al
+        const equipmentSelect = document.querySelector('#quantityOnlySection select[name="equipment_id"]');
+        const selectedOption = equipmentSelect.options[equipmentSelect.selectedIndex];
+        const individualTracking = selectedOption.getAttribute('data-individual-tracking') === 'true';
+        
+        data = {
+            equipment_id: equipmentId,
+            quantity: quantity,
+            operation_type: 'in',
+            individual_tracking: individualTracking
+        };
+    } else {
+        // Manual add mode
         const name = formData.get('name');
         const categoryId = formData.get('category_id');
         const quantity = formData.get('manual_quantity');
         
         if (!name || !categoryId || !quantity) {
-            showToast('Lütfen tüm zorunlu alanları doldurun', 'error');
+            showToast('error', 'Ekipman adı, kategori ve miktar gereklidir');
             return;
         }
         
-        // Backend 'quantity' bekliyor; manual_quantity'yi eşitle
-        formData.set('quantity', quantity);
-
-        // Resim işlemi
-        const photoFile = formData.get('photo');
-        if (photoFile && photoFile.size > 0) {
-            formData.append('photo', photoFile);
+        data = {
+            name: name,
+            category_id: categoryId,
+            brand: formData.get('brand') || '',
+            model: formData.get('model') || '',
+            size: formData.get('size') || '',
+            feature: formData.get('feature') || '',
+            quantity: quantity,
+            unit_type: formData.get('unit_type') || 'adet',
+            critical_level: formData.get('critical_level') || 3,
+            individual_tracking: formData.get('individual_tracking') === 'on' ? true : false,
+            note: formData.get('note') || '',
+            operation_type: 'in'
+        };
+    }
+    
+    // Add photo if exists
+    const photo = formData.get('photo');
+    if (photo && photo.size > 0) {
+        data.photo = photo;
+    }
+    
+    // Create FormData for submission
+    const submitFormData = new FormData();
+    
+    // Add all data fields
+    Object.keys(data).forEach(key => {
+        if (data[key] !== null && data[key] !== undefined) {
+            // Convert boolean values to string for FormData
+            const value = typeof data[key] === 'boolean' ? data[key].toString() : data[key];
+            submitFormData.append(key, value);
+        }
+    });
+    
+    // Add photo if exists
+    if (photo && photo.size > 0) {
+        submitFormData.append('photo', photo);
+    }
+    
+    // Determine endpoint based on mode
+    let endpoint, method, headers, body;
+    
+    if (quantityOnlyMode) {
+        // Quick add mode - use stock operation endpoint
+        const equipmentId = data.equipment_id;
+        endpoint = `/admin/stock/${equipmentId}/operation`;
+        method = 'POST';
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        };
+        body = JSON.stringify({
+            operation_type: 'in',
+            amount: parseInt(data.quantity),
+            note: 'Hızlı ekleme'
+        });
+    } else {
+        // Manual add mode - use store endpoint
+        endpoint = '/admin/stock/store';
+        method = 'POST';
+        headers = {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        };
+        body = submitFormData;
+    }
+    
+    // Submit to backend
+    fetch(endpoint, {
+        method: method,
+        headers: headers,
+        body: body
+    })
+    .then(response => {
+        console.log('Add equipment response status:', response.status);
+        console.log('Add equipment response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Yeni ekipman ve stok oluştur
-    fetch('/admin/stock', {
-        method: 'POST',
-        body: formData,
-        headers: {
-                'X-CSRF-TOKEN': getCsrfToken(),
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.redirected) {
-                // Redirect varsa sayfayı yenile
-                window.location.reload();
-                return;
-            }
-            
-            // Content-Type kontrolü
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return response.json();
-            } else {
-                // HTML response alındıysa hata
-                throw new Error('Beklenmeyen response formatı');
-            }
-        })
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error(`Expected JSON response, got: ${contentType}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
-            if (data && data.success) {
-                showToast('Yeni ekipman ve stok başarıyla oluşturuldu', 'success');
+        console.log('Add equipment response data:', data);
+        if (data.success) {
+            showToast('success', 'Ekipman başarıyla eklendi');
+            loadStockData(currentPage);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
+            modal.hide();
             document.getElementById('addProductForm').reset();
-                document.getElementById('quantityOnlyMode').checked = true;
-                toggleModalMode();
-            bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
-            loadStockData(1);
         } else {
-                showToast(data.message || 'Ekipman oluşturulurken hata oluştu', 'error');
+            console.error('Add equipment error response:', data);
+            showToast('error', data.message || 'Ekipman eklenirken hata oluştu');
         }
     })
     .catch(error => {
-            console.error('Ekipman ekleme hatası:', error);
-            showToast('Ekipman oluşturulurken hata oluştu', 'error');
-    });
-    }
-}
-
-
-
-
-
-
-
-// Toplu stok silme
-function deleteSelectedStocks() {
-    const selectedCheckboxes = document.querySelectorAll('.stock-checkbox:checked');
-    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-    if (selectedIds.length === 0) {
-        showToast('Silinecek stok seçilmedi', 'warning');
-        return;
-    }
-
-    Swal.fire({
-        title: 'Emin misiniz?',
-        text: `${selectedIds.length} stok kalıcı olarak silinecek!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Evet, sil!',
-        cancelButtonText: 'İptal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Siliniyor...',
-                text: 'Lütfen bekleyin',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            const formData = new FormData();
-            formData.append('ids', JSON.stringify(selectedIds));
-            formData.append('_token', getCsrfToken());
-
-            fetch('/admin/stock/bulk-delete', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                }
-            })
-            .then(response => {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                } else {
-                    throw new Error('Beklenmeyen response formatı');
-                }
-            })
-            .then(data => {
-                if (data && data.success) {
-                    // Loading ekranını kapat
-                    Swal.close();
-                    
-                    // DOM'dan seçili satırları kaldır
-                    selectedCheckboxes.forEach(checkbox => {
-                        const row = checkbox.closest('tr');
-                        if (row) {
-                            row.remove();
-                        }
-                    });
-                    
-                    // Select all checkbox'ı temizle
-                    const selectAllCheckbox = document.getElementById('selectAll');
-                    if (selectAllCheckbox) {
-                        selectAllCheckbox.checked = false;
-                        selectAllCheckbox.indeterminate = false;
-                    }
-                    
-                    // Toast mesajı göster
-                    showToast(data.message, 'success');
-                    
-                    // Tablo boşsa "Henüz stok bulunmuyor" mesajını göster
-                    const tbody = document.getElementById('stockTableBody');
-                    if (tbody && tbody.children.length === 0) {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="9" class="text-center py-4">
-                                    <i class="fas fa-boxes fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted">Henüz stok bulunmuyor</p>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                } else {
-                    // Loading ekranını kapat
-                    Swal.close();
-                    
-                    Swal.fire(
-                        'Hata!',
-                        data.message,
-                        'error'
-                    );
-                }
-            })
-            .catch(error => {
-                // Loading ekranını kapat
-                Swal.close();
-                
-                console.error('Toplu silme hatası:', error);
-                Swal.fire(
-                    'Hata!',
-                    'Stoklar silinirken hata oluştu',
-                    'error'
-                );
-            });
-        }
+        console.error('Add equipment error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        showToast('error', 'Ekipman eklenirken hata oluştu: ' + error.message);
     });
 }
 
-// Toast bildirimi gösterme fonksiyonu
-function showToast(message, type = 'info') {
-    // Toast container oluştur (eğer yoksa)
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        `;
-        document.body.appendChild(toastContainer);
-    }
-
-    // Toast elementi oluştur
-    const toast = document.createElement('div');
-    const iconMap = {
-        'success': '✓',
-        'error': '✕',
-        'warning': '⚠',
-        'info': 'ℹ'
-    };
+// Setup equipment selection change handler
+function setupEquipmentSelectionHandler() {
+    // Setup for both quantity section and manual section equipment selects
+    const equipmentSelects = document.querySelectorAll('select[name="equipment_id"]');
     
-    const colorMap = {
-        'success': '#28a745',
-        'error': '#dc3545',
-        'warning': '#ffc107',
-        'info': '#17a2b8'
-    };
-
-    toast.style.cssText = `
-        background: white;
-        border-left: 4px solid ${colorMap[type] || colorMap.info};
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-radius: 4px;
-        padding: 12px 16px;
-        min-width: 300px;
-        max-width: 400px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 14px;
-        color: #333;
-        animation: slideIn 0.3s ease forwards;
-    `;
-
-    toast.innerHTML = `
-        <div style="
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: ${colorMap[type] || colorMap.info};
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        ">${iconMap[type] || iconMap.info}</div>
-        <div style="flex: 1;">${message}</div>
-        <button onclick="this.parentElement.remove()" style="
-            background: none;
-            border: none;
-            color: #999;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        ">&times;</button>
-    `;
-
-    toastContainer.appendChild(toast);
-
-    // 3 saniye sonra otomatik kaldır
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.style.animation = 'slideOut 0.3s ease forwards';
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, 300);
-        }
-    }, 3000);
-}
-
-// Global fonksiyonları window objesine ekle
-window.editStock = editStock;
-window.deleteStock = deleteStock;
-window.stockIn = stockIn;
-window.stockOut = stockOut;
-window.submitStockOperation = submitStockOperation;
-window.showToast = showToast;
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Sayfa yüklendiğinde verileri JavaScript'ten yükle
-    loadStockData(1);
-    
-    // Filtreleme ve arama
-    const searchInput = document.getElementById('filterSearch');
-    const categorySelect = document.getElementById('filterCategory');
-    const trackingSelect = document.getElementById('filterTracking');
-    const statusSelect = document.getElementById('filterStatus');
-    const filterBtn = document.getElementById('filterBtn');
-
-    // Debounce fonksiyonu
-    let searchTimeout;
-    function debouncedSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            // Her zaman AJAX çağrısı yap
-            loadStockData(1);
-        }, 500); // 500ms bekle
-    }
-
-    if (searchInput) {
-        searchInput.addEventListener('input', debouncedSearch);
-        // Arama input'unda silme işlemini de dinle
-        searchInput.addEventListener('keyup', function(e) {
-            if (e.key === 'Backspace' || e.key === 'Delete') {
-                if (this.value === '') {
-                    // Arama temizlendiğinde hemen yükle
-                    loadStockData(1);
-                }
-            }
-        });
-    }
-
-    if (categorySelect) {
-        categorySelect.addEventListener('change', () => {
-            // Kategori seçildiğinde her zaman AJAX çağrısı yap
-            loadStockData(1);
-        });
-    }
-
-    if (trackingSelect) {
-        trackingSelect.addEventListener('change', () => {
-            // Takip türü seçildiğinde her zaman AJAX çağrısı yap
-            loadStockData(1);
-        });
-    }
-
-    // Basit filtreleme fonksiyonu
-    function filterStockTable() {
-        const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
-        const categoryValue = categorySelect ? categorySelect.value : '';
-
-        // URL parametrelerini oluştur
-        const params = new URLSearchParams();
-        if (searchValue) params.append('search', searchValue);
-        if (categoryValue) params.append('category', categoryValue);
-
-        // Sayfayı yeniden yükle
-        const currentUrl = new URL(window.location);
-        currentUrl.search = params.toString();
-        window.location.href = currentUrl.toString();
-    }
-
-    if (statusSelect) {
-        statusSelect.addEventListener('change', () => {
-            // Sadece durum seçildiğinde AJAX çağrısı yap
-            if (statusSelect.value !== '') {
-                loadStockData(1);
-            }
-        });
-    }
-
-    if (filterBtn) {
-        filterBtn.addEventListener('click', () => {
-            // Filtre butonuna basıldığında basit filtreleme yap
-            filterStockTable();
-        });
-    }
-
-    // Filtreleri temizle butonu
-    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
-    if (clearFiltersBtn) {
-        clearFiltersBtn.addEventListener('click', () => {
-            // Tüm filtreleri temizle
-            if (searchInput) searchInput.value = '';
-            if (categorySelect) categorySelect.value = '';
-            if (trackingSelect) trackingSelect.value = '';
-            
-            // Verileri yeniden yükle
-            loadStockData(1);
-        });
-    }
-
-    // Pagination linklerini JavaScript ile yönet
-    const paginationLinks = document.querySelectorAll('#pagination .page-link');
-    paginationLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const href = this.getAttribute('href');
-            const pageMatch = href.match(/page=(\d+)/);
-            if (pageMatch) {
-                const page = parseInt(pageMatch[1]);
-                loadStockData(page);
-            }
-        });
-    });
-
-    // Modal mod değiştirme
-    const quantityOnlyMode = document.getElementById('quantityOnlyMode');
-    if (quantityOnlyMode) {
-        console.log('Checkbox bulundu, event listener ekleniyor');
-        quantityOnlyMode.addEventListener('change', toggleModalMode);
-        // Sayfa yüklendiğinde varsayılan modu ayarla
-        setTimeout(() => {
-            toggleModalMode();
-        }, 100);
-    } else {
-        console.log('Checkbox bulunamadı!');
-    }
-
-    // Ekle modalında ekipman seçimi: tekil takip ise mevcut kodları ekipman adı ile birlikte getir
-    const equipmentSelectInAdd = document.querySelector('select[name="equipment_id"]');
-    if (equipmentSelectInAdd) {
-        equipmentSelectInAdd.addEventListener('change', function() {
+    equipmentSelects.forEach(equipmentSelect => {
+        equipmentSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            const equipmentId = this.value;
-            const isIndividual = selectedOption && selectedOption.getAttribute('data-individual-tracking') === 'true';
-            const wrapper = document.getElementById('addExistingCodesSelectWrapper');
-            const selectEl = document.getElementById('addExistingCodesSelect');
-            if (wrapper) wrapper.style.display = 'none';
-            if (selectEl) selectEl.innerHTML = '';
-            if (!equipmentId || !isIndividual) return;
-
-            Promise.all([
-                fetch(`/admin/stock/${equipmentId}/codes`).then(r => r.json()),
-                fetch(`/admin/stock/${equipmentId}/info`).then(r => r.json())
-            ]).then(([codesRes, infoRes]) => {
-                if (!codesRes || !codesRes.success) return;
-                const codes = Array.isArray(codesRes.data) ? codesRes.data : [];
-                const eqName = infoRes && infoRes.success && infoRes.data ? (infoRes.data.name || '') : '';
-                if (wrapper && selectEl) {
-                    if (codes.length === 1) {
-                        // Tek kod varsa otomatik seç
-                        selectEl.innerHTML = `<option value="${codes[0]}">${codes[0]} - ${eqName}</option>`;
-                        wrapper.style.display = 'block';
-                        selectEl.value = codes[0];
-                    } else if (codes.length > 1) {
-                        selectEl.innerHTML = '<option value="">Kod seçiniz</option>' + codes.map(c => `<option value="${c}">${c} - ${eqName}</option>`).join('');
-                        wrapper.style.display = 'block';
+            const individualTracking = selectedOption.getAttribute('data-individual-tracking') === 'true';
+            
+            // Find the corresponding quantity input in the same section
+            const section = this.closest('.row') || this.closest('#quantityOnlySection') || this.closest('#manualEquipmentSection');
+            const quantityInput = section ? section.querySelector('input[name="quantity"]') : document.querySelector('input[name="quantity"]');
+            const quantityHelp = section ? section.querySelector('#quantityHelp') : document.getElementById('quantityHelp');
+            
+            if (quantityInput) {
+                if (individualTracking) {
+                    quantityInput.value = '1';
+                    quantityInput.disabled = true;
+                    if (quantityHelp) {
+                        quantityHelp.textContent = 'Ayrı takip ekipmanları için miktar otomatik 1 olur';
+                    }
+                } else {
+                    quantityInput.disabled = false;
+                    if (quantityHelp) {
+                        quantityHelp.textContent = 'Toplu takip ekipmanları için miktar girebilirsiniz';
                     }
                 }
-            }).catch(() => {});
+            }
         });
-    }
-
-    // Resim seçenekleri: tek resim toggle kaldırıldı, bölüm her zaman görünür
-    toggleImageOptions();
-
-    // Miktar değişikliklerini dinle
-    const quantityInput = document.querySelector('input[name="quantity"]');
-    const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
+    });
     
-    if (quantityInput) {
-        quantityInput.addEventListener('input', updateImageOptions);
-    }
-    if (manualQuantityInput) {
-        manualQuantityInput.addEventListener('input', updateImageOptions);
-    }
-
-    // Individual tracking değişikliğini dinle
-    const individualTracking = document.getElementById('individualTracking');
-    if (individualTracking) {
-        individualTracking.addEventListener('change', updateImageOptions);
-        // Sayfa yüklendiğinde kontrol et
-        updateImageOptions();
-    }
-
-    // Stok işlemi resim seçenekleri: tek resim toggle kaldırıldı
-    toggleOperationImageOptions();
-
-    // Kod input değişikliğini dinle
-    const operationCode = document.getElementById('operationCode');
-    if (operationCode) {
-        operationCode.addEventListener('input', handleCodeInput);
-    }
-
-    // Referans kod input değişikliğini dinle
-    const referenceCode = document.getElementById('referenceCode');
-    if (referenceCode) {
-        referenceCode.addEventListener('input', handleReferenceCodeInput);
-    }
-
-    // Manuel özellik seçeneklerini dinle
-    const useSameProperties = document.getElementById('useSameProperties');
-    if (useSameProperties) {
-        useSameProperties.addEventListener('change', toggleManualProperties);
-    }
-
-    // Birim türü değişikliklerini dinle
-    const modalUnitType = document.getElementById('modalUnitType');
-    if (modalUnitType) {
-        modalUnitType.addEventListener('change', updateModalCriticalLevelHelp);
-        // Sayfa yüklendiğinde yardım metnini güncelle
-        setTimeout(() => {
-            updateModalCriticalLevelHelp();
-        }, 100);
-    }
-
-    const editStockUnitType = document.getElementById('editStockUnitType');
-    if (editStockUnitType) {
-        editStockUnitType.addEventListener('change', updateEditCriticalLevelHelp);
-    }
-
-    // Stok ekleme
-    const addProductForm = document.getElementById('addProductForm');
-    if (addProductForm) {
-        addProductForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-            addStock();
+    // Setup individual tracking checkbox handler for manual section
+    const individualTrackingCheckbox = document.querySelector('input[name="individual_tracking"]');
+    if (individualTrackingCheckbox) {
+        individualTrackingCheckbox.addEventListener('change', function() {
+            const manualQuantityInput = document.querySelector('input[name="manual_quantity"]');
+            const manualQuantityLabel = document.getElementById('manualQuantityLabel');
+            
+            if (manualQuantityInput) {
+                if (this.checked) {
+                    // Individual tracking enabled - set quantity to 1 and hide input
+                    manualQuantityInput.value = '1';
+                    manualQuantityInput.style.display = 'none';
+                    if (manualQuantityLabel) {
+                        manualQuantityLabel.innerHTML = 'Miktar <small class="text-muted">(Ayrı takip için otomatik 1)</small>';
+                    }
+                } else {
+                    // Individual tracking disabled - show quantity input
+                    manualQuantityInput.style.display = 'block';
+                    manualQuantityInput.disabled = false;
+                    if (manualQuantityLabel) {
+                        manualQuantityLabel.textContent = 'Miktar';
+                    }
+                }
+            }
         });
-    }
-
-    // Toplu silme
-    const deleteSelectedBtn = document.getElementById('deleteSelected');
-    if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', deleteSelectedStocks);
-    }
-
-    // Tümünü seç
-    const selectAllCheckbox = document.getElementById('selectAll');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.stock-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-    }
-});
-
-
-
-// Birim türü değişikliklerini dinleyen yardımcı fonksiyonlar
-function updateEditCriticalLevelHelp() {
-    const unitTypeSelect = document.getElementById('editStockUnitType');
-    const criticalLevelInput = document.getElementById('editStockCriticalLevel');
-    const criticalLevelHelp = document.getElementById('editCriticalLevelHelp');
-    
-    if (!unitTypeSelect || !criticalLevelInput || !criticalLevelHelp) return;
-    
-    const unitType = unitTypeSelect.value;
-    const unitLabels = {
-        'adet': 'Adet',
-        'metre': 'Metre',
-        'kilogram': 'Kilogram',
-        'litre': 'Litre',
-        'paket': 'Paket',
-        'kutu': 'Kutu',
-        'çift': 'Çift',
-        'takım': 'Takım'
-    };
-    
-    const label = unitLabels[unitType] || 'Adet';
-    criticalLevelHelp.textContent = `${label} cinsinden kritik seviye (örn: ${unitType === 'adet' ? '3' : unitType === 'metre' ? '100' : '5'})`;
-    
-    // Birim türüne göre step değerini ayarla
-    if (unitType === 'adet' || unitType === 'paket' || unitType === 'kutu' || unitType === 'çift' || unitType === 'takım') {
-        criticalLevelInput.step = '1';
-        criticalLevelInput.min = '1';
-    } else {
-        criticalLevelInput.step = '0.01';
-        criticalLevelInput.min = '0.01';
-    }
-    
-    // Birim türüne göre placeholder güncelle
-    if (unitType === 'metre') {
-        criticalLevelInput.placeholder = '100';
-    } else if (unitType === 'kilogram') {
-        criticalLevelInput.placeholder = '5';
-    } else if (unitType === 'litre') {
-        criticalLevelInput.placeholder = '10';
-    } else {
-        criticalLevelInput.placeholder = '3';
     }
 }
 
-function updateModalCriticalLevelHelp() {
-    const unitTypeSelect = document.getElementById('modalUnitType');
-    const criticalLevelInput = document.getElementById('modalCriticalLevel');
-    const criticalLevelHelp = document.getElementById('modalCriticalLevelHelp');
+// Load equipment stocks for quick add
+function loadEquipmentStocks(equipmentId) {
+    console.log('Loading equipment stocks for ID:', equipmentId);
     
-    if (!unitTypeSelect || !criticalLevelInput || !criticalLevelHelp) return;
-    
-    const unitType = unitTypeSelect.value;
-    const unitLabels = {
-        'adet': 'Adet',
-        'metre': 'Metre',
-        'kilogram': 'Kilogram',
-        'litre': 'Litre',
-        'paket': 'Paket',
-        'kutu': 'Kutu',
-        'çift': 'Çift',
-        'takım': 'Takım'
-    };
-    
-    const label = unitLabels[unitType] || 'Adet';
-    criticalLevelHelp.textContent = `${label} cinsinden kritik seviye (örn: ${unitType === 'adet' ? '3' : unitType === 'metre' ? '100' : '5'})`;
-    
-    // Birim türüne göre step değerini ayarla
-    if (unitType === 'adet' || unitType === 'paket' || unitType === 'kutu' || unitType === 'çift' || unitType === 'takım') {
-        criticalLevelInput.step = '1';
-        criticalLevelInput.min = '1';
-    } else {
-        criticalLevelInput.step = '0.01';
-        criticalLevelInput.min = '0.01';
-    }
-    
-    // Birim türüne göre placeholder güncelle
-    if (unitType === 'metre') {
-        criticalLevelInput.placeholder = '100';
-    } else if (unitType === 'kilogram') {
-        criticalLevelInput.placeholder = '5';
-    } else if (unitType === 'litre') {
-        criticalLevelInput.placeholder = '10';
-    } else {
-        criticalLevelInput.placeholder = '3';
-    }
+    fetch(`/admin/equipment/${equipmentId}/stocks`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Stocks data:', data);
+            
+            if (data.success && data.stocks) {
+                const stocks = data.stocks;
+                const codeSelect = document.getElementById('quickAddExistingCodesSelect');
+                
+                console.log('Stocks length:', stocks.length);
+                
+                // Clear existing options
+                codeSelect.innerHTML = '<option value="">Kod seçiniz...</option>';
+                
+                // Add stock codes as options
+                if (stocks && stocks.length > 0) {
+                    stocks.forEach(stock => {
+                        console.log('Adding stock option:', stock);
+                        const option = document.createElement('option');
+                        option.value = stock.id;
+                        option.textContent = `${stock.code} - ${stock.brand || 'Marka yok'} ${stock.model || 'Model yok'}`;
+                        option.dataset.brand = stock.brand || '';
+                        option.dataset.model = stock.model || '';
+                        option.dataset.size = stock.size || '';
+                        option.dataset.feature = stock.feature || '';
+                        codeSelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Bu ekipman için kod bulunamadı';
+                    option.disabled = true;
+                    codeSelect.appendChild(option);
+                }
+            } else {
+                console.log('No stocks data found');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading equipment stocks:', error);
+        });
 }
+
+
+// Handle per page change
+function handlePerPageChange() {
+    const perPageSelect = document.getElementById('perPageSelect');
+    const perPage = perPageSelect.value;
+    
+    // Update current filters with per_page
+    currentFilters.per_page = perPage;
+    currentPage = 1; // Reset to first page
+    
+    // Reload data with new per_page
+    loadStockData();
+}
+
+// Ensure functions are globally available
+window.loadStockData = loadStockData;
+window.showStockOperation = showStockOperation;
+window.viewStockDetails = viewStockDetails;
+window.deleteStock = deleteStock;
+window.submitStockOperation = submitStockOperation;
+window.submitEditStock = submitEditStock;
+window.toggleQuantityMode = toggleQuantityMode;
+window.submitAddEquipment = submitAddEquipment;
+window.handlePerPageChange = handlePerPageChange;

@@ -205,7 +205,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav navbar-align d-flex align-items-center">
                    
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown" style="position: relative;">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" style="gap: 8px;">
                             <div class="position-relative">
                                 <span
@@ -222,7 +222,7 @@
                                 <small class="text-muted">{{ auth()->user()->role_label ?? 'Rol' }}</small>
                             </div>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width:280px; border-radius: 12px; margin-top: 8px;">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width:280px; border-radius: 12px; margin-top: 8px; position: absolute; right: 0; left: auto; z-index: 1050; max-width: 90vw; max-height: 80vh; overflow-y: auto;">
                             <!-- Profil Header -->
                             <li class="px-4 py-3 border-bottom" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px 12px 0 0;">
                                 <div class="d-flex align-items-center">
@@ -708,6 +708,50 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     
     @stack('scripts')
+    
+    <!-- Dropdown Fix Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown'ları manuel olarak kontrol et
+            var dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            
+            dropdownToggles.forEach(function(toggle, index) {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var dropdown = this.closest('.dropdown');
+                    var dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                    
+                    if (dropdownMenu) {
+                        // Diğer açık dropdown'ları kapat
+                        document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                            if (menu !== dropdownMenu) {
+                                menu.classList.remove('show');
+                            }
+                        });
+                        
+                        // Bu dropdown'ı aç/kapat
+                        var isOpen = dropdownMenu.classList.contains('show');
+                        if (isOpen) {
+                            dropdownMenu.classList.remove('show');
+                        } else {
+                            dropdownMenu.classList.add('show');
+                        }
+                    }
+                });
+            });
+            
+            // Dışarı tıklandığında dropdown'ları kapat
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
+        });
+    </script>
     </body>
 
 
@@ -811,18 +855,74 @@
 
 @push('scripts')
     <script>
+        console.log('Script section loaded!');
+        
         if (window.feather) {
             feather.replace();
         }
 
         // Toast otomatik kaybolma
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired!');
+            
             var toasts = document.querySelectorAll('.toast');
             toasts.forEach(function(toast) {
                 setTimeout(function() {
                     var bsToast = new bootstrap.Toast(toast);
                     bsToast.hide();
                 }, 5000); // 5 saniye sonra kaybolur
+            });
+            
+            // Debug için console log
+            console.log('Dropdown initialization started');
+            console.log('Found dropdown toggles:', document.querySelectorAll('.dropdown-toggle').length);
+            
+            // Dropdown'ları tamamen manuel olarak kontrol et
+            var dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            console.log('Dropdown toggles found:', dropdownToggles);
+            
+            dropdownToggles.forEach(function(toggle, index) {
+                console.log('Setting up dropdown', index, toggle);
+                
+                toggle.addEventListener('click', function(e) {
+                    console.log('Dropdown clicked!', this);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var dropdown = this.closest('.dropdown');
+                    var dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                    
+                    console.log('Dropdown element:', dropdown);
+                    console.log('Dropdown menu:', dropdownMenu);
+                    
+                    if (dropdownMenu) {
+                        // Diğer açık dropdown'ları kapat
+                        document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                            if (menu !== dropdownMenu) {
+                                menu.classList.remove('show');
+                            }
+                        });
+                        
+                        // Bu dropdown'ı aç/kapat
+                        var isOpen = dropdownMenu.classList.contains('show');
+                        if (isOpen) {
+                            dropdownMenu.classList.remove('show');
+                            console.log('Dropdown closed');
+                        } else {
+                            dropdownMenu.classList.add('show');
+                            console.log('Dropdown opened');
+                        }
+                    }
+                });
+            });
+            
+            // Dışarı tıklandığında dropdown'ları kapat
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                        menu.classList.remove('show');
+                    });
+                }
             });
         });
     </script>

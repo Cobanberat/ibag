@@ -12,7 +12,7 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a href="{{ route('admin.fault') }}" class="text-decoration-none">Arıza Bildirimi</a>
+            <a href="{{ route('admin.fault.create') }}" class="text-decoration-none">Arıza Bildirimi</a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">Yeni Arıza Bildirimi</li>
     </ol>

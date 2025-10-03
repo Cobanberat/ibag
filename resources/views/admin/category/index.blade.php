@@ -22,21 +22,38 @@
     background-color: #f8f9fa;
     border-bottom: 2px solid #dee2e6;
 }
+
+/* Button height consistency */
+#categorySearch,
+#clearFilters,
+.btn[data-bs-target="#addCategoryModal"] {
+    height: 38px;
+    font-size: 0.9rem;
+}
+
+/* Make buttons slightly smaller */
+.btn[data-bs-target="#addCategoryModal"] {
+    padding: 0.5rem 1rem;
+}
+
+#clearFilters {
+    padding: 0.5rem 1rem;
+}
 </style>
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h3 class="fw-bold mb-0">Kategoriler</h3>
 </div>
 <div class="row mb-4 g-2">
     <div class="col-12 col-md-6">
-        <input type="text" class="form-control form-control-sm" id="categorySearch" placeholder="Kategori ara...">
+        <input type="text" class="form-control" id="categorySearch" placeholder="Kategori ara...">
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <button class="btn btn-sm btn-outline-secondary w-100" id="clearFilters">
+        <button class="btn btn-outline-secondary w-100" id="clearFilters">
             <i class="fas fa-times"></i> Temizle
         </button>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <button class="btn btn-add-category w-100" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
             <i class="fas fa-plus"></i> Yeni Kategori
         </button>
     </div>

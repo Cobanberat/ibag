@@ -261,6 +261,9 @@
   <div id="userSnackbar" class="user-snackbar">Veriler güncellendi!</div>
 </div>
 
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
 
 <!-- Kullanıcı Detay Modalı -->
 <div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">

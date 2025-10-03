@@ -116,7 +116,16 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        
+        // Form verilerini al - JSON veya form data
+        $data = $request->all();
+        
+        // Eğer JSON ile gönderilmişse, json() metodunu kullan
+        if ($request->isJson()) {
+            $data = $request->json()->all();
+        }
+        
+        $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'username' => 'nullable|string|max:255|unique:users,username,' . $id,
@@ -137,15 +146,15 @@ class UserController extends Controller
 
         try {
             $user = User::findOrFail($id);
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->username = $request->username;
-            $user->role = $request->role;
-            $user->status = $request->status ?: $user->status;
-            $user->avatar_color = $request->avatar_color ?: $user->avatar_color;
+            $user->name = $data['name'];
+            $user->email = $data['email'];
+            $user->username = $data['username'] ?? $data['email'];
+            $user->role = $data['role'];
+            $user->status = $data['status'] ?? $user->status;
+            $user->avatar_color = $data['avatar_color'] ?? $user->avatar_color;
             
-            if ($request->password) {
-                $user->password = Hash::make($request->password);
+            if (!empty($data['password'])) {
+                $user->password = Hash::make($data['password']);
             }
             
             $user->save();

@@ -12,15 +12,23 @@ class EquipmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $pageTitle = 'Ekipmanlar';
+        
+        // Sayfa başına gösterilecek kayıt sayısını al
+        $perPage = $request->get('per_page', 15);
+        
+        // Maksimum 1000 kayıt ile sınırla (performans için)
+        if ($perPage > 1000) {
+            $perPage = 1000;
+        }
         
         // Ekipman stoklarını, ilgili ekipman bilgisiyle birlikte sayfalayarak çekiyoruz
         // Individual tracking kontrolü: Ayrı takip özelliği olan ekipmanlar için her kayıt ayrı gösterilir
         $equipmentStocks = EquipmentStock::with(['equipment.category'])
             ->orderBy('id', 'asc')
-            ->paginate(15)
+            ->paginate($perPage)
             ->withQueryString();
 
         // QR kodları oluştur
@@ -80,7 +88,15 @@ class EquipmentController extends Controller
             });
         }
 
-        $equipmentStocks = $query->orderBy('id', 'asc')->paginate(15)->withQueryString();
+        // Sayfa başına gösterilecek kayıt sayısını al
+        $perPage = $request->get('per_page', 15);
+        
+        // Maksimum 1000 kayıt ile sınırla (performans için)
+        if ($perPage > 1000) {
+            $perPage = 1000;
+        }
+        
+        $equipmentStocks = $query->orderBy('id', 'asc')->paginate($perPage)->withQueryString();
 
         return response()->json([
             'data' => $equipmentStocks->items(),

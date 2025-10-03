@@ -291,15 +291,26 @@ class AssignmentController extends Controller
         ]);
     }
 
-    public function finish($id)
+    public function finish(Request $request, $id)
     {
-        // Admin kullanıcıları için user_id kontrolünü kaldırıyoruz
-        $assignment = Assignment::findOrFail($id);
+        try {
+            // Admin kullanıcıları için user_id kontrolünü kaldırıyoruz
+            $assignment = Assignment::findOrFail($id);
 
-        $assignment->status = 1;
-        $assignment->save();
+            $assignment->status = 1;
+            $assignment->note = $request->input('note', $assignment->note);
+            $assignment->save();
 
-        return redirect()->route('admin.gidenGelen')->with('success', 'Zimmet başarıyla tamamlandı ve teslim edilenler listesine eklendi.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Zimmet işlemi tamamlandı.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'İşlem sırasında hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function comingGoing()
@@ -487,6 +498,134 @@ class AssignmentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Zaman çizelgesi yüklenirken hata oluştu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Excel export for giden assignments (zimmet alınanlar)
+     */
+    public function exportGidenExcel()
+    {
+        try {
+            $assignments = Assignment::with(['user', 'items.equipment.category'])
+                ->where('status', 0)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $filename = 'zimmet_alinanlar_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            // Create Excel data
+            $data = [];
+            $data[] = [
+                'ID',
+                'Kullanıcı Adı',
+                'Kullanıcı Email',
+                'Zimmet Tarihi',
+                'Zimmet Saati',
+                'Ekipman Sayısı',
+                'Durum',
+                'Not',
+                'Ekipman Detayları'
+            ];
+
+            if ($assignments->count() > 0) {
+                foreach ($assignments as $assignment) {
+                    $equipmentDetails = [];
+                    foreach ($assignment->items as $item) {
+                        $equipmentDetails[] = $item->equipment->name . ' (' . $item->quantity . ' adet)';
+                    }
+                    
+                    $data[] = [
+                        $assignment->id,
+                        $assignment->user->name ?? 'Bilinmiyor',
+                        $assignment->user->email ?? 'Email yok',
+                        $assignment->created_at->format('d.m.Y'),
+                        $assignment->created_at->format('H:i'),
+                        $assignment->items->count(),
+                        $assignment->status == 0 ? 'Bekliyor' : 'Tamamlandı',
+                        $assignment->note ?? 'Not yok',
+                        implode(', ', $equipmentDetails)
+                    ];
+                }
+            } else {
+                $data[] = ['', 'Veri bulunamadı', '', '', '', '', '', '', ''];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'filename' => $filename
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Excel export hatası: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Excel export for gelen assignments (teslim edilenler)
+     */
+    public function exportGelenExcel()
+    {
+        try {
+            $assignments = Assignment::with(['user', 'items.equipment.category'])
+                ->where('status', 1)
+                ->orderBy('updated_at', 'desc')
+                ->get();
+
+            $filename = 'teslim_edilenler_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            // Create Excel data
+            $data = [];
+            $data[] = [
+                'ID',
+                'Kullanıcı Adı',
+                'Kullanıcı Email',
+                'Zimmet Tarihi',
+                'Teslim Tarihi',
+                'Ekipman Sayısı',
+                'Durum',
+                'Arıza Notu',
+                'Ekipman Detayları'
+            ];
+
+            if ($assignments->count() > 0) {
+                foreach ($assignments as $assignment) {
+                    $equipmentDetails = [];
+                    foreach ($assignment->items as $item) {
+                        $equipmentDetails[] = $item->equipment->name . ' (' . $item->quantity . ' adet)';
+                    }
+                    
+                    $data[] = [
+                        $assignment->id,
+                        $assignment->user->name ?? 'Bilinmiyor',
+                        $assignment->user->email ?? 'Email yok',
+                        $assignment->created_at->format('d.m.Y H:i'),
+                        $assignment->updated_at->format('d.m.Y H:i'),
+                        $assignment->items->count(),
+                        'Teslim Edildi',
+                        $assignment->damage_note ?? 'Sağlam',
+                        implode(', ', $equipmentDetails)
+                    ];
+                }
+            } else {
+                $data[] = ['', 'Veri bulunamadı', '', '', '', '', '', '', ''];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'filename' => $filename
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Excel export hatası: ' . $e->getMessage()
             ], 500);
         }
     }

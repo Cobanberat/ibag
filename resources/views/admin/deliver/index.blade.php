@@ -80,7 +80,7 @@
                                 <span class="input-group-text bg-white border-end-0">
                                     <i class="fas fa-search text-muted"></i>
                                 </span>
-                                <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Zimmet ID, not veya ekipman ara...">
+                                <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Zimmet ID Ara...">
                             </div>
                         </div>
                         <div class="col-6 col-md-3 col-lg-2">
@@ -106,11 +106,7 @@
                             <input type="date" class="form-control" id="dateTo">
                         </div>
                         <div class="col-6 col-md-3 col-lg-3 d-flex flex-column flex-sm-row align-items-end gap-2">
-                            <button type="button" class="btn btn-primary px-3 px-sm-4 w-100 w-sm-auto" id="filterBtn">
-                                <i class="fas fa-filter me-1"></i>
-                                <span class="d-none d-sm-inline">Filtrele</span>
-                                <span class="d-sm-none">Filtre</span>
-                            </button>
+                           
                             <button type="button" class="btn btn-outline-secondary px-3 px-sm-4 w-100 w-sm-auto" id="clearBtn">
                                 <i class="fas fa-times me-1"></i>
                                 <span class="d-none d-sm-inline">Temizle</span>
@@ -1130,24 +1126,27 @@ function filterAssignments() {
     // Aktif zimmetleri filtrele
     activeCards.forEach(card => {
         const id = card.getAttribute('data-id');
-        const note = card.getAttribute('data-note').toLowerCase();
+        const note = card.getAttribute('data-note') ? card.getAttribute('data-note').toLowerCase() : '';
         const date = card.getAttribute('data-date');
         
         let show = true;
         
+        // Arama filtresi
         if (searchTerm && !id.includes(searchTerm) && !note.includes(searchTerm)) {
             show = false;
         }
         
+        // Status filtresi - Aktif tab'da sadece status=0 olanlar
         if (statusFilter && statusFilter !== '0') {
             show = false;
         }
         
-        if (dateFrom && date < dateFrom) {
+        // Tarih filtresi
+        if (dateFrom && date && date < dateFrom) {
             show = false;
         }
         
-        if (dateTo && date > dateTo) {
+        if (dateTo && date && date > dateTo) {
             show = false;
         }
         
@@ -1162,24 +1161,27 @@ function filterAssignments() {
     // Geçmiş zimmetleri filtrele
     historyCards.forEach(card => {
         const id = card.getAttribute('data-id');
-        const note = card.getAttribute('data-note').toLowerCase();
+        const note = card.getAttribute('data-note') ? card.getAttribute('data-note').toLowerCase() : '';
         const date = card.getAttribute('data-date');
         
         let show = true;
         
+        // Arama filtresi
         if (searchTerm && !id.includes(searchTerm) && !note.includes(searchTerm)) {
             show = false;
         }
         
+        // Status filtresi - Geçmiş tab'da sadece status=1 olanlar
         if (statusFilter && statusFilter !== '1') {
             show = false;
         }
         
-        if (dateFrom && date < dateFrom) {
+        // Tarih filtresi
+        if (dateFrom && date && date < dateFrom) {
             show = false;
         }
         
-        if (dateTo && date > dateTo) {
+        if (dateTo && date && date > dateTo) {
             show = false;
         }
         
@@ -1223,7 +1225,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Filtre butonları
-    document.getElementById('filterBtn').addEventListener('click', filterAssignments);
     document.getElementById('clearBtn').addEventListener('click', clearFilters);
     
     // Enter tuşu ile filtreleme
@@ -1231,6 +1232,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
             filterAssignments();
         }
+    });
+    
+    // Real-time filtreleme (yazarken)
+    document.getElementById('searchInput').addEventListener('input', function() {
+        filterAssignments();
+    });
+    
+    // Diğer filtreler için de real-time filtreleme
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        filterAssignments();
+    });
+    
+    document.getElementById('dateFrom').addEventListener('change', function() {
+        filterAssignments();
+    });
+    
+    document.getElementById('dateTo').addEventListener('change', function() {
+        filterAssignments();
     });
     
     // Tab geçişleri için event listeners
@@ -1253,6 +1272,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeContent.classList.add('show', 'active');
                 historyContent.classList.remove('show', 'active');
             }
+            
+            // Filtrelemeyi yeniden uygula
+            setTimeout(() => {
+                filterAssignments();
+            }, 100);
         });
     }
     
@@ -1272,13 +1296,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 historyContent.classList.add('show', 'active');
                 activeContent.classList.remove('show', 'active');
             }
+            
+            // Filtrelemeyi yeniden uygula
+            setTimeout(() => {
+                filterAssignments();
+            }, 100);
         });
     }
     
     // Fotoğraf butonları için event delegation
     document.addEventListener('click', function(e) {
-        const button = e.target.closest('.btn-toggle-photos');
-        if (!button) return;
+        // Check if the clicked element has the btn-toggle-photos class or is inside such element
+        let button = e.target;
+        
+        // If the clicked element is not the button itself, check if it's inside a button with the class
+        if (!button.classList.contains('btn-toggle-photos')) {
+            // Check if the clicked element is inside a button with btn-toggle-photos class
+            let parent = button.parentElement;
+            while (parent && parent !== document.body) {
+                if (parent.classList && parent.classList.contains('btn-toggle-photos')) {
+                    button = parent;
+                    break;
+                }
+                parent = parent.parentElement;
+            }
+        }
+        
+        if (!button || !button.classList.contains('btn-toggle-photos')) return;
         
         e.preventDefault();
         e.stopPropagation();
