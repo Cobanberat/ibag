@@ -19,11 +19,11 @@
 <!-- Özet Kartları -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card bg-gradient-primary text-white">
+        <div class="card kpı-card text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">{{ $gidenAssignments->count() }}</h4>
+                        <h4 class="mb-0 text-white">{{ $gidenAssignments->count() }}</h4>
                         <small>Aktif Zimmet</small>
                     </div>
                     <div class="align-self-center">
@@ -35,11 +35,11 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-gradient-success text-white">
+        <div class="card kpı-card text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">{{ $gelenAssignments->count() }}</h4>
+                        <h4 class="mb-0 text-white">{{ $gelenAssignments->count() }}</h4>
                         <small>Teslim Edilen</small>
                     </div>
                     <div class="align-self-center">
@@ -50,11 +50,11 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-gradient-info text-white">
+        <div class="card kpı-card text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">{{ $gidenAssignments->where('status', 0)->count() }}</h4>
+                        <h4 class="mb-0 text-white">{{ $gidenAssignments->where('status', 0)->count() }}</h4>
                         <small>Bekleyen</small>
                     </div>
                     <div class="align-self-center">
@@ -65,11 +65,11 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-gradient-warning text-white">
+        <div class="card kpı-card text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4 class="mb-0">{{ $gidenAssignments->where('status', 1)->count() }}</h4>
+                        <h4 class="mb-0 text-white">{{ $gidenAssignments->where('status', 1)->count() }}</h4>
                         <small>Tamamlanan</small>
                     </div>
                     <div class="align-self-center">
@@ -122,7 +122,7 @@
 </div>
 
 <!-- Sekmeler -->
-<ul class="nav nav-tabs approval-tabs mb-3" id="comingGoingTab" role="tablist">
+{{-- <ul class="nav nav-tabs approval-tabs mb-3" id="comingGoingTab" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="giden-tab" data-bs-toggle="tab" data-bs-target="#gidenTab" type="button" role="tab">
             <i class="fas fa-sign-out-alt me-2"></i>Zimmet Alınanlar ({{ $gidenAssignments->count() }})
@@ -133,7 +133,27 @@
             <i class="fas fa-sign-in-alt me-2"></i>Teslim Edilenler ({{ $gelenAssignments->count() }})
         </button>
     </li>
-</ul>
+</ul> --}}
+
+
+
+                    <ul class="nav nav-pills   mb-3 nav-fill" id="comingGoingTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="giden-tab" data-bs-toggle="pill" data-bs-target="#gidenTab" type="button" role="tab" style="background:#1f2b39; color: white; border: none; z-index: 2;">
+                                <i class="fas fa-clock me-1 me-sm-2"></i>
+                                <span class="d-none d-sm-inline">Zimmet Alınanlar ({{ $gidenAssignments->count() }})</span>
+                                <span class="d-sm-none">Aktif</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="gelen-tab" data-bs-toggle="pill" data-bs-target="#gelenTab" type="button" role="tab" style="background:#222e3c; color: white; border: none; z-index: 1;">
+                                <i class="fas fa-history me-1 me-sm-2"></i>
+                                <span class="d-none d-sm-inline">Teslim Edilenler ({{ $gelenAssignments->count() }})</span>
+                                <span class="d-sm-none">Geçmiş</span>
+                            </button>
+                        </li>
+                    </ul>
+    
 
 <div class="tab-content" id="comingGoingTabContent">
     <!-- Zimmet Alınanlar Tab -->
@@ -742,6 +762,61 @@
 
 @push('scripts')
 <script>
+// tab işlemleri
+    const activeTab = document.getElementById('gereken-tab');
+    const historyTab = document.getElementById('gecmis-tab');
+    
+    if (activeTab) {
+        activeTab.addEventListener('click', function() {
+            // Aktif tab'a geçiş
+            this.classList.add('active');
+            this.style.zIndex = '3';
+            historyTab.classList.remove('active');
+            historyTab.style.zIndex = '1';
+            
+            // İçerik geçişi
+            const activeContent = document.getElementById('active');
+            const historyContent = document.getElementById('history');
+            
+            if (activeContent && historyContent) {
+                activeContent.classList.add('show', 'active');
+                historyContent.classList.remove('show', 'active');
+            }
+            
+            // Filtrelemeyi yeniden uygula
+            setTimeout(() => {
+                filterAssignments();
+            }, 100);
+        });
+    }
+    
+    if (historyTab) {
+        historyTab.addEventListener('click', function() {
+            // Geçmiş tab'a geçiş
+            this.classList.add('active');
+            this.style.zIndex = '3';
+            activeTab.classList.remove('active');
+            activeTab.style.zIndex = '1';
+            
+            // İçerik geçişi
+            const activeContent = document.getElementById('active');
+            const historyContent = document.getElementById('history');
+            
+            if (activeContent && historyContent) {
+                historyContent.classList.add('show', 'active');
+                activeContent.classList.remove('show', 'active');
+            }
+            
+            // Filtrelemeyi yeniden uygula
+            setTimeout(() => {
+                filterAssignments();
+            }, 100);
+        });
+    }
+
+
+
+
 // Toast notification function
 function showToast(type, message) {
     // Create toast element
@@ -1193,11 +1268,11 @@ function submitFinishForm(assignmentId) {
 .animated-title {
     font-size: 1.8rem;
     font-weight: bold;
-    color: #2c3e50;
+    color: rgb(232, 226, 226);
     text-align: center;
     margin-bottom: 2rem;
     padding: 1rem;
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    background: linear-gradient(135deg, #2d3e52 0%, #556d89 100%);
     border-radius: 1rem;
     border: 1px solid rgba(79, 172, 254, 0.2);
 }
@@ -1215,6 +1290,10 @@ function submitFinishForm(assignmentId) {
     border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+}
+.kpı-card{
+background: linear-gradient(135deg, #2d3e52 0%, #556d89 100%); border: 1px solid rgba(79, 172, 254, 0.2); border-radius: 1rem;
 }
 
 .card:hover {
@@ -1320,5 +1399,66 @@ function submitFinishForm(assignmentId) {
 
 .timeline-body p:last-child {
     margin-bottom: 0;
+}
+
+/* Tab Styles */
+.nav-pills .nav-link {
+    transition: all 0.3s ease;
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+.nav-pills .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+    z-index: 1;
+}
+
+.nav-pills .nav-link:hover::before {
+    left: 100%;
+}
+
+.nav-pills .nav-link.active {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.3);
+    z-index: 3;
+}
+
+.nav-pills .nav-link:not(.active) {
+    opacity: 0.8;
+    transform: scale(0.98);
+}
+
+.nav-pills .nav-link:not(.active):hover {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Tab Content Transition */
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    transition: all 0.3s ease;
+}
+
+.tab-pane.fade:not(.show) {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.tab-pane.fade.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 </style>

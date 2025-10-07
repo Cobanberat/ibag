@@ -1,5 +1,44 @@
 /* Admin Home Dashboard Styles */
 
+/* === Minimal Theme Overrides (CSS-only, no class/id changes) === */
+/* KPI cards: dark background #222e3c with white text */
+.kpi-card {
+    background: #2b3748 !important; /* slightly lighter than #222e3c */
+    color: #fff !important;
+}
+.kpi-card .card-body .display-6,
+.kpi-card .card-body .h1,
+.kpi-card .card-body .h2,
+.kpi-card .card-body .counter {
+    color: #fff !important;
+}
+.kpi-card .card-body .small {
+    color: #e5e7eb !important;
+}
+
+/* Critical Stock table: make "Kritik Seviye" column green */
+/* Uses :has() to scope to the card with warning triangle icon title */
+.card:has(.fa-exclamation-triangle) table tbody tr td:nth-child(4) span {
+    color: #16a34a !important; /* green-600 */
+}
+
+/* Recent Activities table: standardize the 3rd column (İşlem) badge to dark */
+.card:has(.fa-history) table tbody tr td:nth-child(3) .badge {
+    background: #222e3c !important;
+    color: #fff !important;
+}
+
+/* Welcome header (card with crown icon): adjust title and date colors */
+.card:has(.fa-crown) .h3 {
+    color: #222e3c !important;
+}
+.card:has(.fa-crown) .h3 .fa-crown {
+    color: #222e3c !important;
+}
+.card:has(.fa-crown) p.text-muted {
+    color: #6b7280 !important; /* neutral gray for date line */
+}
+
 /* KPI Cards */
 .kpi-card {
     transition: all 0.3s ease;

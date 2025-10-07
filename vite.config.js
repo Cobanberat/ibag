@@ -44,23 +44,12 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
-    server: {
-        host: '0.0.0.0',
-        port: 5174,
-        https: true,
-        cors: {
-            origin: [
-                'https://c2b150d5df3a.ngrok-free.app/', 
-                'http://192.168.1.202:8000',
-                'http://192.168.1.202:5174',
-                'https://127.0.0.1:8000',
-                'https://localhost:8000',
-            ],
-            credentials: true,
-        },
-        hmr: {
-            host: 'https://c2b150d5df3a.ngrok-free.app/', 
-            protocol: 'wss',
-        },
+server: {
+    host: '0.0.0.0',
+    port: 5174,
+    cors: true,
+    hmr: {
+        host: '192.168.1.202',
     },
+}
 })

@@ -400,6 +400,7 @@
     color: #6c757d;
 }
 
+
 /* Hoşgeldin kartı responsive */
 @media (max-width: 768px) {
     .h3 {

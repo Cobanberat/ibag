@@ -1,5 +1,35 @@
 /* Works CSS Styles */
 
+.card:has(.fa-plus-circle) .h3,
+.card:has(.fa-plus-circle) .text-primary {
+    color: #222e3c !important;
+}
+
+/* Form header (Zimmet Formu) tone */
+.modern-gradient {
+    background: #222e3c !important;
+}
+
+/* Quantity input: '#' prefix background */
+.equipment-row .input-group .input-group-text {
+    background: #222e3c !important;
+    color: #fff !important;
+    border-color: #222e3c !important;
+}
+
+/* Submit button tone */
+.btn-gradient {
+    background: #222e3c !important;
+    border: 1px solid #222e3c !important;
+    color: #fff !important;
+}
+
+.btn-gradient:hover,
+.btn-gradient:focus {
+    background: #2b3748 !important; /* slightly lighter on hover */
+    border-color: #2b3748 !important;
+}
+
 .works-container {
     padding: 20px;
     max-width: 1200px;

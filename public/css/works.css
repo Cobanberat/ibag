@@ -5,6 +5,10 @@
     max-width: 1200px;
     margin: 0 auto;
 }
+.breadcrumb-item a {
+    color: #222e3c !important;
+    text-decoration: none;
+}
 
 .works-header {
     display: flex;

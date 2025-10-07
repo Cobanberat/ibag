@@ -16,6 +16,82 @@
     </nav>
 
     <style>
+        
+/* Tab Styles */
+.nav-pills .nav-link {
+    transition: all 0.3s ease;
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+.nav-pills .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+    z-index: 1;
+}
+
+.nav-pills .nav-link:hover::before {
+    left: 100%;
+}
+
+.nav-pills .nav-link.active {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.3);
+    z-index: 3;
+}
+
+.nav-pills .nav-link:not(.active) {
+    opacity: 0.8;
+    transform: scale(0.98);
+}
+
+.nav-pills .nav-link:not(.active):hover {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Tab Content Transition */
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    transition: all 0.3s ease;
+}
+
+.tab-pane.fade:not(.show) {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.tab-pane.fade.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Button Styles */
+.btn {
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.btn-group .btn {
+    margin: 0 2px;
+}
         .approval-tabs .nav-link {
             font-weight: 600;
             font-size: 1.08rem;
@@ -90,11 +166,11 @@
     <!-- İstatistik Kartları -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
+            <div class="card text-white" style="background: #2d3e52;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h4 class="mb-0">{{ $stats['bekleyen'] ?? 0 }}</h4>
+                            <h4 class="mb-0 text-white">{{ $stats['bekleyen'] ?? 0 }}</h4>
                             <small>Bekleyen İşlemler</small>
                         </div>
                         <div class="align-self-center">
@@ -105,11 +181,11 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-dark">
+            <div class="card text-white" style="background: #2d3e52">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h4 class="mb-0">{{ $stats['bakim'] ?? 0 }}</h4>
+                            <h4 class="mb-0 text-white">{{ $stats['bakim'] ?? 0 }}</h4>
                             <small>Bakım Gerekenler</small>
                         </div>
                         <div class="align-self-center">
@@ -120,11 +196,11 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-danger text-white">
+            <div class="card text-white" style="background: #2d3e52;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h4 class="mb-0">{{ $stats['arizali'] ?? 0 }}</h4>
+                            <h4 class="mb-0 text-white">{{ $stats['arizali'] ?? 0 }}</h4>
                             <small>Arızalı Olanlar</small>
                         </div>
                         <div class="align-self-center">
@@ -135,11 +211,11 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white">
+            <div class="card text-white" style="background: #2d3e52;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h4 class="mb-0">{{ $stats['cozulen'] ?? 0 }}</h4>
+                            <h4 class="mb-0 text-white">{{ $stats['cozulen'] ?? 0 }}</h4>
                             <small>Çözülen İşlemler</small>
                         </div>
                         <div class="align-self-center">
@@ -196,24 +272,37 @@
     </div>
 
     <!-- Sekmeler -->
-    <ul class="nav nav-tabs approval-tabs mb-3" id="approvalTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="gereken-tab" data-bs-toggle="tab" data-bs-target="#gereken" type="button" role="tab">
-                <i class="fas fa-exclamation-circle me-2"></i>Gereken İşlemler
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="gecmis-tab" data-bs-toggle="tab" data-bs-target="#gecmis" type="button" role="tab">
-                <i class="fas fa-history me-2"></i>Geçmiş İşlemler
-            </button>
-        </li>
-    </ul>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <ul class="nav nav-pills  nav-fill" id="approvalTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="gereken-tab" data-bs-toggle="pill" data-bs-target="#gereken" type="button" role="tab" style="background:#1f2b39; color: white; border: none; z-index: 2;">
+                                <i class="fas fa-clock me-1 me-sm-2"></i>
+                                <span class="d-none d-sm-inline">Gereken İşlemler</span>
+                                <span class="d-sm-none">Aktif</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="gecmis-tab" data-bs-toggle="pill" data-bs-target="#gecmis" type="button" role="tab" style="background:#222e3c; color: white; border: none; z-index: 1;">
+                                <i class="fas fa-history me-1 me-sm-2"></i>
+                                <span class="d-none d-sm-inline">Geçmiş İşlemler</span>
+                                <span class="d-sm-none">Geçmiş</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="tab-content" id="approvalTabContent">
         <!-- Gereken İşlemler Sekmesi -->
         <div class="tab-pane fade show active" id="gereken" role="tabpanel">
             <div class="card mb-4">
-                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background:#bbc7d5">
                     <span><i class="fas fa-exclamation-triangle me-2"></i>Gereken İşlemler</span>
                     <span class="badge bg-dark">{{ count($faults ?? []) }}</span>
                 </div>
@@ -380,6 +469,61 @@
 @include('admin.fault.partials.resolved-fault-detail-modal')
 
     <script>
+ // tab işlemleri
+    const activeTab = document.getElementById('gereken-tab');
+    const historyTab = document.getElementById('gecmis-tab');
+    
+    if (activeTab) {
+        activeTab.addEventListener('click', function() {
+            // Aktif tab'a geçiş
+            this.classList.add('active');
+            this.style.zIndex = '3';
+            historyTab.classList.remove('active');
+            historyTab.style.zIndex = '1';
+            
+            // İçerik geçişi
+            const activeContent = document.getElementById('active');
+            const historyContent = document.getElementById('history');
+            
+            if (activeContent && historyContent) {
+                activeContent.classList.add('show', 'active');
+                historyContent.classList.remove('show', 'active');
+            }
+            
+            // Filtrelemeyi yeniden uygula
+            setTimeout(() => {
+                filterAssignments();
+            }, 100);
+        });
+    }
+    
+    if (historyTab) {
+        historyTab.addEventListener('click', function() {
+            // Geçmiş tab'a geçiş
+            this.classList.add('active');
+            this.style.zIndex = '3';
+            activeTab.classList.remove('active');
+            activeTab.style.zIndex = '1';
+            
+            // İçerik geçişi
+            const activeContent = document.getElementById('active');
+            const historyContent = document.getElementById('history');
+            
+            if (activeContent && historyContent) {
+                historyContent.classList.add('show', 'active');
+                activeContent.classList.remove('show', 'active');
+            }
+            
+            // Filtrelemeyi yeniden uygula
+            setTimeout(() => {
+                filterAssignments();
+            }, 100);
+        });
+    }
+
+
+
+
         // Mesaj gösterme fonksiyonları
         function showSuccessMessage(message) {
             // Toast bildirimi göster

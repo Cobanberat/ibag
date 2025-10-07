@@ -184,29 +184,29 @@
 <!-- Durum Özeti -->
 <div class="row mb-4">
   <div class="col-md-4">
-    <div class="card bg-warning bg-opacity-10 border-warning border-0 shadow-sm">
+    <div class="card bg-opacity-10 border-warning border-0 shadow-sm" style="background: linear-gradient(135deg, #2d3e52 0%, #556d89 100%); border: 1px solid rgba(79, 172, 254, 0.2); border-radius: 1rem;">
       <div class="card-body text-center">
         <i class="fas fa-tools fa-3x text-warning mb-2"></i>
         <h4 class="text-warning fw-bold">{{ $stats['bakim'] ?? 0 }}</h4>
-        <p class="text-muted mb-0">Bakım Gerektiren</p>
+        <p class="text-white mb-0">Bakım Gerektiren</p>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card bg-danger bg-opacity-10 border-danger border-0 shadow-sm">
+    <div class="card bg-danger bg-opacity-10 border-danger border-0 shadow-sm"style="background: linear-gradient(135deg, #2d3e52 0%, #556d89 100%); border: 1px solid rgba(79, 172, 254, 0.2); border-radius: 1rem;">
       <div class="card-body text-center">
         <i class="fas fa-exclamation-triangle fa-3x text-danger mb-2"></i>
         <h4 class="text-danger fw-bold">{{ $stats['arizali'] ?? 0 }}</h4>
-        <p class="text-muted mb-0">Arızalı</p>
+        <p class="text-white mb-0">Arızalı</p>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card bg-info bg-opacity-10 border-info border-0 shadow-sm">
+    <div class="card bg-info bg-opacity-10 border-info border-0 shadow-sm" style="background: linear-gradient(135deg, #2d3e52 0%, #556d89 100%); border: 1px solid rgba(79, 172, 254, 0.2); border-radius: 1rem;">
       <div class="card-body text-center">
         <i class="fas fa-clipboard-list fa-3x text-info mb-2"></i>
         <h4 class="text-info fw-bold">{{ $stats['toplam'] ?? 0 }}</h4>
-        <p class="text-muted mb-0">Toplam</p>
+        <p class="text-white mb-0">Toplam</p>
       </div>
     </div>
   </div>
@@ -240,7 +240,7 @@
         <button type="button" class="btn btn-outline-secondary me-2" id="clearFilters">
           <i class="fas fa-times"></i> Temizle
         </button>
-        <button type="button" class="btn btn-primary" id="filterBtn">
+        <button type="button" class="btn" style="background: #2d3e52" id="filterBtn">
           <i class="fas fa-search"></i> Filtrele
         </button>
       </div>

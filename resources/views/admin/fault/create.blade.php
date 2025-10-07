@@ -22,8 +22,8 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Yeni Arıza/Bakım Bildirimi</h5>
+                <div class="card-header text-white" style="background-color: #222e3c;">
+                    <h5 class="mb-0" style="color: #ffffff;"><i class="fas fa-exclamation-triangle me-2" style="color: #ffffff;"></i>Yeni Arıza/Bakım Bildirimi</h5>
                 </div>
                 <div class="card-body">
                     @if(session('success'))
@@ -152,7 +152,7 @@
                         </div>
 
                         <div class="form-actions mt-4 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn" style="background-color: #22303f; color: #ffffff;">
                                 <i class="fas fa-paper-plane me-1"></i> Bildirimi Gönder
                             </button>
                             <a href="{{ route('admin.fault') }}" class="btn btn-outline-secondary">
@@ -166,8 +166,8 @@
         
         <div class="col-md-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Bilgilendirme</h6>
+                <div class="card-header text-white" style="background-color: #22303f">
+                    <h6 class="mb-0"style="color: #ffffff;"><i class="fas fa-info-circle me-2" style="color: #ffffff;"></i>Bilgilendirme</h6>
                 </div>
                 <div class="card-body">
                     <h6>Bildirim Türleri:</h6>

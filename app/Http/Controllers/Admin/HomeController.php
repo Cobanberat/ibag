@@ -310,9 +310,10 @@ class HomeController extends Controller
         return Assignment::with(['items.equipment', 'items.equipment.category'])
             ->where('user_id', $user->id)
             ->where(function($query) {
-                $query->where('status', 1)
-                      ->orWhere('status', true)
-                      ->orWhere('status', '1');
+                // Aktif zimmet: henüz teslim edilmemiş (status = 0)
+                $query->where('status', 0)
+                      ->orWhere('status', false)
+                      ->orWhere('status', '0');
             })
             ->latest()
             ->limit(5)
@@ -324,7 +325,7 @@ class HomeController extends Controller
                     'equipment_name' => $firstItem->equipment->name ?? 'Bilinmiyor',
                     'category' => $firstItem->equipment->category->name ?? 'Kategori Yok',
                     'assigned_date' => $assignment->created_at->format('d-m-Y'),
-                    'status' => 'Aktif', // Bu metod sadece aktif zimmetleri getiriyor
+                    'status' => 'Aktif', // Bu metod sadece aktif (teslim edilmemiş) zimmetleri getiriyor
                     'notes' => $assignment->note ?? 'Not yok'
                 ];
             });
@@ -340,8 +341,9 @@ class HomeController extends Controller
             ->map(function ($assignment) {
                 $firstItem = $assignment->items->first();
                 // Status kontrolünü daha güvenli hale getir
-                $isActive = ($assignment->status == 1 || $assignment->status === true || $assignment->status === '1');
-                $status = $isActive ? 'Aktif' : 'Pasif';
+                // Aktif = teslim edilmemiş (status = 0)
+                $isActive = ($assignment->status == 0 || $assignment->status === false || $assignment->status === '0');
+                $status = $isActive ? 'Aktif' : 'Teslim Edildi';
                 $statusBadge = $this->getAssignmentStatusBadge($isActive);
                 
                 return [
@@ -358,17 +360,18 @@ class HomeController extends Controller
     private function getMyStats($user)
     {
         $totalAssignments = Assignment::where('user_id', $user->id)->count();
+        // Aktif: status = 0 (teslim edilmemiş), Tamamlanan: status = 1 (teslim edilmiş)
         $activeAssignments = Assignment::where('user_id', $user->id)
-            ->where(function($query) {
-                $query->where('status', 1)
-                      ->orWhere('status', true)
-                      ->orWhere('status', '1');
-            })->count();
-        $completedAssignments = Assignment::where('user_id', $user->id)
             ->where(function($query) {
                 $query->where('status', 0)
                       ->orWhere('status', false)
                       ->orWhere('status', '0');
+            })->count();
+        $completedAssignments = Assignment::where('user_id', $user->id)
+            ->where(function($query) {
+                $query->where('status', 1)
+                      ->orWhere('status', true)
+                      ->orWhere('status', '1');
             })->count();
         $thisMonthAssignments = Assignment::where('user_id', $user->id)
             ->whereMonth('created_at', now()->month)
@@ -409,14 +412,12 @@ class HomeController extends Controller
         ];
     }
     
-    private function getAssignmentStatusBadge($status)
+    private function getAssignmentStatusBadge($isActive)
     {
-        // status kontrolü: 1, true, '1' = Aktif (Geldi), diğerleri = Pasif (Gitti)
-        $isActive = ($status == 1 || $status === true || $status === '1');
         if ($isActive) {
             return 'bg-success'; // Aktif
         } else {
-            return 'bg-secondary'; // Pasif
+            return 'bg-secondary'; // Teslim Edildi / Pasif
         }
     }
     

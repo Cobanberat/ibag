@@ -126,7 +126,7 @@
                 <div class="card-body p-0">
                     <ul class="nav nav-pills nav-fill" id="assignmentTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; z-index: 2;">
+                            <button class="nav-link active d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab" style="background:#1f2b39; color: white; border: none; z-index: 2;">
                                 <i class="fas fa-clock me-1 me-sm-2"></i>
                                 <span class="d-none d-sm-inline">Aktif Zimmetler</span>
                                 <span class="d-sm-none">Aktif</span>
@@ -134,7 +134,7 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="history-tab" data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; z-index: 1;">
+                            <button class="nav-link d-flex align-items-center justify-content-center py-2 py-sm-3 position-relative" id="history-tab" data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab" style="background:#222e3c; color: white; border: none; z-index: 1;">
                                 <i class="fas fa-history me-1 me-sm-2"></i>
                                 <span class="d-none d-sm-inline">Geçmiş Zimmetler</span>
                                 <span class="d-sm-none">Geçmiş</span>
@@ -151,6 +151,51 @@
     <div class="tab-content" id="assignmentTabContent">
         <!-- Aktif Zimmetler -->
         <div class="tab-pane fade show active" id="active" role="tabpanel">
+            <!-- Tablo görünümü (kartları bozmaz) -->
+            <div class="table-responsive mb-4">
+                <table class="table table-hover align-middle" id="activeAssignmentsTable">
+                    <thead class="table-light" style="background: linear-gradient(135deg, #e3f2fd 0%, #e0ecff 100%);">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tarih</th>
+                            <th>Not</th>
+                            <th>Ekipman Sayısı</th>
+                            <th>Durum</th>
+                            <th class="text-end">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($assignments->where('status', 0) as $assignment)
+                            <tr data-id="{{ $assignment->id }}">
+                                <td class="fw-semibold">#{{ $assignment->id }}</td>
+                                <td>{{ $assignment->created_at ? $assignment->created_at->format('d.m.Y H:i') : '-' }}</td>
+                                <td class="text-truncate" style="max-width: 360px;">
+                                    {{ $assignment->note ? Str::limit($assignment->note, 120) : 'Not bulunmuyor' }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ $assignment->items->count() }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Aktif</span>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openDetailModal({{ $assignment->id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="openReturnModal({{ $assignment->id }})">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">Aktif zimmet bulunamadı</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
             <div class="row" id="activeAssignments">
                 @forelse($assignments->where('status', 0) as $assignment)
                     <div class="col-12 col-sm-6 col-lg-4 mb-4" data-id="{{ $assignment->id }}" data-note="{{ $assignment->note }}" data-date="{{ $assignment->created_at->format('Y-m-d') }}">
@@ -221,6 +266,48 @@
 
         <!-- Geçmiş Zimmetler -->
         <div class="tab-pane fade" id="history" role="tabpanel">
+            <!-- Tablo görünümü (kartları bozmaz) -->
+            <div class="table-responsive mb-4">
+                <table class="table table-hover align-middle" id="historyAssignmentsTable">
+                    <thead class="table-light" style="background: linear-gradient(135deg, #e7f0ff 0%, #e0ecff 100%);">
+                        <tr>
+                            <th>ID</th>
+                            <th>Teslim Tarihi</th>
+                            <th>Not</th>
+                            <th>Ekipman Sayısı</th>
+                            <th>Durum</th>
+                            <th class="text-end">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($assignments->where('status', 1) as $assignment)
+                            <tr data-id="{{ $assignment->id }}">
+                                <td class="fw-semibold">#{{ $assignment->id }}</td>
+                                <td>{{ $assignment->updated_at ? $assignment->updated_at->format('d.m.Y H:i') : '-' }}</td>
+                                <td class="text-truncate" style="max-width: 360px;">
+                                    {{ $assignment->note ? Str::limit($assignment->note, 120) : 'Not bulunmuyor' }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ $assignment->items->count() }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Teslim Edildi</span>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openDetailModal({{ $assignment->id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">Geçmiş zimmet bulunamadı</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
             <div class="row" id="historyAssignments">
                 @forelse($assignments->where('status', 1) as $assignment)
                     <div class="col-12 col-sm-6 col-lg-4 mb-4" data-id="{{ $assignment->id }}" data-note="{{ $assignment->note }}" data-date="{{ $assignment->updated_at->format('Y-m-d') }}">
@@ -353,6 +440,34 @@
 </div>
 
 <style>
+/* Table-first layout: keep cards functional but hidden by default */
+#activeAssignments, #historyAssignments {
+    display: none;
+}
+
+.table thead th {
+    border-top: none;
+    font-weight: 600;
+    color: #44556e;
+}
+
+.table tbody td {
+    vertical-align: middle;
+}
+
+.table .badge {
+    border-radius: 999px;
+}
+
+/* Header title color (Zimmet Yönetimi) */
+.card:has(.fa-boxes) .h3,
+.card:has(.fa-boxes) .text-primary {
+    color: #222e3c !important;
+}
+.text-primary{
+    color: #222e3c !important;
+
+}
 /* Global Styles */
 .text-gradient {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

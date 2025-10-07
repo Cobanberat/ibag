@@ -69,3 +69,6 @@
     border: 1.5px solid #e0e7ff;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
+  .card-header{
+  background-color: #222e3c !important;
+  }

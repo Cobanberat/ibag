@@ -424,12 +424,8 @@ class EquipmentStockController extends Controller
             ]);
         }
 
-        // Always return JSON
-        return response()->json([
-            'success' => true,
-            'message' => 'Ekipman başarıyla eklendi!',
-            'equipment_id' => $equipment->id
-        ]);
+                return redirect()->route('admin.stock') 
+                 ->with('success', 'Ekipman başarıyla eklendi!');
     }
 
     /**
